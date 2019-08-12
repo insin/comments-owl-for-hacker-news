@@ -1,10 +1,11 @@
 const HIGHLIGHT_COLOR = '#ffffde'
-const TOGGLE_SHOW = '[+]'
 const TOGGLE_HIDE = '[–]'
+const TOGGLE_SHOW = '[+]'
 
 let config = {
-  autoHighlightNew: true,
   addUpvotedToHeader: true,
+  autoHighlightNew: true,
+  hideReplyLinks: false,
 }
 
 config.enableDebugLogging = false
@@ -33,6 +34,15 @@ function storeData(key, value) {
 //#endregion
 
 //#region Utility functions
+function addStyle(css = '') {
+  let $style = document.createElement('style')
+  if (css) {
+    $style.textContent = css
+  }
+  document.querySelector('head').appendChild($style)
+  return $style
+}
+
 function checkbox(attributes, label) {
   return h('label', null,
     h('input', {
@@ -477,10 +487,18 @@ function commentPage() {
   }
 
   function hideBuiltInCommentFoldingControls() {
-    let $style = document.createElement('style')
-    $style.textContent = 'a.togg { display: none; }'
-    document.querySelector('head').appendChild($style)
+    addStyle('a.togg { display: none; }')
   }
+
+  let toggleHideReplyLinks = (function() {
+    let $style = addStyle()
+    return () => {
+      $style.textContent = config.hideReplyLinks ? `
+        div.reply { margin-top: 8px; }
+        div.reply p { display: none; }
+      ` : ''
+    }
+  })()
 
   /**
    * Highlights comments newer than the given comment id.
@@ -537,6 +555,7 @@ function commentPage() {
   }
 
   hideBuiltInCommentFoldingControls()
+  toggleHideReplyLinks()
   initComments()
   if (hasNewComments && autoHighlightNew) {
     highlightNewComments(true, lastMaxCommentId)
@@ -553,6 +572,13 @@ function commentPage() {
     lastVisit,
     maxCommentId,
     newCommentCount,
+  })
+
+  chrome.storage.onChanged.addListener((changes) => {
+    if ('hideReplyLinks' in changes) {
+      config.hideReplyLinks = changes['hideReplyLinks'].newValue
+      toggleHideReplyLinks()
+    }
   })
 }
 //#endregion
@@ -655,5 +681,11 @@ function main() {
 chrome.storage.local.get((storedConfig) => {
   Object.assign(config, storedConfig)
   main()
+})
+
+chrome.storage.onChanged.addListener((changes) => {
+  if ('enableDebugLogging' in changes) {
+    config.enableDebugLogging = changes['enableDebugLogging'].newValue
+  }
 })
 //#endregion
