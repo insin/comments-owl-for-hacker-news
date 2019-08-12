@@ -21,9 +21,6 @@
       display: flex;
       justify-content: space-between;
       padding: .825em;
-    }
-
-    section.checkbox > label {
       cursor: pointer;
     }
 
@@ -72,7 +69,16 @@
 <form>
   <section class="checkbox">
     <label>
-      <span>Add <code>/upvoted</code> link to header</span>
+      <span>Automatically highlight new comments</span>
+      <div class="switch">
+        <input type="checkbox" name="autoHighlightNew" id="autoHighlightNew">
+        <label for="autoHighlightNew"></label>
+      </div>
+    </label>
+  </section>
+  <section class="checkbox">
+    <label>
+      <span>Add /upvoted link to header</span>
       <div class="switch">
         <input type="checkbox" name="addUpvotedToHeader" id="addUpvotedToHeader">
         <label for="addUpvotedToHeader"></label>

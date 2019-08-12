@@ -1,5 +1,6 @@
 chrome.storage.local.get((storedConfig) => {
   let config = {
+    autoHighlightNew: true,
     addUpvotedToHeader: true,
     enableDebugLogging: false,
     ...storedConfig,
