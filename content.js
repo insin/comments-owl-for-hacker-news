@@ -11,25 +11,44 @@ let config = {
 config.enableDebugLogging = false
 
 //#region Storage
-function commentCountKey(itemId) {
-  return `${itemId}:cc`
+class Visit {
+  constructor({commentCount, maxCommentId, time}) {
+    /** @type {number} */
+    this.commentCount = commentCount
+    /** @type {number} */
+    this.maxCommentId = maxCommentId
+    /** @type {Date} */
+    this.time = time
+  }
+
+  toJSON() {
+    return {
+      c: this.commentCount,
+      m: this.maxCommentId,
+      t: this.time.getTime(),
+    }
+  }
 }
 
-function getData(key, defaultValue) {
-  let value = localStorage.getItem(key)
-  return value != undefined ? value : defaultValue
+Visit.fromJSON = function(obj) {
+  return new Visit({
+    commentCount: obj.c,
+    maxCommentId: obj.m,
+    time: new Date(obj.t),
+  })
 }
 
-function lastVisitKey(itemId) {
-  return `${itemId}:lv`
+function getLastVisit(itemId) {
+  let json = localStorage.getItem(itemId)
+  if (json == null) {
+    return null
+  }
+  return Visit.fromJSON(JSON.parse(json))
 }
 
-function maxCommentIdKey(itemId) {
-  return `${itemId}:mc`
-}
-
-function storeData(key, value) {
-  localStorage.setItem(key, value)
+function storeVisit(itemId, visit) {
+  log('storing visit', visit)
+  localStorage.setItem(itemId, JSON.stringify(visit))
 }
 //#endregion
 
@@ -91,7 +110,7 @@ function h(tagName, attributes, ...children) {
 
 function log(...args) {
   if (config.enableDebugLogging) {
-    console.log('WHY‽', ...args)
+    console.log('🦉', ...args)
   }
 }
 
@@ -186,11 +205,8 @@ function commentPage() {
   /** @type {string} */
   let itemId = /id=(\d+)/.exec(location.search)[1]
 
-  /** @type {number} */
-  let lastMaxCommentId = -1
-
-  /** @type {Date} */
-  let lastVisit = null
+  /** @type {Visit} */
+  let lastVisit
 
   /** @type {number} */
   let maxCommentId = -1
@@ -375,20 +391,20 @@ function commentPage() {
     $container.appendChild(
       h('div', null,
         h('p', null,
-          `${newCommentCount} new comment${s(newCommentCount)} since ${lastVisit.toLocaleString()}`
+          `${newCommentCount} new comment${s(newCommentCount)} since ${lastVisit.time.toLocaleString()}`
         ),
         h('div', null,
           checkbox({
             checked: autoHighlightNew,
             onclick: (e) => {
-              highlightNewComments(e.target.checked, lastMaxCommentId)
+              highlightNewComments(e.target.checked, lastVisit.maxCommentId)
             },
           }, 'highlight new comments'),
           ' ',
           checkbox({
             checked: autoHighlightNew,
             onclick: (e) => {
-              collapseThreadsWithoutNewComments(e.target.checked, lastMaxCommentId)
+              collapseThreadsWithoutNewComments(e.target.checked, lastVisit.maxCommentId)
             },
           }, 'collapse threads without new comments'),
         ),
@@ -405,9 +421,9 @@ function commentPage() {
       .sort((a, b) => a - b)
 
     let showNewCommentsAfter = Math.max(0, sortedCommentIds.length - 1)
+    let howMany = sortedCommentIds.length - showNewCommentsAfter
 
     function getButtonLabel() {
-      let howMany = sortedCommentIds.length - showNewCommentsAfter
       let fromWhen = commentsById[sortedCommentIds[showNewCommentsAfter]].when
       // Older comments display `on ${date}` instead of a relative time
       if (fromWhen.startsWith(' on')) {
@@ -424,6 +440,7 @@ function commentPage() {
       min: 1,
       oninput(e) {
         showNewCommentsAfter = Number(e.target.value)
+        howMany = sortedCommentIds.length - showNewCommentsAfter
         $button.value = getButtonLabel()
       },
       style: {margin: 0, verticalAlign: 'middle'},
@@ -434,6 +451,7 @@ function commentPage() {
     let $button = h('input', {
       onclick() {
         let referenceCommentId = sortedCommentIds[showNewCommentsAfter - 1]
+        log(`manually highlighting ${howMany} comments since ${referenceCommentId}`)
         highlightNewComments(true, referenceCommentId)
         collapseThreadsWithoutNewComments(true, referenceCommentId)
         $timeTravelControl.remove()
@@ -517,6 +535,7 @@ function commentPage() {
     let commentWrappers = document.querySelectorAll('table.comment-tree tr.athing')
     log('number of comment wrappers', commentWrappers.length)
     let index = 0
+    let lastMaxCommentId = lastVisit != null ? lastVisit.maxCommentId : -1
     for (let $wrapper of commentWrappers) {
       let comment = new HNComment($wrapper, index++)
       if (comment.id > maxCommentId) {
@@ -533,21 +552,18 @@ function commentPage() {
     hasNewComments = lastVisit != null && newCommentCount > 0
   }
 
+  // TODO Only store visit data when the item header is present (i.e. not a comment permalink)
+  // TODO Only store visit data for commentable items (a reply box / reply links are visible)
+  // TODO Clear any existing stored visit if the item is no longer commentable
   function storePageViewData() {
-    if (maxCommentId > lastMaxCommentId) {
-      storeData(maxCommentIdKey(itemId), maxCommentId)
-    }
-    storeData(lastVisitKey(itemId), new Date().getTime())
-    if (commentCount) {
-      storeData(commentCountKey(itemId), commentCount)
-    }
+    storeVisit(itemId, new Visit({
+      commentCount,
+      maxCommentId,
+      time: new Date(),
+    }))
   }
 
-  lastMaxCommentId = Number(getData(maxCommentIdKey(itemId), '0'))
-  let lastVisitTime = getData(lastVisitKey(itemId), null)
-  if (lastVisitTime != null) {
-    lastVisit = new Date(Number(lastVisitTime))
-  }
+  lastVisit = getLastVisit(itemId)
 
   let $commentsLink = document.querySelector('td.subtext > a[href^=item]')
   if ($commentsLink && /^\d+/.test($commentsLink.textContent)) {
@@ -558,8 +574,8 @@ function commentPage() {
   toggleHideReplyLinks()
   initComments()
   if (hasNewComments && autoHighlightNew) {
-    highlightNewComments(true, lastMaxCommentId)
-    collapseThreadsWithoutNewComments(true, lastMaxCommentId)
+    highlightNewComments(true, lastVisit.maxCommentId)
+    collapseThreadsWithoutNewComments(true, lastVisit.maxCommentId)
   }
   addPageControls()
   storePageViewData()
@@ -567,8 +583,8 @@ function commentPage() {
   log('page view data', {
     autoHighlightNew,
     commentCount,
+    hasNewComments,
     itemId,
-    lastMaxCommentId,
     lastVisit,
     maxCommentId,
     newCommentCount,
@@ -616,25 +632,27 @@ function itemListPage() {
   let commentLinks = document.querySelectorAll('td.subtext > a[href^="item?id="]:last-child')
   log('number of comments/discuss links', commentLinks.length)
 
+  let noCommentsCount = 0
+  let noLastVisitCount = 0
+
   for (let $commentLink of commentLinks) {
     let id = $commentLink.href.split('=').pop()
 
     let commentCountMatch = /^(\d+)/.exec($commentLink.textContent)
     if (commentCountMatch == null) {
-      log(`${id} doesn't have a comment count`)
+      noCommentsCount++
       continue
     }
 
-    let lastViewedCommentCount = getData(commentCountKey(id), null)
-    if (lastViewedCommentCount == null) {
-      log(`${id} doesn't have a last viewed comment count`)
+    let lastVisit = getLastVisit(id)
+    if (lastVisit == null) {
+      noLastVisitCount++
       continue
     }
 
     let commentCount = Number(commentCountMatch[1])
-    let lastCommentCount = Number(lastViewedCommentCount)
-    if (commentCount <= lastCommentCount) {
-      log(`${id} doesn't have any new comments`)
+    if (commentCount <= lastVisit.commentCount) {
+      log(`${id} doesn't have any new comments`, lastVisit)
       continue
     }
 
@@ -645,12 +663,19 @@ function itemListPage() {
             href: `/item?shownew&id=${id}`,
             style: {fontWeight: 'bold'},
           },
-          commentCount - lastCommentCount,
+          commentCount - lastVisit.commentCount,
           ' new'
         ),
         ')',
       )
     )
+  }
+
+  if (noCommentsCount > 0) {
+    log(`${noCommentsCount} item${s(noCommentsCount, " doesn't,s don't")} have any comments`)
+  }
+  if (noLastVisitCount > 0) {
+    log(`${noLastVisitCount} item${s(noLastVisitCount, " doesn't,s don't")} have a last visit stored`)
   }
 }
 //#endregion
