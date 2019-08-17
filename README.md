@@ -4,8 +4,8 @@
 
 A browser extension which draws the rest of the friendly owl for Hacker News comment threads to make them actually followable over time, by automatically highlighting new comments and showing which items have new comments, plus various other UX tweaks.
 
-* [Install Chrome Extension]()
-* [Install Firefox Add-on]()
+* [Install Chrome Extension](https://chrome.google.com/webstore/detail/hn-comments-owl/kpoggabejgbenjahggloahnnaolmfock)
+* [Install Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/hn-comments-owl/)
 * [Install as a user script](https://greasyfork.org/en/scripts/18066-hn-comment-trees) (requires a [user script manager](https://greasyfork.org/en#home-step-1))
 
 ## Features
@@ -18,6 +18,7 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 
 - Add an "upvoted" link to the header to make it easier to get back to previously visited stories, using upvote as a bookmark (default: on)
 - Toggle display of "reply" links below comments to make more room for comments on the screen (default: off)
+- Replaces built-in comment folding controls with a Reddit-style left-aligned control, with a slightly larger hit target for folding
 
 ## Screenshots
 
@@ -65,7 +66,7 @@ _Default: disabled_
 
 Hides reply links in comment threads to allow more vertical space for comments.
 
-This option can also be toggled while viewing an item's comments threads, using the browser's context menu:
+This option can also be toggled while viewing an item's comments, using the browser's context menu:
 
 | Firefox | Chrome |
 |:-------:|:------:|
