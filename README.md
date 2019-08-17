@@ -67,8 +67,10 @@ Hides reply links in comment threads to allow more vertical space for comments.
 
 This option can also be toggled while viewing an item's comments threads, using the browser's context menu:
 
-![](screenshots/toggle_reply_links_context_menu_chrome.png)
+| Firefox | Chrome |
+|:-------:|:------:|
+| ![](screenshots/toggle_reply_links_context_menu_firefox.png) | ![](screenshots/toggle_reply_links_context_menu_chrome.png) |
 
 ## Icon Attribution
 
-[Surprised owl stroke icon](https://www.vexels.com/vectors/preview/153933/surprised-owl-stroke-icon) | designed by Vexels
+[Surprised owl stroke icon](https://www.vexels.com/vectors/preview/153933/surprised-owl-stroke-icon) | designed by Vexels

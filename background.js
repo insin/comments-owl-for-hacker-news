@@ -10,7 +10,7 @@ let config = {
 
 function log(...args) {
   if (config.enableDebugLogging) {
-    console.log('WHY‽ background.js', ...args)
+    console.log('🦉 background.js', ...args)
   }
 }
 
@@ -22,7 +22,7 @@ function createMenuItems() {
     checked: config.hideReplyLinks,
     title: `Hide reply links`,
     onclick: toggleHideReplyLinks,
-    targetUrlPatterns: [ITEM_URL_PATTERN],
+    documentUrlPatterns: [ITEM_URL_PATTERN],
   })
 }
 
