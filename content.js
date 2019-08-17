@@ -184,7 +184,7 @@ function commentPage() {
   let hasNewComments = false
 
   /** @type {string} */
-  let itemId = location.search.split('=').pop()
+  let itemId = /id=(\d+)/.exec(location.search)[1]
 
   /** @type {number} */
   let lastMaxCommentId = -1
