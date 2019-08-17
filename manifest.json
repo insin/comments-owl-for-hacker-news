@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Why, Combinator‽",
-  "description": "Disruptive innovations for the orange website",
-  "homepage_url": "https://github.com/insin/why-combinator",
+  "name": "HN Comments Owl",
+  "description": "Highlight new Hacker News comments, and other UX tweaks",
+  "homepage_url": "https://github.com/insin/hn-comments-owl",
   "version": "1.0",
   "icons": {
     "16": "icons/icon16.png",
