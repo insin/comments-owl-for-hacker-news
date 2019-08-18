@@ -125,14 +125,14 @@ function toggleDisplay($el, hidden) {
   $el.classList.toggle('noshow', hidden)
   // We need to enforce display setting as the page's own script expands all
   // comments on page load.
-  $el.style.display == hidden ? 'none' : ''
+  $el.style.display = hidden ? 'none' : ''
 }
 
 function toggleVisibility($el, hidden) {
   $el.classList.toggle('nosee', hidden)
   // We need to enforce visibility setting as the page's own script expands
   // all comments on page load.
-  $el.style.visibility == hidden ? 'hidden' : 'visible'
+  $el.style.visibility = hidden ? 'hidden' : 'visible'
 }
 //#endregion
 
