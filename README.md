@@ -40,7 +40,9 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 
 ### Toggling display of reply links
 
-![](screenshots/toggle_reply_links.png)
+| Firefox | Chrome |
+|:-------:|:------:|
+| ![](screenshots/toggle_reply_links_firefox.png) | ![](screenshots/toggle_reply_links_chrome.png) |
 
 ## Options
 
