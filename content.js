@@ -318,18 +318,14 @@ function commentPage() {
       if (this.isDeleted) {
         this.$topBar.style.marginBottom = '4px'
       }
-      if (this.isCollapsed) {
-        this._updateDisplay(false)
-      }
       this.$topBar.insertAdjacentText('afterbegin', ' ')
       this.$topBar.insertAdjacentElement('afterbegin', this.$toggleControl)
     }
 
     /**
-     * @private
      * @param updateChildren {boolean=}
      */
-    _updateDisplay(updateChildren = true) {
+    updateDisplay(updateChildren = true) {
       // Show/hide this comment, preserving display of the meta bar
       toggleDisplay(this.$comment, this.isCollapsed)
       if (this.$vote) {
@@ -392,7 +388,7 @@ function commentPage() {
      */
     toggleCollapsed(isCollapsed = !this.isCollapsed) {
       this.isCollapsed = isCollapsed
-      this._updateDisplay()
+      this.updateDisplay()
     }
 
     /**
@@ -615,6 +611,7 @@ function commentPage() {
   hideBuiltInCommentFoldingControls()
   toggleHideReplyLinks()
   initComments()
+  comments.filter(comment => comment.isCollapsed).forEach(comment => comment.updateDisplay(false))
   if (hasNewComments && autoHighlightNew) {
     highlightNewComments(true, lastVisit.maxCommentId)
     collapseThreadsWithoutNewComments(true, lastVisit.maxCommentId)
