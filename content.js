@@ -50,6 +50,14 @@ function storeVisit(itemId, visit) {
   log('storing visit', visit)
   localStorage.setItem(itemId, JSON.stringify(visit))
 }
+
+function getIgnoredUsers() {
+  return new Set(JSON.parse(localStorage.ignoredUsers || '[]'))
+}
+
+function setIgnoredUsers(ignoredUsers) {
+  localStorage.ignoredUsers = JSON.stringify(Array.from(ignoredUsers))
+}
 //#endregion
 
 //#region Utility functions
@@ -220,6 +228,9 @@ function commentPage() {
   /** @type {number} */
   let newCommentCount = 0
 
+  /** @type {Set<string>} */
+  let ignoredUsers = getIgnoredUsers()
+
   class HNComment {
     /**
      * @param $wrapper {Element}
@@ -231,6 +242,10 @@ function commentPage() {
 
       /** @type {number} */
       this.index = index
+
+      let $user = $wrapper.querySelector('a.hnuser')
+      /** @type {string} */
+      this.user = $user ? $user.innerText : null
 
       /** @type {Element} */
       this.$comment = $wrapper.querySelector('div.comment')
@@ -542,15 +557,36 @@ function commentPage() {
     log('number of comment wrappers', commentWrappers.length)
     let index = 0
     let lastMaxCommentId = lastVisit != null ? lastVisit.maxCommentId : -1
+    let ignoreIndent = null
     for (let $wrapper of commentWrappers) {
       let comment = new HNComment($wrapper, index++)
+
+      // Remove comments in threads under ignored users
+      if (ignoreIndent != null) {
+        if (comment.indent > ignoreIndent) {
+          toggleDisplay($wrapper, true)
+          continue
+        }
+        ignoreIndent = null
+      }
+
+      // Remove comment from ignored users
+      if (ignoredUsers.has(comment.user)) {
+        toggleDisplay($wrapper, true)
+        ignoreIndent = comment.indent
+        continue
+      }
+
       if (comment.id > maxCommentId) {
         maxCommentId = comment.id
       }
+
       if (comment.isNewerThan(lastMaxCommentId)) {
         newCommentCount++
       }
+
       comments.push(comment)
+
       if (comment.id != -1) {
         commentsById[comment.id] = comment
       }
@@ -686,6 +722,46 @@ function itemListPage() {
 }
 //#endregion
 
+//#region Feature: block/unblock users on their profile page
+function userProfilePage() {
+  log('user profile page')
+
+  let $userLink = document.querySelector('a.hnuser')
+  if ($userLink == null) {
+    log('not a valid user')
+    return
+  }
+
+  let userId = $userLink.innerText
+  let ignoredUsers = getIgnoredUsers()
+
+  $userLink.closest('table').querySelector('tbody').appendChild(
+    h('tr', null,
+      h('td'),
+      h('td', null,
+        h('a', {
+            href: '#',
+            onClick: function(e) {
+              e.preventDefault()
+              if (ignoredUsers.has(userId)) {
+                ignoredUsers.delete(userId)
+                this.firstElementChild.innerText = 'block'
+              }
+              else {
+                ignoredUsers.add(userId)
+                this.firstElementChild.innerText = 'unblock'
+              }
+              setIgnoredUsers(ignoredUsers)
+            }
+          },
+          h('u', null, ignoredUsers.has(userId) ? 'unblock' : 'block')
+        )
+      )
+    )
+  )
+}
+//#endregion
+
 //#region Main
 function main() {
   log('config', config)
@@ -694,18 +770,16 @@ function main() {
     addUpvotedLinkToHeader()
   }
 
-  let page
   let path = location.pathname.slice(1)
 
   if (/^($|active|ask|best|front|news|newest|noobstories|show|submitted|upvoted)/.test(path)) {
-    page = itemListPage
+    itemListPage()
   }
   else if (/^item/.test(path)) {
-    page = commentPage
+    commentPage()
   }
-
-  if (page) {
-    page()
+  else if (/^user/.test(path)) {
+    userProfilePage()
   }
 }
 
