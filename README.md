@@ -13,6 +13,7 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 - Show new comment counts since your last visit on item list pages
 - Highlight new comments and collapse comment trees which don't contain any new comments when you revisit an item's comments
 - Manual highlighting of recent comments when new comments can't automatically be highlighted
+- User blocking: block a user via their profile page to hide their comments; manage blocked users on your own profile page
 
 ## Other Tweaks
 
@@ -37,6 +38,12 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 ### Manual highlighting of recent comments
 
 ![](screenshots/highlight_past_comments.png)
+
+### User blocking
+
+| Block users via their profile page | Manage blocked users on your own profile page |
+|:-------:|:------:|
+| ![](screenshots/block_user.png) | ![](screenshots/blocked_users.png) |
 
 ### Toggling display of reply links
 
