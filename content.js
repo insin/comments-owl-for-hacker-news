@@ -730,32 +730,67 @@ function userProfilePage() {
   }
 
   let userId = $userLink.innerText
+  let $currentUserLink = document.querySelector('a#me')
+  let currentUser = $currentUserLink ? $currentUserLink.innerText : ''
   let ignoredUsers = getIgnoredUsers()
+  let $tbody = $userLink.closest('table').querySelector('tbody')
 
-  $userLink.closest('table').querySelector('tbody').appendChild(
-    h('tr', null,
-      h('td'),
-      h('td', null,
-        h('a', {
-            href: '#',
-            onClick: function(e) {
-              e.preventDefault()
-              if (ignoredUsers.has(userId)) {
-                ignoredUsers.delete(userId)
-                this.firstElementChild.innerText = 'block'
+  if (userId == currentUser) {
+    let first = 0
+    ignoredUsers.forEach((ignoredUserId) => {
+      $tbody.appendChild(
+        h('tr', null,
+          h('td', {valign: 'top'}, first++ == 0 ? 'blocked:' : ''),
+          h('td', null,
+            h('a', {href: `/user?id=${ignoredUserId}`}, ignoredUserId),
+            h('a', {
+                href: '#',
+                onClick: function(e) {
+                  e.preventDefault()
+                  if (ignoredUsers.has(ignoredUserId)) {
+                    ignoredUsers.delete(ignoredUserId)
+                    this.firstElementChild.innerText = 'block'
+                  }
+                  else {
+                    ignoredUsers.add(ignoredUserId)
+                    this.firstElementChild.innerText = 'unblock'
+                  }
+                  setIgnoredUsers(ignoredUsers)
+                }
+              },
+              ' (', h('u', null, 'unblock'), ')'
+            )
+          )
+        )
+      )
+    })
+  }
+  else {
+    $tbody.appendChild(
+      h('tr', null,
+        h('td'),
+        h('td', null,
+          h('a', {
+              href: '#',
+              onClick: function(e) {
+                e.preventDefault()
+                if (ignoredUsers.has(userId)) {
+                  ignoredUsers.delete(userId)
+                  this.firstElementChild.innerText = 'block'
+                }
+                else {
+                  ignoredUsers.add(userId)
+                  this.firstElementChild.innerText = 'unblock'
+                }
+                setIgnoredUsers(ignoredUsers)
               }
-              else {
-                ignoredUsers.add(userId)
-                this.firstElementChild.innerText = 'unblock'
-              }
-              setIgnoredUsers(ignoredUsers)
-            }
-          },
-          h('u', null, ignoredUsers.has(userId) ? 'unblock' : 'block')
+            },
+            h('u', null, ignoredUsers.has(userId) ? 'unblock' : 'block')
+          )
         )
       )
     )
-  )
+  }
 }
 //#endregion
 
