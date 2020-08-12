@@ -719,7 +719,7 @@ function itemListPage() {
 }
 //#endregion
 
-//#region Feature: block/unblock users on their profile page
+//#region Feature: block/unblock users on profile pages
 function userProfilePage() {
   log('user profile page')
 

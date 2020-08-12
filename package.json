@@ -2,7 +2,8 @@
   "scripts": {
     "build": "web-ext build",
     "lint": "web-ext lint",
-    "start": "web-ext run"
+    "start": "web-ext run --start-url https://news.ycombinator.com",
+    "chrome": "web-ext run --target chromium --start-url https://news.ycombinator.com"
   },
   "webExt": {
     "ignoreFiles": [
