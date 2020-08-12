@@ -2,7 +2,7 @@
 
 ![](icons/thumbnail.gif)
 
-A browser extension which draws the rest of the friendly owl for Hacker News comment threads to make them actually followable over time, by automatically highlighting new comments and showing which items have new comments, plus various other UX tweaks.
+A browser extension which draws the rest of the friendly owl for Hacker News comment threads to make them actually followable over time, by automatically highlighting new comments and showing which items have new comments, blocking users plus various other UX tweaks.
 
 * [Install Chrome Extension](https://chrome.google.com/webstore/detail/hn-comments-owl/kpoggabejgbenjahggloahnnaolmfock)
 * [Install Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/hn-comments-owl/)
@@ -61,7 +61,7 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 
 _Default: enabled_
 
-Always highlight new comments and collapse old comments when you visit an item's comments - if disabled, this will only happen if you use the "X New" link on an item page, otherwise you will have to manually use the checkboxes at the top of the screen to highlight new comments 
+Always highlight new comments and collapse old comments when you visit an item's comments - if disabled, this will only happen if you use the "X New" link on an item page, otherwise you will have to manually use the checkboxes at the top of the screen to highlight new comments
 
 ### Add upvoted link to header
 
@@ -83,4 +83,4 @@ This option can also be toggled while viewing an item's comments, using the brow
 
 ## Icon Attribution
 
-[Surprised owl stroke icon](https://www.vexels.com/vectors/preview/153933/surprised-owl-stroke-icon) | designed by Vexels
+[Surprised owl stroke icon](https://www.vexels.com/vectors/preview/153933/surprised-owl-stroke-icon) | designed by Vexels
