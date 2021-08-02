@@ -177,9 +177,10 @@ function addUpvotedLinkToHeader() {
  *         </td>
  *         <td class="votelinks">…</td> (vote up/down controls)
  *         <td class="default">
- *           <div> (meta bar: user, age and folding control)
- *           …
- *           <div class="comment">
+ *           <div style="margin-top:2px; margin-bottom:-10px;">
+ *             <div class="comhead"> (meta bar: user, age and folding control)
+ *             …
+ *             <div class="comment">
  *             <span class="comtext"> (text and reply link)
  * ```
  *
@@ -200,6 +201,14 @@ function addUpvotedLinkToHeader() {
  */
 function commentPage() {
   log('comment page')
+  addStyle(`
+    .block {
+      display: none;
+    }
+    tr.comtr:hover .block {
+      display: inline;
+    }
+  `)
 
   /** @type {boolean} */
   let autoHighlightNew = config.autoHighlightNew || location.search.includes('?shownew')
@@ -233,6 +242,61 @@ function commentPage() {
 
   class HNComment {
     /**
+     * returns {boolean}
+     */
+    get isIgnored() {
+      return ignoredUsers.has(this.user)
+    }
+
+    /**
+     * @returns {HNComment[]}
+     */
+    get childComments() {
+      if (this._childComments == null) {
+        this._childComments = []
+        for (let i = this.index + 1; i < comments.length; i++) {
+          if (comments[i].indent <= this.indent) {
+            break
+          }
+          this._childComments.push(comments[i])
+        }
+      }
+      return this._childComments
+    }
+
+    /**
+     * @returns {HNComment[]}
+     */
+    get nonIgnoredChildComments() {
+      if (this._nonIgnoredChildComments == null) {
+        let ignoreIndent = null
+        this._nonIgnoredChildComments = this.childComments.filter(comment => {
+          if (ignoreIndent != null) {
+            if (comment.indent > ignoreIndent) {
+              return false
+            }
+            ignoreIndent = null
+          }
+
+          if (comment.isIgnored) {
+            ignoreIndent = comment.indent
+            return false
+          }
+
+          return true
+        })
+      }
+      return this._nonIgnoredChildComments
+    }
+
+    /**
+     * returns {number}
+     */
+    get childCommentCount() {
+      return this.nonIgnoredChildComments.length
+    }
+
+    /**
      * @param $wrapper {Element}
      * @param index {number}
      */
@@ -261,6 +325,9 @@ function commentPage() {
 
       /** @private @type {HNComment[]} */
       this._childComments = null
+
+      /** @private @type {HNComment[]} */
+      this._nonIgnoredChildComments = null
 
       /**
        * The comment's id.
@@ -303,6 +370,15 @@ function commentPage() {
         style: {cursor: 'pointer'},
       }, this.isCollapsed ? TOGGLE_SHOW : TOGGLE_HIDE)
 
+      /** @type {Element} */
+      this.$blockControl = h('span', {className: 'block'}, ' | ', h('a', {
+        href: `block?id=${this.user}`,
+        onclick: (e) => {
+          e.preventDefault()
+          this.block()
+        }
+      }, 'block'))
+
       if (!this.isDeleted) {
         let $permalink = this.$topBar.querySelector('a[href^=item]')
         this.id = Number($permalink.href.split('=').pop())
@@ -320,6 +396,16 @@ function commentPage() {
       }
       this.$topBar.insertAdjacentText('afterbegin', ' ')
       this.$topBar.insertAdjacentElement('afterbegin', this.$toggleControl)
+      this.$comhead.insertAdjacentElement('beforeend', this.$blockControl)
+    }
+
+    block() {
+      if (this.user) {
+        ignoredUsers.add(this.user)
+        setIgnoredUsers(ignoredUsers)
+        invalidateIgnoreCaches()
+        hideBlockedUsers()
+      }
     }
 
     /**
@@ -337,8 +423,8 @@ function commentPage() {
       if (this.isCollapsed && this.$collapsedChildCount == null) {
         let collapsedCommentCount = [
           this.isDeleted ? '(' : ' | (',
-          this.childComments.length,
-          ` child${s(this.childComments.length, 'ren')})`,
+          this.childCommentCount,
+          ` child${s(this.childCommentCount, 'ren')})`,
         ].join('')
         this.$collapsedChildCount = h('span', null, collapsedCommentCount)
         this.$comhead.appendChild(this.$collapsedChildCount)
@@ -347,24 +433,17 @@ function commentPage() {
 
       // Completely show/hide any child comments
       if (updateChildren) {
-        this.childComments.forEach((child) => toggleDisplay(child.$wrapper, this.isCollapsed))
+        this.childComments.forEach((child) => {
+          if (!child.isIgnored) {
+            toggleDisplay(child.$wrapper, this.isCollapsed)
+          }
+        })
       }
     }
 
-    /**
-     * @returns {HNComment[]}
-     */
-    get childComments() {
-      if (this._childComments == null) {
-        this._childComments = []
-        for (let i = this.index + 1; i < comments.length; i++) {
-          if (comments[i].indent <= this.indent) {
-            break
-          }
-          this._childComments.push(comments[i])
-        }
-      }
-      return this._childComments
+    hide() {
+      toggleDisplay(this.$wrapper, true)
+      this.childComments.forEach((child) => toggleDisplay(child.$wrapper, true))
     }
 
     /**
@@ -372,7 +451,7 @@ function commentPage() {
      * @returns {boolean}
      */
     hasChildCommentsNewerThan(commentId) {
-      return this.childComments.some((comment) => comment.isNewerThan(commentId))
+      return this.nonIgnoredChildComments.some((comment) => comment.isNewerThan(commentId))
     }
 
     /**
@@ -521,6 +600,21 @@ function commentPage() {
     }
   }
 
+  function hideBlockedUsers() {
+    for (let i = 0; i < comments.length; i++) {
+      let comment = comments[i]
+      if (comment.isIgnored) {
+        comment.hide()
+        // Skip over child comments
+        i += comment.childComments.length
+      }
+    }
+  }
+
+	function invalidateIgnoreCaches() {
+    comments.forEach(comment => comment._nonIgnoredChildComments = null)
+  }
+
   function hideBuiltInCommentFoldingControls() {
     addStyle('a.togg { display: none; }')
   }
@@ -542,7 +636,7 @@ function commentPage() {
    */
   function highlightNewComments(highlight, referenceCommentId) {
     comments.forEach((comment) => {
-      if (comment.isNewerThan(referenceCommentId)) {
+      if (!comment.isIgnored && comment.isNewerThan(referenceCommentId)) {
         comment.toggleHighlighted(highlight)
       }
     })
@@ -553,38 +647,21 @@ function commentPage() {
     log('number of comment wrappers', commentWrappers.length)
     let index = 0
     let lastMaxCommentId = lastVisit != null ? lastVisit.maxCommentId : -1
-    let ignoreIndent = null
     for (let $wrapper of commentWrappers) {
       let comment = new HNComment($wrapper, index++)
 
-      // Remove comments in threads under ignored users
-      if (ignoreIndent != null) {
-        if (comment.indent > ignoreIndent) {
-          toggleDisplay($wrapper, true)
-          continue
-        }
-        ignoreIndent = null
-      }
+      comments.push(comment)
 
-      // Remove comment from ignored users
-      if (ignoredUsers.has(comment.user)) {
-        toggleDisplay($wrapper, true)
-        ignoreIndent = comment.indent
-        continue
+      if (comment.id != -1) {
+        commentsById[comment.id] = comment
       }
 
       if (comment.id > maxCommentId) {
         maxCommentId = comment.id
       }
 
-      if (comment.isNewerThan(lastMaxCommentId)) {
+      if (!comment.isIgnored && comment.isNewerThan(lastMaxCommentId)) {
         newCommentCount++
-      }
-
-      comments.push(comment)
-
-      if (comment.id != -1) {
-        commentsById[comment.id] = comment
       }
     }
     hasNewComments = lastVisit != null && newCommentCount > 0
@@ -616,6 +693,7 @@ function commentPage() {
     highlightNewComments(true, lastVisit.maxCommentId)
     collapseThreadsWithoutNewComments(true, lastVisit.maxCommentId)
   }
+  hideBlockedUsers()
   addPageControls()
   storePageViewData()
 
