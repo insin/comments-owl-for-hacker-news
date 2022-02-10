@@ -1,14 +1,22 @@
+// ==UserScript==
+// @name        HN Comments Owl
+// @description Highlight new Hacker News comments, mute users and other UX tweaks
+// @namespace   https://github.com/insin/hn-comments-owl/
+// @match       https://news.ycombinator.com/*
+// @version     39
+// ==/UserScript==
+const enableDebugLogging = false
+
 const HIGHLIGHT_COLOR = '#ffffde'
 const TOGGLE_HIDE = '[–]'
 const TOGGLE_SHOW = '[+]'
 
+/** @type {import("./types").Config} */
 let config = {
   addUpvotedToHeader: true,
   autoHighlightNew: true,
   hideReplyLinks: false,
 }
-
-config.enableDebugLogging = false
 
 //#region Storage
 class Visit {
@@ -40,9 +48,7 @@ Visit.fromJSON = function(obj) {
 
 function getLastVisit(itemId) {
   let json = localStorage.getItem(itemId)
-  if (json == null) {
-    return null
-  }
+  if (json == null) return null
   return Visit.fromJSON(JSON.parse(json))
 }
 
@@ -51,12 +57,12 @@ function storeVisit(itemId, visit) {
   localStorage.setItem(itemId, JSON.stringify(visit))
 }
 
-function getIgnoredUsers() {
-  return new Set(JSON.parse(localStorage.ignoredUsers || '[]'))
+function getMutedUsers() {
+  return new Set(JSON.parse(localStorage.mutedUsers || '[]'))
 }
 
-function setIgnoredUsers(ignoredUsers) {
-  localStorage.ignoredUsers = JSON.stringify(Array.from(ignoredUsers))
+function setMutedUsers(mutedUsers) {
+  localStorage.mutedUsers = JSON.stringify(Array.from(mutedUsers))
 }
 //#endregion
 
@@ -82,6 +88,13 @@ function checkbox(attributes, label) {
   )
 }
 
+/**
+ * Create an element.
+ * @param {string} tagName
+ * @param {{[key: string]: any}} [attributes]
+ * @param {...any} children
+ * @returns {HTMLElement}
+ */
 function h(tagName, attributes, ...children) {
   let $el = document.createElement(tagName)
 
@@ -117,11 +130,16 @@ function h(tagName, attributes, ...children) {
 }
 
 function log(...args) {
-  if (config.enableDebugLogging) {
+  if (enableDebugLogging) {
     console.log('🦉', ...args)
   }
 }
 
+/**
+ * @param {number} count
+ * @param {string} suffixes
+ * @returns {string}
+ */
 function s(count, suffixes = ',s') {
   if (!suffixes.includes(',')) {
     suffixes = `,${suffixes}`
@@ -129,6 +147,10 @@ function s(count, suffixes = ',s') {
   return suffixes.split(',')[count === 1 ? 0 : 1]
 }
 
+/**
+ * @param {HTMLElement} $el
+ * @param {boolean} hidden
+ */
 function toggleDisplay($el, hidden) {
   $el.classList.toggle('noshow', hidden)
   // We need to enforce display setting as the page's own script expands all
@@ -136,6 +158,10 @@ function toggleDisplay($el, hidden) {
   $el.style.display = hidden ? 'none' : ''
 }
 
+/**
+ * @param {HTMLElement} $el
+ * @param {boolean} hidden
+ */
 function toggleVisibility($el, hidden) {
   $el.classList.toggle('nosee', hidden)
   // We need to enforce visibility setting as the page's own script expands
@@ -146,14 +172,10 @@ function toggleVisibility($el, hidden) {
 
 //#region Feature: add upvoted link to header
 function addUpvotedLinkToHeader() {
-  if (window.location.pathname == '/upvoted') {
-    return
-  }
+  if (window.location.pathname == '/upvoted') return
 
   let $userLink = document.querySelector('span.pagetop a[href^="user?id"]')
-  if (!$userLink) {
-    return
-  }
+  if (!$userLink) return
 
   let $pageTop = document.querySelector('span.pagetop')
   $pageTop.insertAdjacentText('beforeend', ' | ')
@@ -202,10 +224,10 @@ function addUpvotedLinkToHeader() {
 function commentPage() {
   log('comment page')
   addStyle(`
-    .block {
+    .mute {
       display: none;
     }
-    tr.comtr:hover .block {
+    tr.comtr:hover .mute {
       display: inline;
     }
   `)
@@ -238,14 +260,14 @@ function commentPage() {
   let newCommentCount = 0
 
   /** @type {Set<string>} */
-  let ignoredUsers = getIgnoredUsers()
+  let mutedUsers = getMutedUsers()
 
   class HNComment {
     /**
      * returns {boolean}
      */
-    get isIgnored() {
-      return ignoredUsers.has(this.user)
+    get isMuted() {
+      return mutedUsers.has(this.user)
     }
 
     /**
@@ -267,67 +289,67 @@ function commentPage() {
     /**
      * @returns {HNComment[]}
      */
-    get nonIgnoredChildComments() {
-      if (this._nonIgnoredChildComments == null) {
-        let ignoreIndent = null
-        this._nonIgnoredChildComments = this.childComments.filter(comment => {
-          if (ignoreIndent != null) {
-            if (comment.indent > ignoreIndent) {
+    get nonMutedChildComments() {
+      if (this._nonMutedChildComments == null) {
+        let muteIndent = null
+        this._nonMutedChildComments = this.childComments.filter(comment => {
+          if (muteIndent != null) {
+            if (comment.indent > muteIndent) {
               return false
             }
-            ignoreIndent = null
+            muteIndent = null
           }
 
-          if (comment.isIgnored) {
-            ignoreIndent = comment.indent
+          if (comment.isMuted) {
+            muteIndent = comment.indent
             return false
           }
 
           return true
         })
       }
-      return this._nonIgnoredChildComments
+      return this._nonMutedChildComments
     }
 
     /**
      * returns {number}
      */
     get childCommentCount() {
-      return this.nonIgnoredChildComments.length
+      return this.nonMutedChildComments.length
     }
 
     /**
-     * @param $wrapper {Element}
-     * @param index {number}
+     * @param {HTMLElement} $wrapper
+     * @param {number} index
      */
     constructor($wrapper, index) {
       /** @type {number} */
-      this.indent = Number($wrapper.querySelector('img[src="s.gif"]').width)
+      this.indent = Number( /** @type {HTMLImageElement} */ ($wrapper.querySelector('img[src="s.gif"]')).width)
 
       /** @type {number} */
       this.index = index
 
-      let $user = $wrapper.querySelector('a.hnuser')
+      let $user = /** @type {HTMLElement} */ ($wrapper.querySelector('a.hnuser'))
       /** @type {string} */
-      this.user = $user ? $user.innerText : null
+      this.user = $user?.innerText
 
-      /** @type {Element} */
+      /** @type {HTMLElement} */
       this.$comment = $wrapper.querySelector('div.comment')
 
-      /** @type {Element} */
+      /** @type {HTMLElement} */
       this.$topBar = $wrapper.querySelector('td.default > div')
 
-      /** @type {Element} */
+      /** @type {HTMLElement} */
       this.$vote = $wrapper.querySelector('td[valign="top"] > center')
 
-      /** @type {Element} */
+      /** @type {HTMLElement} */
       this.$wrapper = $wrapper
 
       /** @private @type {HNComment[]} */
       this._childComments = null
 
       /** @private @type {HNComment[]} */
-      this._nonIgnoredChildComments = null
+      this._nonMutedChildComments = null
 
       /**
        * The comment's id.
@@ -358,31 +380,31 @@ function commentPage() {
        */
       this.when = ''
 
-      /** @type {Element} */
+      /** @type {HTMLElement} */
       this.$collapsedChildCount = null
 
-      /** @type {Element} */
+      /** @type {HTMLElement} */
       this.$comhead = this.$topBar.querySelector('span.comhead')
 
-      /** @type {Element} */
+      /** @type {HTMLElement} */
       this.$toggleControl = h('span', {
         onclick: () => this.toggleCollapsed(),
         style: {cursor: 'pointer'},
       }, this.isCollapsed ? TOGGLE_SHOW : TOGGLE_HIDE)
 
-      /** @type {Element} */
-      this.$blockControl = h('span', {className: 'block'}, ' | ', h('a', {
-        href: `block?id=${this.user}`,
+      /** @type {HTMLElement} */
+      this.$muteControl = h('span', {className: 'mute'}, ' | ', h('a', {
+        href: `mute?id=${this.user}`,
         onclick: (e) => {
           e.preventDefault()
-          this.block()
+          this.mute()
         }
-      }, 'block'))
+      }, 'mute'))
 
       if (!this.isDeleted) {
-        let $permalink = this.$topBar.querySelector('a[href^=item]')
+        let $permalink = /** @type {HTMLAnchorElement} */ (this.$topBar.querySelector('a[href^=item]'))
         this.id = Number($permalink.href.split('=').pop())
-        this.when = $permalink.textContent
+        this.when = $permalink?.textContent.replace('minute', 'min')
       }
 
       this.initDOM()
@@ -396,20 +418,20 @@ function commentPage() {
       }
       this.$topBar.insertAdjacentText('afterbegin', ' ')
       this.$topBar.insertAdjacentElement('afterbegin', this.$toggleControl)
-      this.$comhead.insertAdjacentElement('beforeend', this.$blockControl)
+      this.$comhead.insertAdjacentElement('beforeend', this.$muteControl)
     }
 
-    block() {
+    mute() {
       if (this.user) {
-        ignoredUsers.add(this.user)
-        setIgnoredUsers(ignoredUsers)
-        invalidateIgnoreCaches()
-        hideBlockedUsers()
+        mutedUsers.add(this.user)
+        setMutedUsers(mutedUsers)
+        invalidateMuteCaches()
+        hideMutedUsers()
       }
     }
 
     /**
-     * @param updateChildren {boolean=}
+     * @param {boolean} updateChildren
      */
     updateDisplay(updateChildren = true) {
       // Show/hide this comment, preserving display of the meta bar
@@ -434,7 +456,7 @@ function commentPage() {
       // Completely show/hide any child comments
       if (updateChildren) {
         this.childComments.forEach((child) => {
-          if (!child.isIgnored) {
+          if (!child.isMuted) {
             toggleDisplay(child.$wrapper, this.isCollapsed)
           }
         })
@@ -447,15 +469,15 @@ function commentPage() {
     }
 
     /**
-     * @param commentId {number}
+     * @param {number} commentId
      * @returns {boolean}
      */
     hasChildCommentsNewerThan(commentId) {
-      return this.nonIgnoredChildComments.some((comment) => comment.isNewerThan(commentId))
+      return this.nonMutedChildComments.some((comment) => comment.isNewerThan(commentId))
     }
 
     /**
-     * @param commentId {number}
+     * @param {number} commentId
      * @returns {boolean}
      */
     isNewerThan(commentId) {
@@ -463,7 +485,7 @@ function commentPage() {
     }
 
     /**
-     * @param isCollapsed {boolean=}
+     * @param {boolean} isCollapsed
      */
     toggleCollapsed(isCollapsed = !this.isCollapsed) {
       this.isCollapsed = isCollapsed
@@ -471,7 +493,7 @@ function commentPage() {
     }
 
     /**
-     * @param highlight {boolean}
+     * @param {boolean} highlight
      */
     toggleHighlighted(highlight) {
       this.$wrapper.style.backgroundColor = highlight ? HIGHLIGHT_COLOR : 'transparent'
@@ -481,7 +503,7 @@ function commentPage() {
   /**
    * Adds checkboxes to toggle folding and highlighting when there are new
    * comments on a comment page.
-   * @param $container {Element}
+   * @param {HTMLElement} $container
    */
   function addNewCommentControls($container) {
     $container.appendChild(
@@ -544,7 +566,7 @@ function commentPage() {
       value: sortedCommentIds.length - 1,
     })
 
-    let $button = h('input', {
+    let $button = /** @type {HTMLInputElement} */ (h('input', {
       onclick() {
         let referenceCommentId = sortedCommentIds[showNewCommentsAfter - 1]
         log(`manually highlighting ${howMany} comments since ${referenceCommentId}`)
@@ -554,7 +576,7 @@ function commentPage() {
       },
       type: 'button',
       value: getButtonLabel(),
-    })
+    }))
 
     let $timeTravelControl = h('div', {
       style: {marginTop: '1em'},
@@ -568,7 +590,7 @@ function commentPage() {
    * new comments or any comments at all.
    */
   function addPageControls() {
-    let $container = document.querySelector('td.subtext')
+    let $container = /** @type {HTMLElement} */ (document.querySelector('td.subtext'))
     if (!$container) {
       log('no container found for page controls')
       return
@@ -585,8 +607,8 @@ function commentPage() {
   /**
    * Collapses threads which don't have any comments newer than the given
    * comment id.
-   * @param collapse {boolean}
-   * @param referenceCommentId {number}
+   * @param {boolean} collapse
+   * @param {number} referenceCommentId
    */
   function collapseThreadsWithoutNewComments(collapse, referenceCommentId) {
     for (let i = 0; i < comments.length; i++) {
@@ -600,10 +622,10 @@ function commentPage() {
     }
   }
 
-  function hideBlockedUsers() {
+  function hideMutedUsers() {
     for (let i = 0; i < comments.length; i++) {
       let comment = comments[i]
-      if (comment.isIgnored) {
+      if (comment.isMuted) {
         comment.hide()
         // Skip over child comments
         i += comment.childComments.length
@@ -611,8 +633,8 @@ function commentPage() {
     }
   }
 
-	function invalidateIgnoreCaches() {
-    comments.forEach(comment => comment._nonIgnoredChildComments = null)
+  function invalidateMuteCaches() {
+    comments.forEach(comment => comment._nonMutedChildComments = null)
   }
 
   function hideBuiltInCommentFoldingControls() {
@@ -631,19 +653,19 @@ function commentPage() {
 
   /**
    * Highlights comments newer than the given comment id.
-   * @param highlight {boolean}
-   * @param referenceCommentId {number}
+   * @param {boolean} highlight
+   * @param {number} referenceCommentId
    */
   function highlightNewComments(highlight, referenceCommentId) {
     comments.forEach((comment) => {
-      if (!comment.isIgnored && comment.isNewerThan(referenceCommentId)) {
+      if (!comment.isMuted && comment.isNewerThan(referenceCommentId)) {
         comment.toggleHighlighted(highlight)
       }
     })
   }
 
   function initComments() {
-    let commentWrappers = document.querySelectorAll('table.comment-tree tr.athing')
+    let commentWrappers = /** @type {NodeListOf<HTMLTableRowElement>} */ (document.querySelectorAll('table.comment-tree tr.athing'))
     log('number of comment wrappers', commentWrappers.length)
     let index = 0
     let lastMaxCommentId = lastVisit != null ? lastVisit.maxCommentId : -1
@@ -660,7 +682,7 @@ function commentPage() {
         maxCommentId = comment.id
       }
 
-      if (!comment.isIgnored && comment.isNewerThan(lastMaxCommentId)) {
+      if (!comment.isMuted && comment.isNewerThan(lastMaxCommentId)) {
         newCommentCount++
       }
     }
@@ -693,7 +715,7 @@ function commentPage() {
     highlightNewComments(true, lastVisit.maxCommentId)
     collapseThreadsWithoutNewComments(true, lastVisit.maxCommentId)
   }
-  hideBlockedUsers()
+  hideMutedUsers()
   addPageControls()
   storePageViewData()
 
@@ -746,7 +768,7 @@ function commentPage() {
 function itemListPage() {
   log('item list page')
 
-  let commentLinks = document.querySelectorAll('td.subtext > a[href^="item?id="]:last-child')
+  let commentLinks = /** @type {NodeListOf<HTMLAnchorElement>} */ (document.querySelectorAll('td.subtext > a[href^="item?id="]:last-child'))
   log('number of comments/discuss links', commentLinks.length)
 
   let noCommentsCount = 0
@@ -797,46 +819,46 @@ function itemListPage() {
 }
 //#endregion
 
-//#region Feature: block/unblock users on profile pages
+//#region Feature: mute/unmute users on profile pages
 function userProfilePage() {
   log('user profile page')
 
-  let $userLink = document.querySelector('a.hnuser')
+  let $userLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a.hnuser'))
   if ($userLink == null) {
     log('not a valid user')
     return
   }
 
   let userId = $userLink.innerText
-  let $currentUserLink = document.querySelector('a#me')
-  let currentUser = $currentUserLink ? $currentUserLink.innerText : ''
-  let ignoredUsers = getIgnoredUsers()
+  let $currentUserLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a#me'))
+  let currentUser = $currentUserLink?.innerText ?? ''
+  let mutedUsers = getMutedUsers()
   let $tbody = $userLink.closest('table').querySelector('tbody')
 
   if (userId == currentUser) {
     let first = 0
-    ignoredUsers.forEach((ignoredUserId) => {
+    mutedUsers.forEach((mutedUserId) => {
       $tbody.appendChild(
         h('tr', null,
-          h('td', {valign: 'top'}, first++ == 0 ? 'blocked:' : ''),
+          h('td', {valign: 'top'}, first++ == 0 ? 'muted:' : ''),
           h('td', null,
-            h('a', {href: `/user?id=${ignoredUserId}`}, ignoredUserId),
+            h('a', {href: `/user?id=${mutedUserId}`}, mutedUserId),
             h('a', {
                 href: '#',
                 onClick: function(e) {
                   e.preventDefault()
-                  if (ignoredUsers.has(ignoredUserId)) {
-                    ignoredUsers.delete(ignoredUserId)
-                    this.firstElementChild.innerText = 'block'
+                  if (mutedUsers.has(mutedUserId)) {
+                    mutedUsers.delete(mutedUserId)
+                    this.firstElementChild.innerText = 'mute'
                   }
                   else {
-                    ignoredUsers.add(ignoredUserId)
-                    this.firstElementChild.innerText = 'unblock'
+                    mutedUsers.add(mutedUserId)
+                    this.firstElementChild.innerText = 'unmute'
                   }
-                  setIgnoredUsers(ignoredUsers)
+                  setMutedUsers(mutedUsers)
                 }
               },
-              ' (', h('u', null, 'unblock'), ')'
+              ' (', h('u', null, 'unmute'), ')'
             )
           )
         )
@@ -852,18 +874,18 @@ function userProfilePage() {
               href: '#',
               onClick: function(e) {
                 e.preventDefault()
-                if (ignoredUsers.has(userId)) {
-                  ignoredUsers.delete(userId)
-                  this.firstElementChild.innerText = 'block'
+                if (mutedUsers.has(userId)) {
+                  mutedUsers.delete(userId)
+                  this.firstElementChild.innerText = 'mute'
                 }
                 else {
-                  ignoredUsers.add(userId)
-                  this.firstElementChild.innerText = 'unblock'
+                  mutedUsers.add(userId)
+                  this.firstElementChild.innerText = 'unmute'
                 }
-                setIgnoredUsers(ignoredUsers)
+                setMutedUsers(mutedUsers)
               }
             },
-            h('u', null, ignoredUsers.has(userId) ? 'unblock' : 'block')
+            h('u', null, mutedUsers.has(userId) ? 'unmute' : 'mute')
           )
         )
       )
@@ -893,14 +915,17 @@ function main() {
   }
 }
 
-chrome.storage.local.get((storedConfig) => {
-  Object.assign(config, storedConfig)
+if (
+  typeof GM == 'undefined' &&
+  typeof chrome != 'undefined' &&
+  typeof chrome.storage != 'undefined'
+) {
+  chrome.storage.local.get((storedConfig) => {
+    Object.assign(config, storedConfig)
+    main()
+  })
+}
+else {
   main()
-})
-
-chrome.storage.onChanged.addListener((changes) => {
-  if ('enableDebugLogging' in changes) {
-    config.enableDebugLogging = changes['enableDebugLogging'].newValue
-  }
-})
+}
 //#endregion

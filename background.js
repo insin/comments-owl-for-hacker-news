@@ -1,17 +1,11 @@
 const TOGGLE_REPLY_LINKS = 'toggle-reply-links'
 const ITEM_URL_PATTERN = 'https://news.ycombinator.com/item*'
 
+/** @type {import("./types").Config} */
 let config = {
   addUpvotedToHeader: true,
   autoHighlightNew: true,
-  enableDebugLogging: false,
   hideReplyLinks: false,
-}
-
-function log(...args) {
-  if (config.enableDebugLogging) {
-    console.log('🦉 background.js', ...args)
-  }
 }
 
 function createMenuItems() {
@@ -37,9 +31,6 @@ chrome.storage.local.get((storedConfig) => {
 })
 
 chrome.storage.onChanged.addListener((changes) => {
-  if ('enableDebugLogging' in changes) {
-    config.enableDebugLogging = changes['enableDebugLogging'].newValue
-  }
   if ('hideReplyLinks' in changes) {
     config.hideReplyLinks = changes['hideReplyLinks'].newValue
     chrome.contextMenus.update(TOGGLE_REPLY_LINKS, {checked: config.hideReplyLinks})

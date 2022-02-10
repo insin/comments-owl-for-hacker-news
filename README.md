@@ -2,7 +2,7 @@
 
 ![](icons/thumbnail.gif)
 
-A browser extension which draws the rest of the friendly owl for Hacker News comment threads to make them actually followable over time, by automatically highlighting new comments, showing which items have new comments, blocking users, and various other UX tweaks.
+A browser extension which draws the rest of the friendly owl for Hacker News comment threads to make them actually followable over time, by automatically highlighting new comments, showing which items have new comments, muting users, and various other UX tweaks.
 
 * [Install Chrome Extension](https://chrome.google.com/webstore/detail/hn-comments-owl/kpoggabejgbenjahggloahnnaolmfock)
 * [Install Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/hn-comments-owl/)
@@ -13,7 +13,7 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 - Show new comment counts since your last visit on item list pages
 - Highlight new comments and collapse comment trees which don't contain any new comments when you revisit an item's comments
 - Manual highlighting of recent comments when new comments can't automatically be highlighted
-- User blocking: block a user to hide their comments and replies to them; manage blocked users on your own profile page
+- User muting: mute a user to hide their comments and replies to them; manage muted users on your own profile page
 
 ## Other Tweaks
 
@@ -39,11 +39,11 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 
 ![](screenshots/highlight_past_comments.png)
 
-### User blocking
+### User muting
 
-| Block users via their profile page | Manage blocked users on your own profile page |
-|:-------:|:------:|
-| ![](screenshots/block_user.png) | ![](screenshots/blocked_users.png) |
+| Mute users by hovering over a comment | Mute/unmute users via their profile page | Manage muted users on your own profile page |
+|:-------:|:------:|:------:|
+| ![](screenshots/mute_user_comment.png) | ![](screenshots/mute_user_profile.png) | ![](screenshots/muted_users.png) |
 
 ### Toggling display of reply links
 

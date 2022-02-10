@@ -2,110 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>HN Comments Owl Options</title>
-  <style>
-    body, html {
-      padding: 0;
-      margin: 0;
-    }
-
-    form {
-      font-size: 1.25em;
-    }
-
-    section:not(:first-child) {
-      border-top: 1px solid #b6b6b6;
-    }
-
-    section.checkbox > label {
-      display: flex;
-      justify-content: space-between;
-      padding: .825em;
-      cursor: pointer;
-    }
-
-    .switch {
-      position: relative;
-      width: 38px;
-      user-select: none;
-    }
-
-    .switch > input {
-      display: none;
-    }
-
-    .switch > label {
-      display: block; overflow: hidden; cursor: pointer;
-      height: 16px; padding: 0; line-height: 16px;
-      border: 0 solid #FFFFFF; border-radius: 20px;
-      background-color: #9AA0A6;
-    }
-
-    .switch > label:before {
-      content: "";
-      display: block; width: 20px; height: 20px; margin: -2px;
-      background: #DADCE0;
-      position: absolute;
-      top: 0;
-      right: 20px;
-      border-radius: 20px;
-      transition: right 0.1s ease-in 0s;
-    }
-
-    .switch > input:checked + label {
-      background-color: #5A6F93;
-    }
-
-    .switch > input:checked + label {
-      margin-left: 0;
-    }
-
-    .switch > input:checked + label:before {
-      right: 0;
-      background-color: #8AB4F8;
-    }
-  </style>
+  <link rel="stylesheet" href="options.css">
 </head>
-
 <form>
   <section class="checkbox">
     <label>
-      <span>Automatically highlight new comments</span>
-      <div class="switch">
-        <input type="checkbox" name="autoHighlightNew" id="autoHighlightNew">
-        <label for="autoHighlightNew"></label>
-      </div>
+      Automatically highlight new comments
+      <input type="checkbox" name="autoHighlightNew">
     </label>
   </section>
   <section class="checkbox">
     <label>
-      <span>Add upvoted link to header</span>
-      <div class="switch">
-        <input type="checkbox" name="addUpvotedToHeader" id="addUpvotedToHeader">
-        <label for="addUpvotedToHeader"></label>
-      </div>
+      Add "upvoted" to header
+      <input type="checkbox" name="addUpvotedToHeader">
     </label>
   </section>
   <section class="checkbox">
     <label>
       <span>Hide reply links under comments</span>
-      <div class="switch">
-        <input type="checkbox" name="hideReplyLinks" id="hideReplyLinks">
-        <label for="hideReplyLinks"></label>
-      </div>
-    </label>
-  </section>
-  <section class="checkbox">
-    <label>
-      <span>Enable debug logging (developer option)</span>
-      <div class="switch">
-        <input type="checkbox" name="enableDebugLogging" id="enableDebugLogging">
-        <label for="enableDebugLogging"></label>
-      </div>
+      <input type="checkbox" name="hideReplyLinks">
     </label>
   </section>
 </form>
-
 <script src="options.js"></script>
-
 </html>

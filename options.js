@@ -1,32 +1,35 @@
 let form = document.querySelector('form')
 
 function setFormValue(prop, value) {
-  if (!form.elements.hasOwnProperty(prop)) {
-    return
-  }
-  let $el = form.elements[prop]
+  if (!form.elements.hasOwnProperty(prop)) return
+
+  let $el = /** @type {HTMLInputElement} */ (form.elements[prop])
   if ($el.type == 'checkbox') {
     $el.checked = value
-  }
-  else {
+  } else {
     $el.value = value
   }
 }
 
-chrome.storage.local.get((storedConfig) => {
-  let config = {
-    addUpvotedToHeader: true,
-    autoHighlightNew: true,
-    enableDebugLogging: false,
-    hideReplyLinks: false,
-    ...storedConfig,
-  }
+/** @type {import("./types").Config} */
+let defaultConfig = {
+  addUpvotedToHeader: true,
+  autoHighlightNew: true,
+  hideReplyLinks: false,
+}
 
-  for (let [prop, value] of Object.entries(config)) {
+/** @type {import("./types").Config} */
+let optionsConfig
+
+chrome.storage.local.get((storedConfig) => {
+  optionsConfig = {...defaultConfig, ...storedConfig}
+
+  for (let [prop, value] of Object.entries(optionsConfig)) {
     setFormValue(prop, value)
   }
 
-  form.addEventListener('change', ({target}) => {
+  form.addEventListener('change', (e) => {
+    let target = /** @type {HTMLInputElement} */ (e.target)
     let prop = target.name
     let value = target.type == 'checkbox' ? target.checked : target.value
     chrome.storage.local.set({[prop]: value})
@@ -34,7 +37,7 @@ chrome.storage.local.get((storedConfig) => {
 
   chrome.storage.onChanged.addListener((changes) => {
     for (let prop in changes) {
-      config[prop] = changes[prop].newValue
+      optionsConfig[prop] = changes[prop].newValue
       setFormValue(prop, changes[prop].newValue)
     }
   })
