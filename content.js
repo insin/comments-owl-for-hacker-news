@@ -3,7 +3,7 @@
 // @description Highlight new Hacker News comments, mute users and other UX tweaks
 // @namespace   https://github.com/insin/hn-comments-owl/
 // @match       https://news.ycombinator.com/*
-// @version     39
+// @version     40
 // ==/UserScript==
 const enableDebugLogging = false
 
