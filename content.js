@@ -702,9 +702,11 @@ function commentPage() {
 
   lastVisit = getLastVisit(itemId)
 
-  let $commentsLink = document.querySelector('td.subtext > a[href^=item]')
+  let $commentsLink = document.querySelector('span.subline > a[href^=item]')
   if ($commentsLink && /^\d+/.test($commentsLink.textContent)) {
     commentCount = Number($commentsLink.textContent.split(/\s/).shift())
+  } else {
+    log('number of comments link not found')
   }
 
   hideBuiltInCommentFoldingControls()
