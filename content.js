@@ -770,7 +770,7 @@ function commentPage() {
 function itemListPage() {
   log('item list page')
 
-  let commentLinks = /** @type {NodeListOf<HTMLAnchorElement>} */ (document.querySelectorAll('td.subtext > a[href^="item?id="]:last-child'))
+  let commentLinks = /** @type {NodeListOf<HTMLAnchorElement>} */ (document.querySelectorAll('span.subline > a[href^="item?id="]:last-child'))
   log('number of comments/discuss links', commentLinks.length)
 
   let noCommentsCount = 0
