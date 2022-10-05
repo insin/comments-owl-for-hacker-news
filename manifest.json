@@ -3,7 +3,7 @@
   "name": "HN Comments Owl",
   "description": "Highlight new Hacker News comments, mute users, and other UX tweaks",
   "homepage_url": "https://github.com/insin/hn-comments-owl",
-  "version": "1.5",
+  "version": "1.6",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
