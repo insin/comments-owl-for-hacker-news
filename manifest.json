@@ -31,6 +31,11 @@
     "chrome_style": false,
     "page": "options.html"
   },
+  "browser_action": {
+    "browser_style": true,
+    "default_title": "HN Comments Owl",
+    "default_popup": "browser_action.html"
+  },
   "permissions": [
     "contextMenus",
     "storage"

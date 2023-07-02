@@ -1,9 +1,16 @@
-let form = document.querySelector('form')
+const $body = document.body
+let $form = document.querySelector('form')
+
+if (navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test(navigator.userAgent)) {
+  $body.classList.add('safari', /iP(ad|hone)/.test(navigator.userAgent) ? 'iOS' : 'macOS')
+} else {
+  $body.classList.toggle('edge', navigator.userAgent.includes('Edg/'))
+}
 
 function setFormValue(prop, value) {
-  if (!form.elements.hasOwnProperty(prop)) return
+  if (!$form.elements.hasOwnProperty(prop)) return
 
-  let $el = /** @type {HTMLInputElement} */ (form.elements[prop])
+  let $el = /** @type {HTMLInputElement} */ ($form.elements[prop])
   if ($el.type == 'checkbox') {
     $el.checked = value
   } else {
@@ -14,6 +21,7 @@ function setFormValue(prop, value) {
 /** @type {import("./types").Config} */
 let defaultConfig = {
   addUpvotedToHeader: true,
+  autoCollapseNotNew: true,
   autoHighlightNew: true,
   hideReplyLinks: false,
 }
@@ -28,10 +36,10 @@ chrome.storage.local.get((storedConfig) => {
     setFormValue(prop, value)
   }
 
-  form.addEventListener('change', (e) => {
-    let target = /** @type {HTMLInputElement} */ (e.target)
-    let prop = target.name
-    let value = target.type == 'checkbox' ? target.checked : target.value
+  $form.addEventListener('change', (e) => {
+    let $el = /** @type {HTMLInputElement} */ (e.target)
+    let prop = $el.name
+    let value = $el.type == 'checkbox' ? $el.checked : $el.value
     chrome.storage.local.set({[prop]: value})
   })
 

@@ -6,25 +6,43 @@
   <title>HN Comments Owl Options</title>
   <link rel="stylesheet" href="options.css">
 </head>
-<form>
-  <section class="checkbox">
-    <label>
-      Automatically highlight new comments
-      <input type="checkbox" name="autoHighlightNew">
-    </label>
-  </section>
-  <section class="checkbox">
-    <label>
-      Add "upvoted" to header
-      <input type="checkbox" name="addUpvotedToHeader">
-    </label>
-  </section>
-  <section class="checkbox">
-    <label>
-      <span>Hide reply links under comments</span>
-      <input type="checkbox" name="hideReplyLinks">
-    </label>
-  </section>
-</form>
-<script src="options.js"></script>
+<body>
+  <form>
+    <section class="group labelled">
+      <label>Item pages</label>
+      <section class="checkbox">
+        <label>
+          Auto highlight new comments
+          <input type="checkbox" name="autoHighlightNew">
+          <span class="toggle"></span>
+        </label>
+      </section>
+      <section class="checkbox">
+        <label>
+          Auto collapse threads without new comments
+          <input type="checkbox" name="autoCollapseNotNew">
+          <span class="toggle"></span>
+        </label>
+      </section>
+      <section class="checkbox">
+        <label>
+          <span>Hide reply links under comments</span>
+          <input type="checkbox" name="hideReplyLinks">
+          <span class="toggle"></span>
+        </label>
+      </section>
+    </section>
+    <section class="group labelled">
+      <label>Other options</label>
+      <section class="checkbox">
+        <label>
+          Add "upvoted" to header
+          <input type="checkbox" name="addUpvotedToHeader">
+          <span class="toggle"></span>
+        </label>
+      </section>
+    </section>
+  </form>
+  <script src="options.js"></script>
+</body>
 </html>

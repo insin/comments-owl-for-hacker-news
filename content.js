@@ -14,6 +14,7 @@ const TOGGLE_SHOW = '[+]'
 /** @type {import("./types").Config} */
 let config = {
   addUpvotedToHeader: true,
+  autoCollapseNotNew: true,
   autoHighlightNew: true,
   hideReplyLinks: false,
 }
@@ -234,6 +235,9 @@ function commentPage() {
 
   /** @type {boolean} */
   let autoHighlightNew = config.autoHighlightNew || location.search.includes('?shownew')
+
+  /** @type {boolean} */
+  let autoCollapseNotNew = config.autoCollapseNotNew || location.search.includes('?shownew')
 
   /** @type {number} */
   let commentCount = 0
@@ -520,7 +524,7 @@ function commentPage() {
           }, 'highlight new comments'),
           ' ',
           checkbox({
-            checked: autoHighlightNew,
+            checked: autoCollapseNotNew,
             onclick: (e) => {
               collapseThreadsWithoutNewComments(e.target.checked, lastVisit.maxCommentId)
             },
@@ -714,8 +718,12 @@ function commentPage() {
   initComments()
   comments.filter(comment => comment.isCollapsed).forEach(comment => comment.updateDisplay(false))
   if (hasNewComments && autoHighlightNew) {
-    highlightNewComments(true, lastVisit.maxCommentId)
-    collapseThreadsWithoutNewComments(true, lastVisit.maxCommentId)
+    if (autoHighlightNew) {
+      highlightNewComments(true, lastVisit.maxCommentId)
+    }
+    if (autoCollapseNotNew) {
+      collapseThreadsWithoutNewComments(true, lastVisit.maxCommentId)
+    }
   }
   hideMutedUsers()
   addPageControls()
@@ -748,7 +756,9 @@ function commentPage() {
  * <tr class="athing">…</td> (rank, upvote control, title/link and domain)
  * <tr>
  *   <td>…</td> (spacer)
- *   <td class="subtext">…</td> (item meta info)
+ *   <td class="subtext">
+ *     <span class="subline">…</span> (item meta info)
+ *   </td>
  * </tr>
  * <tr class="spacer">…</tr>
  * ```

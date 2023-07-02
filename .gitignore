@@ -1,2 +1,4 @@
+.DS_Store
+browser_action.html
 node_modules/
 web-ext-artifacts/
