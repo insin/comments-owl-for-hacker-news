@@ -21,7 +21,6 @@ function createMenuItems() {
 }
 
 function toggleHideReplyLinks() {
-  log(`toggling hideReplyLinks → ${!config.hideReplyLinks}`)
   chrome.storage.local.set({hideReplyLinks: !config.hideReplyLinks})
 }
 
