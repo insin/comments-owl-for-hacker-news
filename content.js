@@ -62,8 +62,16 @@ function getMutedUsers() {
   return new Set(JSON.parse(localStorage.mutedUsers || '[]'))
 }
 
+function getUserNotes() {
+  return JSON.parse(localStorage.userNotes || '{}')
+}
+
 function setMutedUsers(mutedUsers) {
   localStorage.mutedUsers = JSON.stringify(Array.from(mutedUsers))
+}
+
+function setUserNotes(userNotes) {
+  localStorage.userNotes = JSON.stringify(userNotes)
 }
 //#endregion
 
@@ -75,6 +83,11 @@ function addStyle(css = '') {
   }
   document.querySelector('head').appendChild($style)
   return $style
+}
+
+function autosizeTextarea($textarea) {
+  $textarea.style.height = '0px'
+  $textarea.style.height = Math.max($textarea.scrollHeight, 24) + 'px'
 }
 
 function checkbox(attributes, label) {
@@ -266,6 +279,9 @@ function commentPage() {
   /** @type {Set<string>} */
   let mutedUsers = getMutedUsers()
 
+  /** @type {Record<string, string>} */
+  let userNotes = getUserNotes()
+
   class HNComment {
     /**
      * returns {boolean}
@@ -396,15 +412,6 @@ function commentPage() {
         style: {cursor: 'pointer'},
       }, this.isCollapsed ? TOGGLE_SHOW : TOGGLE_HIDE)
 
-      /** @type {HTMLElement} */
-      this.$muteControl = h('span', {className: 'mute'}, ' | ', h('a', {
-        href: `mute?id=${this.user}`,
-        onclick: (e) => {
-          e.preventDefault()
-          this.mute()
-        }
-      }, 'mute'))
-
       if (!this.isDeleted) {
         let $permalink = /** @type {HTMLAnchorElement} */ (this.$topBar.querySelector('a[href^=item]'))
         this.id = Number($permalink.href.split('=').pop())
@@ -422,7 +429,20 @@ function commentPage() {
       }
       this.$topBar.insertAdjacentText('afterbegin', ' ')
       this.$topBar.insertAdjacentElement('afterbegin', this.$toggleControl)
-      this.$comhead.insertAdjacentElement('beforeend', this.$muteControl)
+      this.$comhead.append(...[
+        // User note
+        userNotes[this.user] && h('span', {className: 'note'},
+          ` | note: ${userNotes[this.user].split(/\r?\n/)[0]}`,
+        ),
+        // Mute control
+        h('span', {className: 'mute'}, ' | ', h('a', {
+          href: `mute?id=${this.user}`,
+          onclick: (e) => {
+            e.preventDefault()
+            this.mute()
+          }
+        }, 'mute'))
+      ].filter(Boolean))
     }
 
     mute() {
@@ -831,7 +851,7 @@ function itemListPage() {
 }
 //#endregion
 
-//#region Feature: mute/unmute users on profile pages
+//#region Feature: mute/unmute users and edit user notes on profile pages
 function userProfilePage() {
   log('user profile page')
 
@@ -845,7 +865,9 @@ function userProfilePage() {
   let $currentUserLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a#me'))
   let currentUser = $currentUserLink?.innerText ?? ''
   let mutedUsers = getMutedUsers()
+  let userNotes = getUserNotes()
   let $tbody = $userLink.closest('table').querySelector('tbody')
+  let editingNote = false
 
   if (userId == currentUser) {
     let first = 0
@@ -871,14 +893,15 @@ function userProfilePage() {
                 }
               },
               ' (', h('u', null, 'unmute'), ')'
-            )
+            ),
+            userNotes[mutedUserId] ? ` - ${userNotes[mutedUserId].split(/\r?\n/)[0]}` : null,
           )
         )
       )
     })
   }
   else {
-    $tbody.appendChild(
+    $tbody.append(
       h('tr', null,
         h('td'),
         h('td', null,
@@ -900,7 +923,63 @@ function userProfilePage() {
             h('u', null, mutedUsers.has(userId) ? 'unmute' : 'mute')
           )
         )
-      )
+      ),
+      h('tr', null,
+        h('td', {vAlign: 'top'}, 'notes:'),
+        h('td', null,
+          userNotes[userId] ? h('div', {style: {whiteSpace: 'pre-line'}}, userNotes[userId] || '') : null,
+          h('button', {
+            style: {
+              marginTop: userNotes[userId] ? '4px' : '0'
+            },
+            onClick: function(e) {
+              e.preventDefault()
+              if (!editingNote) {
+                let $textarea = h('div', null,
+                  h('textarea', {
+                    rows: 1,
+                    cols: 60,
+                    value: userNotes[userId] || '',
+                    onInput() {
+                      autosizeTextarea(this)
+                    },
+                    // Use Ctrl/Cmd + Enter to save
+                    onKeydown(e) {
+                      if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
+                        e.preventDefault()
+                        this.parentElement.nextElementSibling.click()
+                      }
+                    }
+                  })
+                )
+                if (this.previousElementSibling) {
+                  this.previousElementSibling.replaceWith($textarea)
+                } else {
+                  this.insertAdjacentElement('beforebegin', $textarea)
+                }
+                autosizeTextarea($textarea.firstElementChild)
+                this.innerText = 'save'
+                this.style.marginTop = '4px'
+              }
+              else {
+                let notes = this.previousElementSibling.firstElementChild.value
+                userNotes[userId] = notes
+                setUserNotes(userNotes)
+                if (notes) {
+                  this.previousElementSibling.replaceWith(
+                    h('div', {style: {whiteSpace: 'pre-line'}}, notes)
+                  )
+                } else {
+                  this.previousElementSibling.remove()
+                }
+                this.innerText = notes ? 'edit' : 'add'
+                this.style.marginTop = notes ? '4px' : '0'
+              }
+              editingNote = !editingNote
+            }
+          }, userNotes[userId] ? 'edit' : 'add')
+        )
+      ),
     )
   }
 }
