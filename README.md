@@ -1,4 +1,4 @@
-# HN Comments Owl
+# Comments Owl for Hacker News
 
 ![](icons/thumbnail.gif)
 
@@ -83,4 +83,4 @@ This option can also be toggled while viewing an item's comments, using the brow
 
 ## Icon Attribution
 
-[Surprised owl stroke icon](https://www.vexels.com/vectors/preview/153933/surprised-owl-stroke-icon) | designed by Vexels
+Icon adapted from "Owl icon" by [Lorc](https://lorcblog.blogspot.com/) from [game-icons.net](https://game-icons.net), [CC 3.0 BY](https://creativecommons.org/licenses/by/3.0/)

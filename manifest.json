@@ -1,7 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "HN Comments Owl",
-  "description": "Highlight new Hacker News comments, mute users, and other UX tweaks",
+  "default_locale": "en",
+  "name": "__MSG_extensionName__",
+  "description": "__MSG_extensionDescription__",
   "homepage_url": "https://github.com/insin/hn-comments-owl",
   "version": "1.6",
   "icons": {
@@ -33,7 +34,7 @@
   },
   "browser_action": {
     "browser_style": true,
-    "default_title": "HN Comments Owl",
+    "default_title": "__MSG_extensionName__",
     "default_popup": "browser_action.html"
   },
   "permissions": [

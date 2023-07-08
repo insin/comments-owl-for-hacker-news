@@ -1,16 +1,17 @@
 // ==UserScript==
-// @name        HN Comments Owl
-// @description Highlight new Hacker News comments, mute users and other UX tweaks
+// @name        Comments Owl for Hacker News
+// @description Highlight new comments, manage users, and other tweaks for Hacker News
 // @namespace   https://github.com/insin/hn-comments-owl/
 // @match       https://news.ycombinator.com/*
 // @version     42
 // ==/UserScript==
-const enableDebugLogging = false
+let debug = false
 
 const HIGHLIGHT_COLOR = '#ffffde'
 const TOGGLE_HIDE = '[–]'
 const TOGGLE_SHOW = '[+]'
 
+//#region Config
 /** @type {import("./types").Config} */
 let config = {
   addUpvotedToHeader: true,
@@ -18,6 +19,7 @@ let config = {
   autoHighlightNew: true,
   hideReplyLinks: false,
 }
+//#endregion
 
 //#region Storage
 class Visit {
@@ -85,10 +87,18 @@ function addStyle(css = '') {
   return $style
 }
 
-function autosizeTextarea($textarea) {
-  $textarea.style.height = '0px'
-  $textarea.style.height = Math.max($textarea.scrollHeight, 24) + 'px'
-}
+const autosizeTextArea = (() => {
+  /** @type {Number} */
+  let textAreaPadding
+
+  return function autosizeTextarea($textArea) {
+    if (textAreaPadding == null) {
+      textAreaPadding = Number(getComputedStyle($textArea).paddingTop.replace('px', '')) * 2
+    }
+    $textArea.style.height = '0px'
+    $textArea.style.height = $textArea.scrollHeight + textAreaPadding + 'px'
+  }
+})()
 
 function checkbox(attributes, label) {
   return h('label', null,
@@ -144,7 +154,7 @@ function h(tagName, attributes, ...children) {
 }
 
 function log(...args) {
-  if (enableDebugLogging) {
+  if (debug) {
     console.log('🦉', ...args)
   }
 }
@@ -935,29 +945,30 @@ function userProfilePage() {
             onClick: function(e) {
               e.preventDefault()
               if (!editingNote) {
-                let $textarea = h('div', null,
-                  h('textarea', {
-                    rows: 1,
-                    cols: 60,
-                    value: userNotes[userId] || '',
-                    onInput() {
-                      autosizeTextarea(this)
-                    },
-                    // Use Ctrl/Cmd + Enter to save
-                    onKeydown(e) {
-                      if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
-                        e.preventDefault()
-                        this.parentElement.nextElementSibling.click()
-                      }
+                let notes = userNotes[userId] || ''
+                let $textArea = /** @type {HTMLTextAreaElement} */ (h('textarea', {
+                  cols: 60,
+                  value: notes,
+                  style: {resize: 'none'},
+                  onInput() {
+                    autosizeTextArea(this)
+                  },
+                  // Use Ctrl/Cmd + Enter to save
+                  onKeydown(e) {
+                    if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
+                      e.preventDefault()
+                      this.parentElement.nextElementSibling.click()
                     }
-                  })
-                )
+                  }
+                }))
                 if (this.previousElementSibling) {
-                  this.previousElementSibling.replaceWith($textarea)
+                  this.previousElementSibling.replaceWith(h('div', null, $textArea))
                 } else {
-                  this.insertAdjacentElement('beforebegin', $textarea)
+                  this.insertAdjacentElement('beforebegin', h('div', null, $textArea))
                 }
-                autosizeTextarea($textarea.firstElementChild)
+                autosizeTextArea($textArea)
+                $textArea.focus()
+                $textArea.setSelectionRange(notes.length, notes.length)
                 this.innerText = 'save'
                 this.style.marginTop = '4px'
               }

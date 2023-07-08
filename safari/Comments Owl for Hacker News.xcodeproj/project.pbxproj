@@ -1,0 +1,1024 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		FB6A6CF12A595D2600636A10 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6A6CF02A595D2600636A10 /* AppDelegate.swift */; };
+		FB6A6CF32A595D2600636A10 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6A6CF22A595D2600636A10 /* SceneDelegate.swift */; };
+		FB6A6CF62A595D2600636A10 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CF42A595D2600636A10 /* LaunchScreen.storyboard */; };
+		FB6A6CF92A595D2600636A10 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CF72A595D2600636A10 /* Main.storyboard */; };
+		FB6A6D022A595D2600636A10 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6A6D012A595D2600636A10 /* AppDelegate.swift */; };
+		FB6A6D052A595D2600636A10 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D032A595D2600636A10 /* Main.storyboard */; };
+		FB6A6D0C2A595D2600636A10 /* Comments Owl for Hacker News Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FB6A6D0B2A595D2600636A10 /* Comments Owl for Hacker News Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FB6A6D162A595D2600636A10 /* Comments Owl for Hacker News Extension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FB6A6D152A595D2600636A10 /* Comments Owl for Hacker News Extension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FB6A6D1C2A595D2600636A10 /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CD72A595D2500636A10 /* Main.html */; };
+		FB6A6D1D2A595D2600636A10 /* Main.html in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CD72A595D2500636A10 /* Main.html */; };
+		FB6A6D1E2A595D2600636A10 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CD92A595D2500636A10 /* Icon.png */; };
+		FB6A6D1F2A595D2600636A10 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CD92A595D2500636A10 /* Icon.png */; };
+		FB6A6D202A595D2600636A10 /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CDA2A595D2500636A10 /* Style.css */; };
+		FB6A6D212A595D2600636A10 /* Style.css in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CDA2A595D2500636A10 /* Style.css */; };
+		FB6A6D222A595D2600636A10 /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CDB2A595D2500636A10 /* Script.js */; };
+		FB6A6D232A595D2600636A10 /* Script.js in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CDB2A595D2500636A10 /* Script.js */; };
+		FB6A6D242A595D2600636A10 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6A6CDC2A595D2500636A10 /* ViewController.swift */; };
+		FB6A6D252A595D2600636A10 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6A6CDC2A595D2500636A10 /* ViewController.swift */; };
+		FB6A6D262A595D2600636A10 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CDD2A595D2600636A10 /* Assets.xcassets */; };
+		FB6A6D272A595D2600636A10 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CDD2A595D2600636A10 /* Assets.xcassets */; };
+		FB6A6D282A595D2600636A10 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6A6CDF2A595D2600636A10 /* SafariWebExtensionHandler.swift */; };
+		FB6A6D292A595D2600636A10 /* SafariWebExtensionHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6A6CDF2A595D2600636A10 /* SafariWebExtensionHandler.swift */; };
+		FB6A6D2E2A595D2600636A10 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CE32A595D2600636A10 /* manifest.json */; };
+		FB6A6D2F2A595D2600636A10 /* manifest.json in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CE32A595D2600636A10 /* manifest.json */; };
+		FB6A6D522A599C9800636A10 /* options.css in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D4A2A599C9700636A10 /* options.css */; };
+		FB6A6D532A599C9800636A10 /* options.css in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D4A2A599C9700636A10 /* options.css */; };
+		FB6A6D542A599C9800636A10 /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D4B2A599C9800636A10 /* content.js */; };
+		FB6A6D552A599C9800636A10 /* content.js in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D4B2A599C9800636A10 /* content.js */; };
+		FB6A6D562A599C9800636A10 /* options.html in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D4C2A599C9800636A10 /* options.html */; };
+		FB6A6D572A599C9800636A10 /* options.html in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D4C2A599C9800636A10 /* options.html */; };
+		FB6A6D582A599C9800636A10 /* browser_action.html in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D4D2A599C9800636A10 /* browser_action.html */; };
+		FB6A6D592A599C9800636A10 /* browser_action.html in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D4D2A599C9800636A10 /* browser_action.html */; };
+		FB6A6D5C2A599C9800636A10 /* _locales in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D4F2A599C9800636A10 /* _locales */; };
+		FB6A6D5D2A599C9800636A10 /* _locales in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D4F2A599C9800636A10 /* _locales */; };
+		FB6A6D5E2A599C9800636A10 /* options.js in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D502A599C9800636A10 /* options.js */; };
+		FB6A6D5F2A599C9800636A10 /* options.js in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D502A599C9800636A10 /* options.js */; };
+		FB6A6D602A599C9800636A10 /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D512A599C9800636A10 /* background.js */; };
+		FB6A6D612A599C9800636A10 /* background.js in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D512A599C9800636A10 /* background.js */; };
+		FB6A6D662A599D2F00636A10 /* icon256.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D622A599D2F00636A10 /* icon256.png */; };
+		FB6A6D672A599D2F00636A10 /* icon256.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D622A599D2F00636A10 /* icon256.png */; };
+		FB6A6D682A599D2F00636A10 /* icon96.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D632A599D2F00636A10 /* icon96.png */; };
+		FB6A6D692A599D2F00636A10 /* icon96.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D632A599D2F00636A10 /* icon96.png */; };
+		FB6A6D6A2A599D2F00636A10 /* icon128.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D642A599D2F00636A10 /* icon128.png */; };
+		FB6A6D6B2A599D2F00636A10 /* icon128.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D642A599D2F00636A10 /* icon128.png */; };
+		FB6A6D6C2A599D2F00636A10 /* icon48.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D652A599D2F00636A10 /* icon48.png */; };
+		FB6A6D6D2A599D2F00636A10 /* icon48.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D652A599D2F00636A10 /* icon48.png */; };
+		FB6A6D812A599E9B00636A10 /* icon512.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D802A599E9B00636A10 /* icon512.png */; };
+		FB6A6D822A599E9B00636A10 /* icon512.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D802A599E9B00636A10 /* icon512.png */; };
+		FB6A6D892A59ABA800636A10 /* toolbar-icon19.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D832A59ABA800636A10 /* toolbar-icon19.png */; };
+		FB6A6D8A2A59ABA800636A10 /* toolbar-icon19.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D832A59ABA800636A10 /* toolbar-icon19.png */; };
+		FB6A6D8B2A59ABA800636A10 /* toolbar-icon48.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D842A59ABA800636A10 /* toolbar-icon48.png */; };
+		FB6A6D8C2A59ABA800636A10 /* toolbar-icon48.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D842A59ABA800636A10 /* toolbar-icon48.png */; };
+		FB6A6D8D2A59ABA800636A10 /* toolbar-icon72.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D852A59ABA800636A10 /* toolbar-icon72.png */; };
+		FB6A6D8E2A59ABA800636A10 /* toolbar-icon72.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D852A59ABA800636A10 /* toolbar-icon72.png */; };
+		FB6A6D8F2A59ABA800636A10 /* toolbar-icon16.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D862A59ABA800636A10 /* toolbar-icon16.png */; };
+		FB6A6D902A59ABA800636A10 /* toolbar-icon16.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D862A59ABA800636A10 /* toolbar-icon16.png */; };
+		FB6A6D912A59ABA800636A10 /* toolbar-icon32.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D872A59ABA800636A10 /* toolbar-icon32.png */; };
+		FB6A6D922A59ABA800636A10 /* toolbar-icon32.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D872A59ABA800636A10 /* toolbar-icon32.png */; };
+		FB6A6D932A59ABA800636A10 /* toolbar-icon38.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D882A59ABA800636A10 /* toolbar-icon38.png */; };
+		FB6A6D942A59ABA800636A10 /* toolbar-icon38.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D882A59ABA800636A10 /* toolbar-icon38.png */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		FB6A6D0D2A595D2600636A10 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FB6A6CD12A595D2500636A10 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FB6A6D0A2A595D2600636A10;
+			remoteInfo = "Comments Owl for Hacker News Extension (iOS)";
+		};
+		FB6A6D172A595D2600636A10 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FB6A6CD12A595D2500636A10 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FB6A6D142A595D2600636A10;
+			remoteInfo = "Comments Owl for Hacker News Extension (macOS)";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		FB6A6D3F2A595D2600636A10 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				FB6A6D0C2A595D2600636A10 /* Comments Owl for Hacker News Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB6A6D462A595D2600636A10 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				FB6A6D162A595D2600636A10 /* Comments Owl for Hacker News Extension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		FB6A6CD82A595D2500636A10 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = ../Base.lproj/Main.html; sourceTree = "<group>"; };
+		FB6A6CD92A595D2500636A10 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
+		FB6A6CDA2A595D2500636A10 /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
+		FB6A6CDB2A595D2500636A10 /* Script.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = Script.js; sourceTree = "<group>"; };
+		FB6A6CDC2A595D2500636A10 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		FB6A6CDD2A595D2600636A10 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		FB6A6CDF2A595D2600636A10 /* SafariWebExtensionHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariWebExtensionHandler.swift; sourceTree = "<group>"; };
+		FB6A6CE32A595D2600636A10 /* manifest.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = manifest.json; sourceTree = "<group>"; };
+		FB6A6CED2A595D2600636A10 /* Comments Owl for Hacker News.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Comments Owl for Hacker News.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB6A6CF02A595D2600636A10 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		FB6A6CF22A595D2600636A10 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
+		FB6A6CF52A595D2600636A10 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		FB6A6CF82A595D2600636A10 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		FB6A6CFA2A595D2600636A10 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FB6A6CFF2A595D2600636A10 /* Comments Owl for Hacker News.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Comments Owl for Hacker News.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB6A6D012A595D2600636A10 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		FB6A6D042A595D2600636A10 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		FB6A6D062A595D2600636A10 /* Comments Owl for Hacker News.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Comments Owl for Hacker News.entitlements"; sourceTree = "<group>"; };
+		FB6A6D0B2A595D2600636A10 /* Comments Owl for Hacker News Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Comments Owl for Hacker News Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB6A6D102A595D2600636A10 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FB6A6D152A595D2600636A10 /* Comments Owl for Hacker News Extension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = "Comments Owl for Hacker News Extension.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB6A6D1A2A595D2600636A10 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FB6A6D1B2A595D2600636A10 /* Comments Owl for Hacker News.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Comments Owl for Hacker News.entitlements"; sourceTree = "<group>"; };
+		FB6A6D4A2A599C9700636A10 /* options.css */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.css; name = options.css; path = ../../../options.css; sourceTree = "<group>"; };
+		FB6A6D4B2A599C9800636A10 /* content.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = content.js; path = ../../../content.js; sourceTree = "<group>"; };
+		FB6A6D4C2A599C9800636A10 /* options.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = options.html; path = ../../../options.html; sourceTree = "<group>"; };
+		FB6A6D4D2A599C9800636A10 /* browser_action.html */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.html; name = browser_action.html; path = ../../../browser_action.html; sourceTree = "<group>"; };
+		FB6A6D4F2A599C9800636A10 /* _locales */ = {isa = PBXFileReference; lastKnownFileType = folder; name = _locales; path = ../../../_locales; sourceTree = "<group>"; };
+		FB6A6D502A599C9800636A10 /* options.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = options.js; path = ../../../options.js; sourceTree = "<group>"; };
+		FB6A6D512A599C9800636A10 /* background.js */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.javascript; name = background.js; path = ../../../background.js; sourceTree = "<group>"; };
+		FB6A6D622A599D2F00636A10 /* icon256.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon256.png; path = ../../../icons/icon256.png; sourceTree = "<group>"; };
+		FB6A6D632A599D2F00636A10 /* icon96.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon96.png; path = ../../../icons/icon96.png; sourceTree = "<group>"; };
+		FB6A6D642A599D2F00636A10 /* icon128.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon128.png; path = ../../../icons/icon128.png; sourceTree = "<group>"; };
+		FB6A6D652A599D2F00636A10 /* icon48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon48.png; path = ../../../icons/icon48.png; sourceTree = "<group>"; };
+		FB6A6D802A599E9B00636A10 /* icon512.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon512.png; path = ../../../icons/icon512.png; sourceTree = "<group>"; };
+		FB6A6D832A59ABA800636A10 /* toolbar-icon19.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-icon19.png"; path = "../../../icons/toolbar-icon19.png"; sourceTree = "<group>"; };
+		FB6A6D842A59ABA800636A10 /* toolbar-icon48.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-icon48.png"; path = "../../../icons/toolbar-icon48.png"; sourceTree = "<group>"; };
+		FB6A6D852A59ABA800636A10 /* toolbar-icon72.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-icon72.png"; path = "../../../icons/toolbar-icon72.png"; sourceTree = "<group>"; };
+		FB6A6D862A59ABA800636A10 /* toolbar-icon16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-icon16.png"; path = "../../../icons/toolbar-icon16.png"; sourceTree = "<group>"; };
+		FB6A6D872A59ABA800636A10 /* toolbar-icon32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-icon32.png"; path = "../../../icons/toolbar-icon32.png"; sourceTree = "<group>"; };
+		FB6A6D882A59ABA800636A10 /* toolbar-icon38.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-icon38.png"; path = "../../../icons/toolbar-icon38.png"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FB6A6CEA2A595D2600636A10 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB6A6CFC2A595D2600636A10 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB6A6D082A595D2600636A10 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB6A6D122A595D2600636A10 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		FB6A6CD02A595D2500636A10 = {
+			isa = PBXGroup;
+			children = (
+				FB6A6CD52A595D2500636A10 /* Shared (App) */,
+				FB6A6CDE2A595D2600636A10 /* Shared (Extension) */,
+				FB6A6CEF2A595D2600636A10 /* iOS (App) */,
+				FB6A6D002A595D2600636A10 /* macOS (App) */,
+				FB6A6D0F2A595D2600636A10 /* iOS (Extension) */,
+				FB6A6D192A595D2600636A10 /* macOS (Extension) */,
+				FB6A6CEE2A595D2600636A10 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FB6A6CD52A595D2500636A10 /* Shared (App) */ = {
+			isa = PBXGroup;
+			children = (
+				FB6A6CDC2A595D2500636A10 /* ViewController.swift */,
+				FB6A6CDD2A595D2600636A10 /* Assets.xcassets */,
+				FB6A6CD62A595D2500636A10 /* Resources */,
+			);
+			path = "Shared (App)";
+			sourceTree = "<group>";
+		};
+		FB6A6CD62A595D2500636A10 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FB6A6CD72A595D2500636A10 /* Main.html */,
+				FB6A6CD92A595D2500636A10 /* Icon.png */,
+				FB6A6CDA2A595D2500636A10 /* Style.css */,
+				FB6A6CDB2A595D2500636A10 /* Script.js */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		FB6A6CDE2A595D2600636A10 /* Shared (Extension) */ = {
+			isa = PBXGroup;
+			children = (
+				FB6A6CDF2A595D2600636A10 /* SafariWebExtensionHandler.swift */,
+				FB6A6CE02A595D2600636A10 /* Resources */,
+			);
+			path = "Shared (Extension)";
+			sourceTree = "<group>";
+		};
+		FB6A6CE02A595D2600636A10 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				FB6A6D4F2A599C9800636A10 /* _locales */,
+				FB6A6D512A599C9800636A10 /* background.js */,
+				FB6A6D4D2A599C9800636A10 /* browser_action.html */,
+				FB6A6D4B2A599C9800636A10 /* content.js */,
+				FB6A6D652A599D2F00636A10 /* icon48.png */,
+				FB6A6D632A599D2F00636A10 /* icon96.png */,
+				FB6A6D642A599D2F00636A10 /* icon128.png */,
+				FB6A6D622A599D2F00636A10 /* icon256.png */,
+				FB6A6D802A599E9B00636A10 /* icon512.png */,
+				FB6A6CE32A595D2600636A10 /* manifest.json */,
+				FB6A6D4A2A599C9700636A10 /* options.css */,
+				FB6A6D4C2A599C9800636A10 /* options.html */,
+				FB6A6D502A599C9800636A10 /* options.js */,
+				FB6A6D862A59ABA800636A10 /* toolbar-icon16.png */,
+				FB6A6D832A59ABA800636A10 /* toolbar-icon19.png */,
+				FB6A6D872A59ABA800636A10 /* toolbar-icon32.png */,
+				FB6A6D882A59ABA800636A10 /* toolbar-icon38.png */,
+				FB6A6D842A59ABA800636A10 /* toolbar-icon48.png */,
+				FB6A6D852A59ABA800636A10 /* toolbar-icon72.png */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		FB6A6CEE2A595D2600636A10 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FB6A6CED2A595D2600636A10 /* Comments Owl for Hacker News.app */,
+				FB6A6CFF2A595D2600636A10 /* Comments Owl for Hacker News.app */,
+				FB6A6D0B2A595D2600636A10 /* Comments Owl for Hacker News Extension.appex */,
+				FB6A6D152A595D2600636A10 /* Comments Owl for Hacker News Extension.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FB6A6CEF2A595D2600636A10 /* iOS (App) */ = {
+			isa = PBXGroup;
+			children = (
+				FB6A6CF02A595D2600636A10 /* AppDelegate.swift */,
+				FB6A6CF22A595D2600636A10 /* SceneDelegate.swift */,
+				FB6A6CF42A595D2600636A10 /* LaunchScreen.storyboard */,
+				FB6A6CF72A595D2600636A10 /* Main.storyboard */,
+				FB6A6CFA2A595D2600636A10 /* Info.plist */,
+			);
+			path = "iOS (App)";
+			sourceTree = "<group>";
+		};
+		FB6A6D002A595D2600636A10 /* macOS (App) */ = {
+			isa = PBXGroup;
+			children = (
+				FB6A6D012A595D2600636A10 /* AppDelegate.swift */,
+				FB6A6D032A595D2600636A10 /* Main.storyboard */,
+				FB6A6D062A595D2600636A10 /* Comments Owl for Hacker News.entitlements */,
+			);
+			path = "macOS (App)";
+			sourceTree = "<group>";
+		};
+		FB6A6D0F2A595D2600636A10 /* iOS (Extension) */ = {
+			isa = PBXGroup;
+			children = (
+				FB6A6D102A595D2600636A10 /* Info.plist */,
+			);
+			path = "iOS (Extension)";
+			sourceTree = "<group>";
+		};
+		FB6A6D192A595D2600636A10 /* macOS (Extension) */ = {
+			isa = PBXGroup;
+			children = (
+				FB6A6D1A2A595D2600636A10 /* Info.plist */,
+				FB6A6D1B2A595D2600636A10 /* Comments Owl for Hacker News.entitlements */,
+			);
+			path = "macOS (Extension)";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		FB6A6CEC2A595D2600636A10 /* Comments Owl for Hacker News (iOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FB6A6D402A595D2600636A10 /* Build configuration list for PBXNativeTarget "Comments Owl for Hacker News (iOS)" */;
+			buildPhases = (
+				FB6A6CE92A595D2600636A10 /* Sources */,
+				FB6A6CEA2A595D2600636A10 /* Frameworks */,
+				FB6A6CEB2A595D2600636A10 /* Resources */,
+				FB6A6D3F2A595D2600636A10 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FB6A6D0E2A595D2600636A10 /* PBXTargetDependency */,
+			);
+			name = "Comments Owl for Hacker News (iOS)";
+			productName = "Comments Owl for Hacker News (iOS)";
+			productReference = FB6A6CED2A595D2600636A10 /* Comments Owl for Hacker News.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FB6A6CFE2A595D2600636A10 /* Comments Owl for Hacker News (macOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FB6A6D472A595D2600636A10 /* Build configuration list for PBXNativeTarget "Comments Owl for Hacker News (macOS)" */;
+			buildPhases = (
+				FB6A6CFB2A595D2600636A10 /* Sources */,
+				FB6A6CFC2A595D2600636A10 /* Frameworks */,
+				FB6A6CFD2A595D2600636A10 /* Resources */,
+				FB6A6D462A595D2600636A10 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				FB6A6D182A595D2600636A10 /* PBXTargetDependency */,
+			);
+			name = "Comments Owl for Hacker News (macOS)";
+			productName = "Comments Owl for Hacker News (macOS)";
+			productReference = FB6A6CFF2A595D2600636A10 /* Comments Owl for Hacker News.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FB6A6D0A2A595D2600636A10 /* Comments Owl for Hacker News Extension (iOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FB6A6D3C2A595D2600636A10 /* Build configuration list for PBXNativeTarget "Comments Owl for Hacker News Extension (iOS)" */;
+			buildPhases = (
+				FB6A6D072A595D2600636A10 /* Sources */,
+				FB6A6D082A595D2600636A10 /* Frameworks */,
+				FB6A6D092A595D2600636A10 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Comments Owl for Hacker News Extension (iOS)";
+			productName = "Comments Owl for Hacker News Extension (iOS)";
+			productReference = FB6A6D0B2A595D2600636A10 /* Comments Owl for Hacker News Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		FB6A6D142A595D2600636A10 /* Comments Owl for Hacker News Extension (macOS) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FB6A6D432A595D2600636A10 /* Build configuration list for PBXNativeTarget "Comments Owl for Hacker News Extension (macOS)" */;
+			buildPhases = (
+				FB6A6D112A595D2600636A10 /* Sources */,
+				FB6A6D122A595D2600636A10 /* Frameworks */,
+				FB6A6D132A595D2600636A10 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Comments Owl for Hacker News Extension (macOS)";
+			productName = "Comments Owl for Hacker News Extension (macOS)";
+			productReference = FB6A6D152A595D2600636A10 /* Comments Owl for Hacker News Extension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		FB6A6CD12A595D2500636A10 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1420;
+				LastUpgradeCheck = 1420;
+				TargetAttributes = {
+					FB6A6CEC2A595D2600636A10 = {
+						CreatedOnToolsVersion = 14.2;
+					};
+					FB6A6CFE2A595D2600636A10 = {
+						CreatedOnToolsVersion = 14.2;
+					};
+					FB6A6D0A2A595D2600636A10 = {
+						CreatedOnToolsVersion = 14.2;
+					};
+					FB6A6D142A595D2600636A10 = {
+						CreatedOnToolsVersion = 14.2;
+					};
+				};
+			};
+			buildConfigurationList = FB6A6CD42A595D2500636A10 /* Build configuration list for PBXProject "Comments Owl for Hacker News" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = FB6A6CD02A595D2500636A10;
+			productRefGroup = FB6A6CEE2A595D2600636A10 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FB6A6CEC2A595D2600636A10 /* Comments Owl for Hacker News (iOS) */,
+				FB6A6CFE2A595D2600636A10 /* Comments Owl for Hacker News (macOS) */,
+				FB6A6D0A2A595D2600636A10 /* Comments Owl for Hacker News Extension (iOS) */,
+				FB6A6D142A595D2600636A10 /* Comments Owl for Hacker News Extension (macOS) */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		FB6A6CEB2A595D2600636A10 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB6A6D1E2A595D2600636A10 /* Icon.png in Resources */,
+				FB6A6CF62A595D2600636A10 /* LaunchScreen.storyboard in Resources */,
+				FB6A6D1C2A595D2600636A10 /* Main.html in Resources */,
+				FB6A6D222A595D2600636A10 /* Script.js in Resources */,
+				FB6A6D262A595D2600636A10 /* Assets.xcassets in Resources */,
+				FB6A6CF92A595D2600636A10 /* Main.storyboard in Resources */,
+				FB6A6D202A595D2600636A10 /* Style.css in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB6A6CFD2A595D2600636A10 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB6A6D1F2A595D2600636A10 /* Icon.png in Resources */,
+				FB6A6D212A595D2600636A10 /* Style.css in Resources */,
+				FB6A6D052A595D2600636A10 /* Main.storyboard in Resources */,
+				FB6A6D232A595D2600636A10 /* Script.js in Resources */,
+				FB6A6D272A595D2600636A10 /* Assets.xcassets in Resources */,
+				FB6A6D1D2A595D2600636A10 /* Main.html in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB6A6D092A595D2600636A10 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB6A6D542A599C9800636A10 /* content.js in Resources */,
+				FB6A6D5E2A599C9800636A10 /* options.js in Resources */,
+				FB6A6D6C2A599D2F00636A10 /* icon48.png in Resources */,
+				FB6A6D6A2A599D2F00636A10 /* icon128.png in Resources */,
+				FB6A6D582A599C9800636A10 /* browser_action.html in Resources */,
+				FB6A6D812A599E9B00636A10 /* icon512.png in Resources */,
+				FB6A6D522A599C9800636A10 /* options.css in Resources */,
+				FB6A6D8D2A59ABA800636A10 /* toolbar-icon72.png in Resources */,
+				FB6A6D8B2A59ABA800636A10 /* toolbar-icon48.png in Resources */,
+				FB6A6D912A59ABA800636A10 /* toolbar-icon32.png in Resources */,
+				FB6A6D932A59ABA800636A10 /* toolbar-icon38.png in Resources */,
+				FB6A6D602A599C9800636A10 /* background.js in Resources */,
+				FB6A6D8F2A59ABA800636A10 /* toolbar-icon16.png in Resources */,
+				FB6A6D662A599D2F00636A10 /* icon256.png in Resources */,
+				FB6A6D2E2A595D2600636A10 /* manifest.json in Resources */,
+				FB6A6D5C2A599C9800636A10 /* _locales in Resources */,
+				FB6A6D562A599C9800636A10 /* options.html in Resources */,
+				FB6A6D892A59ABA800636A10 /* toolbar-icon19.png in Resources */,
+				FB6A6D682A599D2F00636A10 /* icon96.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB6A6D132A595D2600636A10 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB6A6D552A599C9800636A10 /* content.js in Resources */,
+				FB6A6D5F2A599C9800636A10 /* options.js in Resources */,
+				FB6A6D6D2A599D2F00636A10 /* icon48.png in Resources */,
+				FB6A6D6B2A599D2F00636A10 /* icon128.png in Resources */,
+				FB6A6D592A599C9800636A10 /* browser_action.html in Resources */,
+				FB6A6D822A599E9B00636A10 /* icon512.png in Resources */,
+				FB6A6D532A599C9800636A10 /* options.css in Resources */,
+				FB6A6D8E2A59ABA800636A10 /* toolbar-icon72.png in Resources */,
+				FB6A6D8C2A59ABA800636A10 /* toolbar-icon48.png in Resources */,
+				FB6A6D922A59ABA800636A10 /* toolbar-icon32.png in Resources */,
+				FB6A6D942A59ABA800636A10 /* toolbar-icon38.png in Resources */,
+				FB6A6D612A599C9800636A10 /* background.js in Resources */,
+				FB6A6D902A59ABA800636A10 /* toolbar-icon16.png in Resources */,
+				FB6A6D672A599D2F00636A10 /* icon256.png in Resources */,
+				FB6A6D2F2A595D2600636A10 /* manifest.json in Resources */,
+				FB6A6D5D2A599C9800636A10 /* _locales in Resources */,
+				FB6A6D572A599C9800636A10 /* options.html in Resources */,
+				FB6A6D8A2A59ABA800636A10 /* toolbar-icon19.png in Resources */,
+				FB6A6D692A599D2F00636A10 /* icon96.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FB6A6CE92A595D2600636A10 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB6A6D242A595D2600636A10 /* ViewController.swift in Sources */,
+				FB6A6CF12A595D2600636A10 /* AppDelegate.swift in Sources */,
+				FB6A6CF32A595D2600636A10 /* SceneDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB6A6CFB2A595D2600636A10 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB6A6D252A595D2600636A10 /* ViewController.swift in Sources */,
+				FB6A6D022A595D2600636A10 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB6A6D072A595D2600636A10 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB6A6D282A595D2600636A10 /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FB6A6D112A595D2600636A10 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB6A6D292A595D2600636A10 /* SafariWebExtensionHandler.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		FB6A6D0E2A595D2600636A10 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FB6A6D0A2A595D2600636A10 /* Comments Owl for Hacker News Extension (iOS) */;
+			targetProxy = FB6A6D0D2A595D2600636A10 /* PBXContainerItemProxy */;
+		};
+		FB6A6D182A595D2600636A10 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FB6A6D142A595D2600636A10 /* Comments Owl for Hacker News Extension (macOS) */;
+			targetProxy = FB6A6D172A595D2600636A10 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		FB6A6CD72A595D2500636A10 /* Main.html */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FB6A6CD82A595D2500636A10 /* Base */,
+			);
+			name = Main.html;
+			sourceTree = "<group>";
+		};
+		FB6A6CF42A595D2600636A10 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FB6A6CF52A595D2600636A10 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+		FB6A6CF72A595D2600636A10 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FB6A6CF82A595D2600636A10 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		FB6A6D032A595D2600636A10 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				FB6A6D042A595D2600636A10 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		FB6A6D3A2A595D2600636A10 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MARKETING_VERSION = 1.6;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		FB6A6D3B2A595D2600636A10 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MARKETING_VERSION = 1.6;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		FB6A6D3D2A595D2600636A10 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2RDKJDLNY8;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "iOS (Extension)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News.Extension";
+				PRODUCT_NAME = "Comments Owl for Hacker News Extension";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FB6A6D3E2A595D2600636A10 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2RDKJDLNY8;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "iOS (Extension)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News.Extension";
+				PRODUCT_NAME = "Comments Owl for Hacker News Extension";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		FB6A6D412A595D2600636A10 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2RDKJDLNY8;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "iOS (App)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News";
+				PRODUCT_NAME = "Comments Owl for Hacker News";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		FB6A6D422A595D2600636A10 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2RDKJDLNY8;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "iOS (App)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
+				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News";
+				PRODUCT_NAME = "Comments Owl for Hacker News";
+				SDKROOT = iphoneos;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		FB6A6D442A595D2600636A10 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "macOS (Extension)/Comments Owl for Hacker News.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2RDKJDLNY8;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (Extension)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News.Extension";
+				PRODUCT_NAME = "Comments Owl for Hacker News Extension";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FB6A6D452A595D2600636A10 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "macOS (Extension)/Comments Owl for Hacker News.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2RDKJDLNY8;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "macOS (Extension)/Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News Extension";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@executable_path/../../../../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News.Extension";
+				PRODUCT_NAME = "Comments Owl for Hacker News Extension";
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		FB6A6D482A595D2600636A10 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "macOS (App)/Comments Owl for Hacker News.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2RDKJDLNY8;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News";
+				PRODUCT_NAME = "Comments Owl for Hacker News";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		FB6A6D492A595D2600636A10 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "macOS (App)/Comments Owl for Hacker News.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 2RDKJDLNY8;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				INFOPLIST_KEY_NSMainStoryboardFile = Main;
+				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				OTHER_LDFLAGS = (
+					"-framework",
+					SafariServices,
+					"-framework",
+					WebKit,
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News";
+				PRODUCT_NAME = "Comments Owl for Hacker News";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		FB6A6CD42A595D2500636A10 /* Build configuration list for PBXProject "Comments Owl for Hacker News" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB6A6D3A2A595D2600636A10 /* Debug */,
+				FB6A6D3B2A595D2600636A10 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FB6A6D3C2A595D2600636A10 /* Build configuration list for PBXNativeTarget "Comments Owl for Hacker News Extension (iOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB6A6D3D2A595D2600636A10 /* Debug */,
+				FB6A6D3E2A595D2600636A10 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FB6A6D402A595D2600636A10 /* Build configuration list for PBXNativeTarget "Comments Owl for Hacker News (iOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB6A6D412A595D2600636A10 /* Debug */,
+				FB6A6D422A595D2600636A10 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FB6A6D432A595D2600636A10 /* Build configuration list for PBXNativeTarget "Comments Owl for Hacker News Extension (macOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB6A6D442A595D2600636A10 /* Debug */,
+				FB6A6D452A595D2600636A10 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FB6A6D472A595D2600636A10 /* Build configuration list for PBXNativeTarget "Comments Owl for Hacker News (macOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FB6A6D482A595D2600636A10 /* Debug */,
+				FB6A6D492A595D2600636A10 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = FB6A6CD12A595D2500636A10 /* Project object */;
+}

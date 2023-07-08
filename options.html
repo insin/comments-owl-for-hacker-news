@@ -3,40 +3,44 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>HN Comments Owl Options</title>
+  <title></title>
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
   <form>
     <section class="group labelled">
-      <label>Item pages</label>
+      <label id="itemPagesOptionsLabel">
+        Item pages
+      </label>
       <section class="checkbox">
         <label>
-          Auto highlight new comments
+          <span id="autoHighlightNewLabel">Auto highlight new comments</span>
           <input type="checkbox" name="autoHighlightNew">
           <span class="toggle"></span>
         </label>
       </section>
       <section class="checkbox">
         <label>
-          Auto collapse threads without new comments
+          <span id="autoCollapseNotNewLabel">Auto collapse threads without new comments</span>
           <input type="checkbox" name="autoCollapseNotNew">
           <span class="toggle"></span>
         </label>
       </section>
       <section class="checkbox">
         <label>
-          <span>Hide reply links under comments</span>
+          <span id="hideReplyLinksLabel">Hide reply links under comments</span>
           <input type="checkbox" name="hideReplyLinks">
           <span class="toggle"></span>
         </label>
       </section>
     </section>
     <section class="group labelled">
-      <label>Other options</label>
+      <label id="otherOptionsLabel">
+        Other options
+      </label>
       <section class="checkbox">
         <label>
-          Add "upvoted" to header
+          <span id="addUpvotedToHeaderLabel">Add "upvoted" to header</span>
           <input type="checkbox" name="addUpvotedToHeader">
           <span class="toggle"></span>
         </label>

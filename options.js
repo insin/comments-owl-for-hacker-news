@@ -1,4 +1,17 @@
-const $body = document.body
+document.title = chrome.i18n.getMessage('extensionName')
+
+for (let translationId of [
+  'itemPagesOptionsLabel',
+  'autoHighlightNewLabel',
+  'autoCollapseNotNewLabel',
+  'hideReplyLinksLabel',
+  'otherOptionsLabel',
+  'addUpvotedToHeaderLabel',
+]) {
+  document.getElementById(translationId).textContent = chrome.i18n.getMessage(translationId)
+}
+
+let $body = document.body
 let $form = document.querySelector('form')
 
 if (navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test(navigator.userAgent)) {

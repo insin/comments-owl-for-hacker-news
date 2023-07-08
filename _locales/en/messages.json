@@ -1,0 +1,27 @@
+{
+  "extensionName": {
+    "message": "Comments Owl for Hacker News"
+  },
+  "extensionDescription": {
+    "message": "Highlight new comments, manage users, and other tweaks for Hacker News",
+    "description": "<= 112 characters"
+  },
+  "itemPagesOptionsLabel": {
+    "message": "Item pages"
+  },
+  "autoHighlightNewLabel": {
+    "message": "Auto highlight new comments"
+  },
+  "autoCollapseNotNewLabel": {
+    "message": "Auto collapse threads without new comments"
+  },
+  "hideReplyLinksLabel": {
+    "message": "Hide reply links under comments"
+  },
+  "otherOptionsLabel": {
+    "message": "Other options"
+  },
+  "addUpvotedToHeaderLabel": {
+    "message": "Add \"upvoted\" to header"
+  }
+}
