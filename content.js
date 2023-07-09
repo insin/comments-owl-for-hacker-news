@@ -278,11 +278,27 @@ function improveMobileNav() {
 function commentPage() {
   log('comment page')
   addStyle(`
+    .navs {
+      display: none;
+    }
+    .toggle {
+      cursor: pointer;
+      margin-right: 3px;
+    }
     .mute {
       display: none;
     }
     tr.comtr:hover .mute {
       display: inline;
+    }
+    @media only screen and (min-width: 300px) and (max-width: 750px) {
+      .comment {
+        max-width: unset;
+      }
+      .toggle {
+        display: inline-block;
+        transform: scale(1.1,1.1);
+      }
     }
   `)
 
@@ -448,8 +464,8 @@ function commentPage() {
 
       /** @type {HTMLElement} */
       this.$toggleControl = h('span', {
+        className: 'toggle',
         onclick: () => this.toggleCollapsed(),
-        style: {cursor: 'pointer'},
       }, this.isCollapsed ? TOGGLE_SHOW : TOGGLE_HIDE)
 
       if (!this.isDeleted) {
