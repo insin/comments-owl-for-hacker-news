@@ -209,6 +209,36 @@ function addUpvotedLinkToHeader() {
 }
 //#endregion
 
+//#region Feature: improved mobile navigation
+function improveMobileNav() {
+  addStyle(`
+    .desktopnav {
+      display: inline;
+    }
+    .mobilenav {
+      display: none;
+    }
+    @media only screen and (min-width : 300px) and (max-width : 750px) {
+      .desktopnav {
+        display: none;
+      }
+      .mobilenav {
+        display: revert;
+      }
+    }
+  `)
+
+  let $pageTop = document.querySelector('span.pagetop')
+  // Create a new row for mobile nav
+  let $mobileNav = /** @type {HTMLTableCellElement} */ ($pageTop.parentElement.cloneNode(true))
+  $mobileNav.querySelector('b')?.remove()
+  $mobileNav.colSpan = 3
+  $pageTop.closest('tbody').append(h('tr', {className: 'mobilenav'}, $mobileNav))
+  // Move everything after b.hnname into a wrapper
+  $pageTop.appendChild(h('span', {className: 'desktopnav'}, ...Array.from($pageTop.childNodes).slice(1)))
+}
+//#endregion
+
 //#region Feature: new comment highlighting on comment pages
 /**
  * Each comment on a comment page has the following structure:
@@ -1003,6 +1033,8 @@ function main() {
   if (config.addUpvotedToHeader) {
     addUpvotedLinkToHeader()
   }
+
+  improveMobileNav()
 
   let path = location.pathname.slice(1)
 
