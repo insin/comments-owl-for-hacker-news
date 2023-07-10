@@ -28,6 +28,7 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 
 - Add an "upvoted" link to the header to make it easier to get back to previously visited stories, using upvote as a bookmark
 - Improved navigation links on mobile, displayed below the other header contents
+- Increased distance between the upvote and downvote arrows on mobile
 
 ## Screenshots
 

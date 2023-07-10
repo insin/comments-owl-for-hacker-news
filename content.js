@@ -296,26 +296,38 @@ function improveMobileNav() {
 function commentPage() {
   log('comment page')
   addStyle('base', `
-    .navs {
+    /* Hide default toggle and nav links, we're probably breaking them by hiding comments ourselves */
+    a.togg {
       display: none;
     }
-    a.togg {
+    .navs {
       display: none;
     }
     .toggle {
       cursor: pointer;
       margin-right: 3px;
     }
+    /* Display the mute control on hover, unless the comment is being hidden */
     .mute {
       display: none;
     }
-    tr.comtr:hover .mute {
+    tr.comtr:hover td.votelinks:not(.nosee) + td .mute {
       display: inline;
     }
+    /* Don't show notes on hidden comments */
+    td.votelinks.nosee + td .note {
+      display: none;
+    }
     @media only screen and (min-width: 300px) and (max-width: 750px) {
+      /* Allow comments to go full-width */
       .comment {
         max-width: unset;
       }
+      /* Increase distance between upvote and downvote */
+      a[id^="down_"] {
+        margin-top: 16px;
+      }
+      /* Increase hit-target */
       .toggle {
         display: inline-block;
         transform: scale(1.1,1.1);
