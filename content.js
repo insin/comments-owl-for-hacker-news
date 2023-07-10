@@ -148,7 +148,7 @@ function addStyle(role, ...css) {
   $style.dataset.insertedBy = 'comments-owl'
   $style.dataset.role = role
   if (css.length > 0) {
-    $style.textContent = css.map(dedent).join('\n')
+    $style.textContent = css.filter(Boolean).map(dedent).join('\n')
   }
   document.querySelector('head').appendChild($style)
   return $style
@@ -1255,6 +1255,20 @@ function userProfilePage() {
 //#region Main
 function main() {
   log('config', config)
+
+  if (location.pathname.startsWith('/login')) {
+    log('login screen')
+    let isSafari = navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test(navigator.userAgent)
+    if (isSafari) {
+      log('trying to prevent Safari zooming in on the autofocused input')
+      addStyle('login', `input[type="text"], input[type="password"] { font-size: 16px; }`)
+      setTimeout(() => {
+        document.querySelector('input[type="password"]').focus()
+        document.querySelector('input[type="text"]').focus()
+      })
+    }
+    return
+  }
 
   if (location.pathname.startsWith('/muted')) {
     document.documentElement.innerHTML = LOGGED_OUT_USER_PAGE
