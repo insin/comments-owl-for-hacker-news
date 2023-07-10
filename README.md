@@ -56,42 +56,6 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 |:-------:|:------:|:------:|
 | ![](screenshots/mute_user_comment.png) | ![](screenshots/mute_user_profile.png) | ![](screenshots/muted_users.png) |
 
-### Toggling display of reply links
-
-| Firefox | Chrome |
-|:-------:|:------:|
-| ![](screenshots/toggle_reply_links_firefox.png) | ![](screenshots/toggle_reply_links_chrome.png) |
-
-## Options
-
-| Firefox | Chrome |
-|:-------:|:------:|
-| ![](screenshots/options_firefox.png) | ![](screenshots/options_chrome.png) |
-
-### Automatically highlight new comments
-
-_Default: enabled_
-
-Always highlight new comments and collapse old comments when you visit an item's comments - if disabled, this will only happen if you use the "X New" link on an item page, otherwise you will have to manually use the checkboxes at the top of the screen to highlight new comments
-
-### Add upvoted link to header
-
-_Default: enabled_
-
-Adds an "upvoted" link to the site's top navigation so you can more easily get back to the comment threads on items you've recently upvoted.
-
-### Hide reply links under comments
-
-_Default: disabled_
-
-Hides reply links in comment threads to allow more vertical space for comments.
-
-This option can also be toggled while viewing an item's comments, using the browser's context menu:
-
-| Firefox | Chrome |
-|:-------:|:------:|
-| ![](screenshots/toggle_reply_links_context_menu_firefox.png) | ![](screenshots/toggle_reply_links_context_menu_chrome.png) |
-
 ## Icon Attribution
 
 Icon adapted from "Owl icon" by [Lorc](https://lorcblog.blogspot.com/) from [game-icons.net](https://game-icons.net), [CC 3.0 BY](https://creativecommons.org/licenses/by/3.0/)
