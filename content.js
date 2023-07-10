@@ -33,14 +33,7 @@ const LOGGED_OUT_USER_PAGE = `<head>
                   </td>
                   <td style="line-height: 12pt; height: 10px">
                     <span class="pagetop"><b class="hnname"><a href="news">Hacker News</a></b>
-                      <a href="newest">new</a> |
-                      <a href="threads?id=insin">threads</a> |
-                      <a href="front">past</a> |
-                      <a href="newcomments">comments</a> |
-                      <a href="ask">ask</a> |
-                      <a href="show">show</a> |
-                      <a href="jobs">jobs</a> |
-                      <a href="submit">submit</a>
+                      <a href="newest">new</a> | <a href="front">past</a> | <a href="newcomments">comments</a> | <a href="ask">ask</a> | <a href="show">show</a> | <a href="jobs">jobs</a>
                     </span>
                   </td>
                   <td style="text-align: right; padding-right: 4px">
@@ -56,18 +49,16 @@ const LOGGED_OUT_USER_PAGE = `<head>
         <tr id="pagespace" title="Muted" style="height: 10px"></tr>
         <tr>
           <td>
-            <form class="profileform" action="/xuser" method="post">
-              <table border="0">
-                <tbody>
-                  <tr class="athing">
-                    <td valign="top">user:</td>
-                    <td>
-                      <a class="hnuser">anonymous comments owl user</a>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </form>
+            <table border="0">
+              <tbody>
+                <tr class="athing">
+                  <td valign="top">user:</td>
+                  <td>
+                    <a class="hnuser">anonymous comments owl user</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
             <br><br>
           </td>
         </tr>
