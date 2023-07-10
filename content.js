@@ -1116,7 +1116,8 @@ function main() {
 
   let path = location.pathname.slice(1)
 
-  if (/^($|active|ask|best|flagged|front|news|newest|noobstories|show|submitted|upvoted)/.test(path)) {
+  if (/^($|active|ask|best($|\?)|flagged|front|invited|launches|news|newest|noobstories|pool|show|submitted|upvoted)/.test(path) ||
+      /^favorites/.test(path) && !path.includes('&comments=t')) {
     itemListPage()
   }
   else if (/^item/.test(path)) {
