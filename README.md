@@ -15,7 +15,7 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 - Show new comment counts since you last viewed each item - clicking on the "X new" link will  highlight new comments and collapse comment trees which don't contain any new comments
 - Prevent accidental flagging on mobile by hiding the flag control or requiring confirmation
 
-### Item pages
+### Comment pages
 
 - Highlight new comments and collapse comment trees which don't contain any new comments when you revisit an item's comments - you can configure whether or not this happens automatically when you revisit
 - Default comment folding controls are replaced with a Reddit-style left-aligned control, with a slightly larger hit target
@@ -24,12 +24,13 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
   - Logged out users get a new 'muted' link in the header they can use to manage their muted users
 - Add your own notes to other users on their profile page - the first line will be displayed next to their comments
 - Toggle display of "reply" links below comments to make more room for comments on the screen
-
-### Other features
-
-- Add an "upvoted" link to the header to make it easier to get back to previously visited stories, like using upvoting as a bookmark
-- Move navigation links below other header contents on mobile
 - Increased distance between the upvote and downvote arrows on mobile
+
+### Navigation
+
+- Hide navigation items you don't use
+- Add an "upvoted" link to the header to make it easier to get back to previously visited items
+- Improves mobile navigation by display links below other header contents
 
 ## Screenshots
 

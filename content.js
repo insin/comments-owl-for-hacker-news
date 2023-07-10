@@ -82,8 +82,12 @@ let config = {
   addUpvotedToHeader: true,
   autoCollapseNotNew: true,
   autoHighlightNew: true,
+  hideCommentsNav: false,
+  hideJobsNav: false,
+  hidePastNav: false,
   hideReplyLinks: false,
-  listPageFlagging: 'enable',
+  hideSubmitNav: false,
+  listPageFlagging: 'enabled',
 }
 //#endregion
 
@@ -277,22 +281,15 @@ function toggleVisibility($el, hidden) {
 }
 //#endregion
 
-//#region Feature: add upvoted link to header for logged-in users
-function addUpvotedLinkToHeader() {
-  if (window.location.pathname == '/upvoted') return
+//#region Navigation features
+function tweakNav() {
+  let $pageTop = document.querySelector('span.pagetop')
+  if (!$pageTop) {
+    log('pagetop not found')
+    return
+  }
 
-  let $userLink = document.querySelector('span.pagetop a[href^="user?id"]')
-  if (!$userLink) return
-
-  document.querySelector('span.pagetop').append(' | ', h('a', {
-    href: `/upvoted?id=${$userLink.textContent}`,
-  }, 'upvoted'))
-}
-//#endregion
-
-//#region Feature: improved mobile navigation
-function improveMobileNav() {
-  addStyle('mobile-nav', `
+  addStyle('nav-static', `
     .desktopnav {
       display: inline;
     }
@@ -309,18 +306,63 @@ function improveMobileNav() {
     }
   `)
 
-  let $pageTop = document.querySelector('span.pagetop')
+  let $style = addStyle('nav-dynamic')
+
+  function configureCss() {
+    let hideNavSelectors = [
+      config.hidePastNav && 'span.past-sep, span.past-sep + a',
+      config.hideCommentsNav && 'span.comments-sep, span.comments-sep + a',
+      config.hideJobsNav && 'span.jobs-sep, span.jobs-sep + a',
+      config.hideSubmitNav && 'span.submit-sep, span.submit-sep + a',
+      !config.addUpvotedToHeader && 'span.upvoted-sep, span.upvoted-sep + a',
+    ].filter(Boolean)
+    $style.textContent = hideNavSelectors.length == 0 ? '' : dedent(`
+      ${hideNavSelectors.join(',\n')} {
+        display: none;
+      }
+    `)
+  }
+
+  // Add /upvoted if we're not on it
+  if (!location.pathname.startsWith('/upvoted')) {
+    let $userLink = document.querySelector('span.pagetop a[href^="user?id"]')
+    if ($userLink) {
+      let $submit = $pageTop.querySelector('a[href="submit"]')
+      $submit.insertAdjacentElement('afterend', h('a', {href: `upvoted?id=${$userLink.textContent}`}, 'upvoted'))
+      $submit.insertAdjacentElement('afterend', h('span', {className: 'upvoted-sep'}, ' | '))
+    } else {
+      log('user link not found')
+    }
+  }
+
+  // Wrap separators in elements so they can be used to hide items
+  Array.from($pageTop.childNodes)
+       .filter(n => n.nodeType == Node.TEXT_NODE && n.nodeValue == ' | ')
+       .forEach(n => n.replaceWith(h('span', {className: `${n.nextSibling?.textContent}-sep`}, ' | ')))
+
   // Create a new row for mobile nav
   let $mobileNav = /** @type {HTMLTableCellElement} */ ($pageTop.parentElement.cloneNode(true))
   $mobileNav.querySelector('b')?.remove()
   $mobileNav.colSpan = 3
   $pageTop.closest('tbody').append(h('tr', {className: 'mobilenav'}, $mobileNav))
-  // Move everything after b.hnname into a wrapper
+
+  // Move everything after b.hnname into a desktop nav wrapper
   $pageTop.appendChild(h('span', {className: 'desktopnav'}, ...Array.from($pageTop.childNodes).slice(1)))
+
+  configureCss()
+
+  chrome.storage.onChanged.addListener((changes) => {
+    for (let [configProp, change] of Object.entries(changes)) {
+      if (['hidePastNav', 'hideCommentsNav', 'hideJobsNav', 'hideSubmitNav', 'addUpvotedToHeader'].includes(configProp)) {
+        config[configProp] = change.newValue
+        configureCss()
+      }
+    }
+  })
 }
 //#endregion
 
-//#region Feature: new comment highlighting on comment pages
+//#region Item page features
 /**
  * Each comment on a comment page has the following structure:
  *
@@ -358,7 +400,7 @@ function improveMobileNav() {
  */
 function commentPage() {
   log('comment page')
-  addStyle('base', `
+  addStyle('comments-static', `
     /* Hide default toggle and nav links, we're probably breaking them by hiding comments ourselves */
     a.togg {
       display: none;
@@ -398,7 +440,7 @@ function commentPage() {
     }
   `)
 
-  let $style = addStyle('features')
+  let $style = addStyle('comments-dynamic')
 
   function configureCss() {
     $style.textContent = [
@@ -916,7 +958,7 @@ function commentPage() {
 }
 //#endregion
 
-//#region Feature: new comment indicators on link pages
+//#region Item list features
 /**
  * Each item on an item list page has the following structure:
  *
@@ -947,13 +989,13 @@ function commentPage() {
  */
 function itemListPage() {
   log('item list page')
-  let $style = addStyle('features')
+  let $style = addStyle('list-dynamic')
 
   function configureCss() {
     $style.textContent = [
       // Hide flag links
-      config.listPageFlagging == 'disable' && `
-        a[href^="flag"], a[href^="flag"] + span {
+      config.listPageFlagging == 'disabled' && `
+        .flag-sep, .flag-sep + a {
           display: none;
         }
       `
@@ -962,15 +1004,15 @@ function itemListPage() {
 
   function confirmFlag(e) {
     if (config.listPageFlagging != 'confirm') return
-    let title = e.target.closest('tbody').querySelector('.titleline a')?.textContent || 'this item'
-    if (!confirm(`Are you sure you want to flag ${title}?`)) {
+    let title = e.target.closest('tr').previousElementSibling.querySelector('.titleline a')?.textContent || 'this item'
+    if (!confirm(`Are you sure you want to flag "${title}"?`)) {
       e.preventDefault()
     }
   }
 
   for (let $flagLink of document.querySelectorAll('span.subline > a[href^="flag"]')) {
-    // Wrap the '|' after flag links in an element so they can be hidden
-    $flagLink.nextSibling.replaceWith(h('span', null, ' | '))
+    // Wrap the '|' before flag links in an element so they can be hidden
+    $flagLink.previousSibling.replaceWith(h('span', {className: 'flag-sep'}, ' | '))
     $flagLink.addEventListener('click', confirmFlag)
   }
 
@@ -1005,7 +1047,7 @@ function itemListPage() {
       h('span', null,
         ' (',
         h('a', {
-            href: `/item?shownew&id=${id}`,
+            href: `item?shownew&id=${id}`,
             style: {fontWeight: 'bold'},
           },
           commentCount - lastVisit.commentCount,
@@ -1023,6 +1065,8 @@ function itemListPage() {
     log(`${noLastVisitCount} item${s(noLastVisitCount, " doesn't,s don't")} have a last visit stored`)
   }
 
+  configureCss()
+
   chrome.storage.onChanged.addListener((changes) => {
     if ('listPageFlagging' in changes) {
       config.listPageFlagging = changes['listPageFlagging'].newValue
@@ -1032,7 +1076,7 @@ function itemListPage() {
 }
 //#endregion
 
-//#region Feature: mute/unmute users and edit user notes on profile pages
+//#region Profile page features
 function userProfilePage() {
   log('user profile page')
 
@@ -1066,7 +1110,7 @@ function userProfilePage() {
         h('tr', null,
           h('td', {valign: 'top'}, first++ == 0 ? 'muted:' : ''),
           h('td', null,
-            h('a', {href: `/user?id=${mutedUserId}`}, mutedUserId),
+            h('a', {href: `user?id=${mutedUserId}`}, mutedUserId),
             h('a', {
                 href: '#',
                 onClick: function(e) {
@@ -1184,23 +1228,22 @@ function main() {
     document.documentElement.innerHTML = LOGGED_OUT_USER_PAGE
   }
 
+  // Add a 'muted' link next to 'login' for logged-out users
   let $loginLink = document.querySelector('span.pagetop a[href^="login"]')
   if ($loginLink) {
-    $loginLink.parentElement.append(' | ', h('a', {
-      href: `/muted`,
-    }, 'muted'))
+    $loginLink.parentElement.append(
+      h('a', {href: `muted`}, 'muted'),
+      ' | ',
+      $loginLink,
+    )
   }
 
-  if (config.addUpvotedToHeader) {
-    addUpvotedLinkToHeader()
-  }
-
-  improveMobileNav()
+  tweakNav()
 
   let path = location.pathname.slice(1)
 
-  if (/^($|active|ask|best($|\?)|flagged|front|invited|launches|news|newest|noobstories|pool|show|submitted|upvoted)/.test(path) ||
-      /^favorites/.test(path) && !path.includes('&comments=t')) {
+  if (/^($|active|ask|best($|\?)|flagged|front|hidden|invited|launches|news|newest|noobstories|pool|show|submitted|upvoted)/.test(path) ||
+      /^favorites/.test(path) && !location.search.includes('&comments=t')) {
     itemListPage()
   }
   else if (/^item/.test(path)) {

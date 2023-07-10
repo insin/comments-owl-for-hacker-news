@@ -6,8 +6,12 @@ let config = {
   addUpvotedToHeader: true,
   autoCollapseNotNew: true,
   autoHighlightNew: true,
+  hideCommentsNav: false,
+  hideJobsNav: false,
+  hidePastNav: false,
   hideReplyLinks: false,
-  listPageFlagging: 'enable',
+  hideSubmitNav: false,
+  listPageFlagging: 'enabled',
 }
 
 function createMenuItems() {

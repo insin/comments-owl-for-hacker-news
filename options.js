@@ -1,12 +1,30 @@
 document.title = chrome.i18n.getMessage('extensionName')
 
+for (let optionValue of [
+  'confirm',
+  'disabled',
+  'enabled',
+]) {
+  let label = chrome.i18n.getMessage(`option_${optionValue}`)
+  for (let $option of document.querySelectorAll(`option[value="${optionValue}"]`)) {
+    $option.textContent = label
+  }
+}
+
 for (let translationId of [
-  'itemPagesOptionsLabel',
-  'autoHighlightNewLabel',
-  'autoCollapseNotNewLabel',
-  'hideReplyLinksLabel',
-  'otherOptionsLabel',
-  'addUpvotedToHeaderLabel',
+  'addUpvotedToHeader',
+  'autoCollapseNotNew',
+  'autoHighlightNew',
+  'commentPagesOptions',
+  'hideCommentsNav',
+  'hideJobsNav',
+  'hidePastNav',
+  'hideReplyLinks',
+  'hideSubmitNav',
+  'listPageFlagging',
+  'listPageFlaggingInfo',
+  'listPagesOptions',
+  'navigationOptions',
 ]) {
   document.getElementById(translationId).textContent = chrome.i18n.getMessage(translationId)
 }
@@ -36,8 +54,12 @@ let defaultConfig = {
   addUpvotedToHeader: true,
   autoCollapseNotNew: true,
   autoHighlightNew: true,
+  hideCommentsNav: false,
+  hideJobsNav: false,
+  hidePastNav: false,
   hideReplyLinks: false,
-  listPageFlagging: 'enable',
+  hideSubmitNav: false,
+  listPageFlagging: 'enabled',
 }
 
 /** @type {import("./types").Config} */

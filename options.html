@@ -9,54 +9,82 @@
 <body>
   <form>
     <section class="group labelled">
-      <label id="listPagesOptionsLabel">
+      <label id="listPagesOptions">
         List pages
       </label>
       <section class="select">
         <label>
-          <span id="listPageFlaggingLabel">Flagging</span>
+          <span id="listPageFlagging">Flagging</span>
           <select name="listPageFlagging">
-            <option value="enable">Enable</option>
-            <option value="disable">Disable</option>
+            <option value="enabled">Enabled</option>
+            <option value="disabled">Disabled</option>
             <option value="confirm">Confirm</option>
           </select>
         </label>
-        <p>Prevent accidental flagging on mobile</p>
+        <p id="listPageFlaggingInfo">Prevent accidental flagging on mobile</p>
       </section>
     </section>
     <section class="group labelled">
-      <label id="itemPagesOptionsLabel">
-        Item pages
+      <label id="commentPagesOptions">
+        Comment pages
       </label>
       <section class="checkbox">
         <label>
-          <span id="autoHighlightNewLabel">Auto highlight new comments</span>
+          <span id="autoHighlightNew">Auto highlight new comments</span>
           <input type="checkbox" name="autoHighlightNew">
           <span class="toggle"></span>
         </label>
       </section>
       <section class="checkbox">
         <label>
-          <span id="autoCollapseNotNewLabel">Auto collapse threads without new comments</span>
+          <span id="autoCollapseNotNew">Auto collapse threads without new comments</span>
           <input type="checkbox" name="autoCollapseNotNew">
           <span class="toggle"></span>
         </label>
       </section>
       <section class="checkbox">
         <label>
-          <span id="hideReplyLinksLabel">Hide reply links under comments</span>
+          <span id="hideReplyLinks">Hide "reply" links under comments</span>
           <input type="checkbox" name="hideReplyLinks">
           <span class="toggle"></span>
         </label>
       </section>
     </section>
     <section class="group labelled">
-      <label id="otherOptionsLabel">
-        Other options
+      <label id="navigationOptions">
+        Navigation
       </label>
       <section class="checkbox">
         <label>
-          <span id="addUpvotedToHeaderLabel">Add "upvoted" to header</span>
+          <span id="hidePastNav">Hide "past"</span>
+          <input type="checkbox" name="hidePastNav">
+          <span class="toggle"></span>
+        </label>
+      </section>
+      <section class="checkbox">
+        <label>
+          <span id="hideCommentsNav">Hide "comments"</span>
+          <input type="checkbox" name="hideCommentsNav">
+          <span class="toggle"></span>
+        </label>
+      </section>
+      <section class="checkbox">
+        <label>
+          <span id="hideJobsNav">Hide "jobs"</span>
+          <input type="checkbox" name="hideJobsNav">
+          <span class="toggle"></span>
+        </label>
+      </section>
+      <section class="checkbox">
+        <label>
+          <span id="hideSubmitNav">Hide "submit"</span>
+          <input type="checkbox" name="hideSubmitNav">
+          <span class="toggle"></span>
+        </label>
+      </section>
+      <section class="checkbox">
+        <label>
+          <span id="addUpvotedToHeader">Add "upvoted"</span>
           <input type="checkbox" name="addUpvotedToHeader">
           <span class="toggle"></span>
         </label>

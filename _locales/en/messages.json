@@ -6,22 +6,52 @@
     "message": "Highlight new comments, manage users, and other tweaks for Hacker News",
     "description": "<= 112 characters"
   },
-  "itemPagesOptionsLabel": {
-    "message": "Item pages"
+  "addUpvotedToHeader": {
+    "message": "Add \"upvoted\" to header"
   },
-  "autoHighlightNewLabel": {
-    "message": "Auto highlight new comments"
-  },
-  "autoCollapseNotNewLabel": {
+  "autoCollapseNotNew": {
     "message": "Auto collapse threads without new comments"
   },
-  "hideReplyLinksLabel": {
-    "message": "Hide reply links under comments"
+  "autoHighlightNew": {
+    "message": "Auto highlight new comments"
   },
-  "otherOptionsLabel": {
-    "message": "Other options"
+  "commentPagesOptions": {
+    "message": "Comment pages"
   },
-  "addUpvotedToHeaderLabel": {
-    "message": "Add \"upvoted\" to header"
+  "hideCommentsNav": {
+    "message": "Hide \"comments\""
+  },
+  "hideJobsNav": {
+    "message": "Hide \"jobs\""
+  },
+  "hidePastNav": {
+    "message": "Hide \"past\""
+  },
+  "hideReplyLinks": {
+    "message": "Hide \"reply\" links under comments"
+  },
+  "hideSubmitNav": {
+    "message": "Hide \"submit\""
+  },
+  "listPageFlagging": {
+    "message": "Flagging"
+  },
+  "listPageFlaggingInfo": {
+    "message": "Prevent accidental flagging on mobile"
+  },
+  "listPagesOptions": {
+    "message": "List pages"
+  },
+  "navigationOptions": {
+    "message": "Navigation"
+  },
+  "option_confirm": {
+    "message": "Confirm"
+  },
+  "option_disabled": {
+    "message": "Disabled"
+  },
+  "option_enabled": {
+    "message": "Enabled"
   }
 }

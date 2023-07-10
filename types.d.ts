@@ -2,6 +2,10 @@ export type Config = {
   addUpvotedToHeader: boolean
   autoCollapseNotNew: boolean
   autoHighlightNew: boolean
+  hideCommentsNav: boolean
+  hideJobsNav: boolean
+  hidePastNav: boolean
   hideReplyLinks: boolean
-  listPageFlagging: 'enable' | 'disable' | 'confirm'
+  hideSubmitNav: boolean
+  listPageFlagging: 'enabled' | 'disabled' | 'confirm'
 }
