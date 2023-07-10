@@ -423,6 +423,17 @@ function commentPage() {
     td.votelinks.nosee + td .note {
       display: none;
     }
+    #timeTravel {
+      margin-top: 1em;
+      vertical-align: middle;
+    }
+    #timeTravelRange {
+      width: 100%;
+    }
+    #timeTravelButton {
+      margin-right: 1em;
+    }
+
     @media only screen and (min-width: 300px) and (max-width: 750px) {
       /* Allow comments to go full-width */
       .comment {
@@ -434,8 +445,16 @@ function commentPage() {
       }
       /* Increase hit-target */
       .toggle {
-        display: inline-block;
-        transform: scale(1.1,1.1);
+        font-size: 14px;
+      }
+      #highlightControls label {
+        display: block;
+      }
+      #highlightControls label + label {
+        margin-top: .5rem;
+      }
+      #timeTravelRange {
+        width: calc(100% - 32px);
       }
     }
   `)
@@ -637,7 +656,7 @@ function commentPage() {
       this.$comhead.append(...[
         // User note
         userNotes[this.user] && h('span', {className: 'note'},
-          ` | note: ${userNotes[this.user].split(/\r?\n/)[0]}`,
+          ` | nb: ${userNotes[this.user].split(/\r?\n/)[0]}`,
         ),
         // Mute control
         h('span', {className: 'mute'}, ' | ', h('a', {
@@ -740,7 +759,7 @@ function commentPage() {
         h('p', null,
           `${newCommentCount} new comment${s(newCommentCount)} since ${lastVisit.time.toLocaleString()}`
         ),
-        h('div', null,
+        h('div', {id: 'highlightControls'},
           checkbox({
             checked: autoHighlightNew,
             onclick: (e) => {
@@ -770,7 +789,7 @@ function commentPage() {
     let showNewCommentsAfter = Math.max(0, sortedCommentIds.length - 1)
     let howMany = sortedCommentIds.length - showNewCommentsAfter
 
-    function getButtonLabel() {
+    function getRangeDescription() {
       let fromWhen = commentsById[sortedCommentIds[showNewCommentsAfter]].when
       // Older comments display `on ${date}` instead of a relative time
       if (fromWhen.startsWith(' on')) {
@@ -779,23 +798,26 @@ function commentPage() {
       else {
         fromWhen = `from ${fromWhen}`
       }
-      return `highlight ${howMany} comment${s(howMany)} ${fromWhen}`
+      return `${howMany} ${fromWhen}`
     }
 
+    let $description = h('span', null, getRangeDescription())
+
     let $range = h('input', {
+      id: 'timeTravelRange',
       max: sortedCommentIds.length - 1,
       min: 1,
       oninput(e) {
         showNewCommentsAfter = Number(e.target.value)
         howMany = sortedCommentIds.length - showNewCommentsAfter
-        $button.value = getButtonLabel()
+        $description.textContent = getRangeDescription()
       },
-      style: {margin: 0, verticalAlign: 'middle'},
       type: 'range',
       value: sortedCommentIds.length - 1,
     })
 
     let $button = /** @type {HTMLInputElement} */ (h('input', {
+      id: 'timeTravelButton',
       onclick() {
         let referenceCommentId = sortedCommentIds[showNewCommentsAfter - 1]
         log(`manually highlighting ${howMany} comments since ${referenceCommentId}`)
@@ -804,12 +826,10 @@ function commentPage() {
         $timeTravelControl.remove()
       },
       type: 'button',
-      value: getButtonLabel(),
+      value: 'highlight comments',
     }))
 
-    let $timeTravelControl = h('div', {
-      style: {marginTop: '1em'},
-    }, $range, ' ', $button)
+    let $timeTravelControl = h('div', {id: 'timeTravel'}, h('div', null, $range), $button, $description)
 
     $container.appendChild($timeTravelControl)
   }
@@ -1099,7 +1119,7 @@ function userProfilePage() {
       $tbody.appendChild(
         h('tr', null,
           h('td', {valign: 'top'}, 'muted:'),
-          h('td', null, "you don't have any users muted")
+          h('td', null, 'No muted users.')
         )
       )
     }
