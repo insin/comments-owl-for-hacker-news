@@ -145,7 +145,7 @@ function setUserNotes(userNotes) {
  */
 function addStyle(role, ...css) {
   let $style = document.createElement('style')
-  $style.dataset.insertedBy = 'comments-owl-for-hn'
+  $style.dataset.insertedBy = 'comments-owl'
   $style.dataset.role = role
   if (css.length > 0) {
     $style.textContent = css.map(dedent).join('\n')
@@ -237,6 +237,12 @@ function log(...args) {
   }
 }
 
+function warn(...args) {
+  if (debug) {
+    console.log('❗', ...args)
+  }
+}
+
 /**
  * @param {number} count
  * @param {string} suffixes
@@ -276,7 +282,7 @@ function toggleVisibility($el, hidden) {
 function tweakNav() {
   let $pageTop = document.querySelector('span.pagetop')
   if (!$pageTop) {
-    log('pagetop not found')
+    warn('pagetop not found')
     return
   }
 
@@ -314,15 +320,13 @@ function tweakNav() {
     `)
   }
 
-  // Add /upvoted if we're not on it
+  // Add /upvoted if we're not on it and the user is logged in
   if (!location.pathname.startsWith('/upvoted')) {
     let $userLink = document.querySelector('span.pagetop a[href^="user?id"]')
     if ($userLink) {
       let $submit = $pageTop.querySelector('a[href="submit"]')
       $submit.insertAdjacentElement('afterend', h('a', {href: `upvoted?id=${$userLink.textContent}`}, 'upvoted'))
       $submit.insertAdjacentElement('afterend', h('span', {className: 'upvoted-sep'}, ' | '))
-    } else {
-      log('user link not found')
     }
   }
 
@@ -392,7 +396,7 @@ function tweakNav() {
 function commentPage() {
   log('comment page')
   addStyle('comments-static', `
-    /* Hide default toggle and nav links, we're probably breaking them by hiding comments ourselves */
+    /* Hide default toggle and nav links */
     a.togg {
       display: none;
     }
@@ -455,8 +459,12 @@ function commentPage() {
   function configureCss() {
     $style.textContent = [
       config.hideReplyLinks && `
-        div.reply { margin-top: 8px; }
-        div.reply p { display: none; }
+        div.reply {
+          margin-top: 8px;
+        }
+        div.reply p {
+          display: none;
+        }
       `
     ].filter(Boolean).map(dedent).join('\n')
   }
@@ -845,7 +853,7 @@ function commentPage() {
   function addPageControls() {
     let $container = /** @type {HTMLElement} */ (document.querySelector('td.subtext'))
     if (!$container) {
-      log('no container found for page controls')
+      warn('no container found for page controls')
       return
     }
 
@@ -945,7 +953,7 @@ function commentPage() {
   if ($commentsLink && /^\d+/.test($commentsLink.textContent)) {
     commentCount = Number($commentsLink.textContent.split(/\s/).shift())
   } else {
-    log('number of comments link not found')
+    warn('number of comments link not found')
   }
 
   configureCss()
@@ -1106,7 +1114,7 @@ function userProfilePage() {
 
   let $userLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a.hnuser'))
   if ($userLink == null) {
-    log('not a valid user')
+    warn('not a valid user')
     return
   }
 
