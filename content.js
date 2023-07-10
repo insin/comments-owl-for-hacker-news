@@ -407,14 +407,17 @@ function commentPage() {
       cursor: pointer;
       margin-right: 3px;
     }
-    /* Display the mute control on hover, unless the comment is being hidden */
+    /* Display the mute control on hover, unless the comment is collapsed */
     .mute {
       display: none;
     }
-    tr.comtr:hover td.votelinks:not(.nosee) + td .mute {
-      display: inline;
+    /* Prevent :hover causing double-tap on comment functionality in iOS Safari */
+    @media(hover: hover) and (pointer: fine) {
+      tr.comtr:hover td.votelinks:not(.nosee) + td .mute {
+        display: inline;
+      }
     }
-    /* Don't show notes on hidden comments */
+    /* Don't show notes on collapsed comments */
     td.votelinks.nosee + td .note {
       display: none;
     }
@@ -430,6 +433,9 @@ function commentPage() {
     }
 
     @media only screen and (min-width: 300px) and (max-width: 750px) {
+      td.votelinks:not(.nosee) + td .mute {
+        display: inline;
+      }
       /* Allow comments to go full-width */
       .comment {
         max-width: unset;
