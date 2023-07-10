@@ -829,8 +829,21 @@ function commentPage() {
       value: 'highlight comments',
     }))
 
-    let $timeTravelControl = h('div', {id: 'timeTravel'}, h('div', null, $range), $button, $description)
+    let $timeTravelControl = h('div', {
+      id: 'timeTravel',
+      style: {display: 'none'},
+    }, h('div', null, $range), $button, $description)
 
+    let $highlightComments = h('span', null, ' | ', h('a', {
+      href: '#',
+      onClick(e) {
+        e.preventDefault()
+        $timeTravelControl.style.display = 'initial'
+        $highlightComments.remove()
+      },
+    }, 'highlight comments'))
+
+    $container.querySelector('.subline')?.append($highlightComments)
     $container.appendChild($timeTravelControl)
   }
 
