@@ -448,7 +448,7 @@ function commentPage() {
       this.$topBar = $wrapper.querySelector('td.default > div')
 
       /** @type {HTMLElement} */
-      this.$vote = $wrapper.querySelector('td[valign="top"] > center')
+      this.$voteLinks = $wrapper.querySelector('td.votelinks')
 
       /** @type {HTMLElement} */
       this.$wrapper = $wrapper
@@ -548,8 +548,8 @@ function commentPage() {
     updateDisplay(updateChildren = true) {
       // Show/hide this comment, preserving display of the meta bar
       toggleDisplay(this.$comment, this.isCollapsed)
-      if (this.$vote) {
-        toggleVisibility(this.$vote, this.isCollapsed)
+      if (this.$voteLinks) {
+        toggleVisibility(this.$voteLinks, this.isCollapsed)
       }
       this.$toggleControl.textContent = this.isCollapsed ? TOGGLE_SHOW : TOGGLE_HIDE
 
