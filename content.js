@@ -10,6 +10,71 @@ let debug = false
 const HIGHLIGHT_COLOR = '#ffffde'
 const TOGGLE_HIDE = '[–]'
 const TOGGLE_SHOW = '[+]'
+const LOGGED_OUT_USER_PAGE = `<head>
+  <meta name="referrer" content="origin">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="news.css">
+  <link rel="shortcut icon" href="favicon.ico">
+  <title>Muted | Comments Owl for Hacker News</title>
+</head>
+<body>
+  <center>
+    <table id="hnmain" width="85%" cellspacing="0" cellpadding="0" border="0" bgcolor="#f6f6ef">
+      <tbody>
+        <tr>
+          <td bgcolor="#ff6600">
+            <table style="padding: 2px" width="100%" cellspacing="0" cellpadding="0" border="0">
+              <tbody>
+                <tr>
+                  <td style="width: 18px; padding-right: 4px">
+                    <a href="https://news.ycombinator.com">
+                      <img src="y18.svg" style="border: 1px white solid; display: block" width="18" height="18">
+                    </a>
+                  </td>
+                  <td style="line-height: 12pt; height: 10px">
+                    <span class="pagetop"><b class="hnname"><a href="news">Hacker News</a></b>
+                      <a href="newest">new</a> |
+                      <a href="threads?id=insin">threads</a> |
+                      <a href="front">past</a> |
+                      <a href="newcomments">comments</a> |
+                      <a href="ask">ask</a> |
+                      <a href="show">show</a> |
+                      <a href="jobs">jobs</a> |
+                      <a href="submit">submit</a>
+                    </span>
+                  </td>
+                  <td style="text-align: right; padding-right: 4px">
+                    <span class="pagetop">
+                      <a href="login?goto=news">login</a>
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </td>
+        </tr>
+        <tr id="pagespace" title="Muted" style="height: 10px"></tr>
+        <tr>
+          <td>
+            <form class="profileform" action="/xuser" method="post">
+              <table border="0">
+                <tbody>
+                  <tr class="athing">
+                    <td valign="top">user:</td>
+                    <td>
+                      <a class="hnuser">anonymous comments owl user</a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </form>
+            <br><br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </center>
+</body>`
 
 //#region Config
 /** @type {import("./types").Config} */
@@ -212,16 +277,14 @@ function toggleVisibility($el, hidden) {
 }
 //#endregion
 
-//#region Feature: add upvoted link to header
+//#region Feature: add upvoted link to header for logged-in users
 function addUpvotedLinkToHeader() {
   if (window.location.pathname == '/upvoted') return
 
   let $userLink = document.querySelector('span.pagetop a[href^="user?id"]')
   if (!$userLink) return
 
-  let $pageTop = document.querySelector('span.pagetop')
-  $pageTop.insertAdjacentText('beforeend', ' | ')
-  $pageTop.appendChild(h('a', {
+  document.querySelector('span.pagetop').append(' | ', h('a', {
     href: `/upvoted?id=${$userLink.textContent}`,
   }, 'upvoted'))
 }
@@ -987,7 +1050,16 @@ function userProfilePage() {
   let $tbody = $userLink.closest('table').querySelector('tbody')
   let editingNote = false
 
-  if (userId == currentUser) {
+  if (userId == currentUser || location.pathname.startsWith('/muted')) {
+    if (mutedUsers.size == 0) {
+      $tbody.appendChild(
+        h('tr', null,
+          h('td', {valign: 'top'}, 'muted:'),
+          h('td', null, "you don't have any users muted")
+        )
+      )
+    }
+
     let first = 0
     mutedUsers.forEach((mutedUserId) => {
       $tbody.appendChild(
@@ -1108,6 +1180,17 @@ function userProfilePage() {
 function main() {
   log('config', config)
 
+  if (location.pathname.startsWith('/muted')) {
+    document.documentElement.innerHTML = LOGGED_OUT_USER_PAGE
+  }
+
+  let $loginLink = document.querySelector('span.pagetop a[href^="login"]')
+  if ($loginLink) {
+    $loginLink.parentElement.append(' | ', h('a', {
+      href: `/muted`,
+    }, 'muted'))
+  }
+
   if (config.addUpvotedToHeader) {
     addUpvotedLinkToHeader()
   }
@@ -1123,7 +1206,7 @@ function main() {
   else if (/^item/.test(path)) {
     commentPage()
   }
-  else if (/^user/.test(path)) {
+  else if (/^(user|muted)/.test(path)) {
     userProfilePage()
   }
 }

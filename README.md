@@ -2,7 +2,7 @@
 
 ![](icons/thumbnail.gif)
 
-A browser extension which draws the rest of the friendly owl for Hacker News comment threads to make them actually followable over time, by automatically highlighting new comments, showing which items have new comments, muting and adding notes to users, and various other UX tweaks.
+A browser extension which draws the rest of the friendly owl for Hacker News comment threads to make them actually followable over time, by automatically highlighting new comments, showing which items have new comments, muting and adding notes to users, as well as various other UX tweaks for Hacker News.
 
 * [Install Chrome Extension](https://chrome.google.com/webstore/detail/hn-comments-owl/kpoggabejgbenjahggloahnnaolmfock)
 * [Install Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/hn-comments-owl/)
@@ -13,21 +13,22 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 ### List pages
 
 - Show new comment counts since you last viewed each item - clicking on the "X new" link will  highlight new comments and collapse comment trees which don't contain any new comments
-- Prevent accidental flagging by hiding the flag control or requiring confirmation
+- Prevent accidental flagging on mobile by hiding the flag control or requiring confirmation
 
 ### Item pages
 
-- Highlight new comments and collapse comment trees which don't contain any new comments when you revisit an item's comments
+- Highlight new comments and collapse comment trees which don't contain any new comments when you revisit an item's comments - you can configure whether or not this happens automatically when you revisit
 - Default comment folding controls are replaced with a Reddit-style left-aligned control, with a slightly larger hit target
-- Manually highlight the X most-recent comments when new comments can't automatically be highlighted
+- Manually highlight the X most-recent comments
 - Mute users to hide their comments and replies to them - muted users can be managed on your own profile page
+  - Logged out users get a new 'muted' link in the header they can use to manage their muted users
 - Add your own notes to other users on their profile page - the first line will be displayed next to their comments
 - Toggle display of "reply" links below comments to make more room for comments on the screen
 
 ### Other features
 
-- Add an "upvoted" link to the header to make it easier to get back to previously visited stories, using upvote as a bookmark
-- Improved navigation links on mobile, displayed below the other header contents
+- Add an "upvoted" link to the header to make it easier to get back to previously visited stories, like using upvoting as a bookmark
+- Move navigation links below other header contents on mobile
 - Increased distance between the upvote and downvote arrows on mobile
 
 ## Screenshots
