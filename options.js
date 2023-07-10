@@ -37,6 +37,7 @@ let defaultConfig = {
   autoCollapseNotNew: true,
   autoHighlightNew: true,
   hideReplyLinks: false,
+  listPageFlagging: 'enable',
 }
 
 /** @type {import("./types").Config} */

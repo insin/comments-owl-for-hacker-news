@@ -18,6 +18,7 @@ let config = {
   autoCollapseNotNew: true,
   autoHighlightNew: true,
   hideReplyLinks: false,
+  listPageFlagging: 'enable',
 }
 //#endregion
 
@@ -78,10 +79,16 @@ function setUserNotes(userNotes) {
 //#endregion
 
 //#region Utility functions
-function addStyle(css = '') {
+/**
+ * @param {string} role
+ * @param {...string} css
+ */
+function addStyle(role, ...css) {
   let $style = document.createElement('style')
-  if (css) {
-    $style.textContent = css
+  $style.dataset.insertedBy = 'comments-owl-for-hn'
+  $style.dataset.role = role
+  if (css.length > 0) {
+    $style.textContent = css.map(dedent).join('\n')
   }
   document.querySelector('head').appendChild($style)
   return $style
@@ -110,6 +117,17 @@ function checkbox(attributes, label) {
     ' ',
     label,
   )
+}
+
+/**
+ * @param {string} str
+ * @return {string}
+ */
+function dedent(str) {
+  str = str.replace(/^[ \t]*\r?\n/, '')
+  let indent = /^[ \t]+/m.exec(str)
+  if (indent) str = str.replace(new RegExp('^' + indent[0], 'gm'), '')
+  return str.replace(/(\r?\n)[ \t]+$/, '$1')
 }
 
 /**
@@ -211,7 +229,7 @@ function addUpvotedLinkToHeader() {
 
 //#region Feature: improved mobile navigation
 function improveMobileNav() {
-  addStyle(`
+  addStyle('mobile-nav', `
     .desktopnav {
       display: inline;
     }
@@ -277,8 +295,11 @@ function improveMobileNav() {
  */
 function commentPage() {
   log('comment page')
-  addStyle(`
+  addStyle('base', `
     .navs {
+      display: none;
+    }
+    a.togg {
       display: none;
     }
     .toggle {
@@ -301,6 +322,17 @@ function commentPage() {
       }
     }
   `)
+
+  let $style = addStyle('features')
+
+  function configureCss() {
+    $style.textContent = [
+      config.hideReplyLinks && `
+        div.reply { margin-top: 8px; }
+        div.reply p { display: none; }
+      `
+    ].filter(Boolean).map(dedent).join('\n')
+  }
 
   /** @type {boolean} */
   let autoHighlightNew = config.autoHighlightNew || location.search.includes('?shownew')
@@ -717,20 +749,6 @@ function commentPage() {
     comments.forEach(comment => comment._nonMutedChildComments = null)
   }
 
-  function hideBuiltInCommentFoldingControls() {
-    addStyle('a.togg { display: none; }')
-  }
-
-  let toggleHideReplyLinks = (function() {
-    let $style = addStyle()
-    return () => {
-      $style.textContent = config.hideReplyLinks ? `
-        div.reply { margin-top: 8px; }
-        div.reply p { display: none; }
-      ` : ''
-    }
-  })()
-
   /**
    * Highlights comments newer than the given comment id.
    * @param {boolean} highlight
@@ -789,8 +807,7 @@ function commentPage() {
     log('number of comments link not found')
   }
 
-  hideBuiltInCommentFoldingControls()
-  toggleHideReplyLinks()
+  configureCss()
   initComments()
   comments.filter(comment => comment.isCollapsed).forEach(comment => comment.updateDisplay(false))
   if (hasNewComments && autoHighlightNew) {
@@ -818,7 +835,7 @@ function commentPage() {
   chrome.storage.onChanged.addListener((changes) => {
     if ('hideReplyLinks' in changes) {
       config.hideReplyLinks = changes['hideReplyLinks'].newValue
-      toggleHideReplyLinks()
+      configureCss()
     }
   })
 }
@@ -855,6 +872,32 @@ function commentPage() {
  */
 function itemListPage() {
   log('item list page')
+  let $style = addStyle('features')
+
+  function configureCss() {
+    $style.textContent = [
+      // Hide flag links
+      config.listPageFlagging == 'disable' && `
+        a[href^="flag"], a[href^="flag"] + span {
+          display: none;
+        }
+      `
+    ].filter(Boolean).map(dedent).join('\n')
+  }
+
+  function confirmFlag(e) {
+    if (config.listPageFlagging != 'confirm') return
+    let title = e.target.closest('tbody').querySelector('.titleline a')?.textContent || 'this item'
+    if (!confirm(`Are you sure you want to flag ${title}?`)) {
+      e.preventDefault()
+    }
+  }
+
+  for (let $flagLink of document.querySelectorAll('span.subline > a[href^="flag"]')) {
+    // Wrap the '|' after flag links in an element so they can be hidden
+    $flagLink.nextSibling.replaceWith(h('span', null, ' | '))
+    $flagLink.addEventListener('click', confirmFlag)
+  }
 
   let commentLinks = /** @type {NodeListOf<HTMLAnchorElement>} */ (document.querySelectorAll('span.subline > a[href^="item?id="]:last-child'))
   log('number of comments/discuss links', commentLinks.length)
@@ -904,6 +947,13 @@ function itemListPage() {
   if (noLastVisitCount > 0) {
     log(`${noLastVisitCount} item${s(noLastVisitCount, " doesn't,s don't")} have a last visit stored`)
   }
+
+  chrome.storage.onChanged.addListener((changes) => {
+    if ('listPageFlagging' in changes) {
+      config.listPageFlagging = changes['listPageFlagging'].newValue
+      configureCss()
+    }
+  })
 }
 //#endregion
 
@@ -1054,7 +1104,7 @@ function main() {
 
   let path = location.pathname.slice(1)
 
-  if (/^($|active|ask|best|front|news|newest|noobstories|show|submitted|upvoted)/.test(path)) {
+  if (/^($|active|ask|best|flagged|front|news|newest|noobstories|show|submitted|upvoted)/.test(path)) {
     itemListPage()
   }
   else if (/^item/.test(path)) {

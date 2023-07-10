@@ -4,8 +4,10 @@ const ITEM_URL_PATTERN = 'https://news.ycombinator.com/item*'
 /** @type {import("./types").Config} */
 let config = {
   addUpvotedToHeader: true,
+  autoCollapseNotNew: true,
   autoHighlightNew: true,
   hideReplyLinks: false,
+  listPageFlagging: 'enable',
 }
 
 function createMenuItems() {

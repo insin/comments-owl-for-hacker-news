@@ -3,4 +3,5 @@ export type Config = {
   autoCollapseNotNew: boolean
   autoHighlightNew: boolean
   hideReplyLinks: boolean
+  listPageFlagging: 'enable' | 'disable' | 'confirm'
 }

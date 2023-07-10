@@ -2,7 +2,7 @@
 
 ![](icons/thumbnail.gif)
 
-A browser extension which draws the rest of the friendly owl for Hacker News comment threads to make them actually followable over time, by automatically highlighting new comments, showing which items have new comments, muting users, and various other UX tweaks.
+A browser extension which draws the rest of the friendly owl for Hacker News comment threads to make them actually followable over time, by automatically highlighting new comments, showing which items have new comments, muting and adding notes to users, and various other UX tweaks.
 
 * [Install Chrome Extension](https://chrome.google.com/webstore/detail/hn-comments-owl/kpoggabejgbenjahggloahnnaolmfock)
 * [Install Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/hn-comments-owl/)
@@ -10,16 +10,24 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 
 ## Features
 
-- Show new comment counts since your last visit on item list pages
+### List pages
+
+- Show new comment counts since you last viewed each item - clicking on the "X new" link will  highlight new comments and collapse comment trees which don't contain any new comments
+- Prevent accidental flagging by hiding the flag control or requiring confirmation
+
+### Item pages
+
 - Highlight new comments and collapse comment trees which don't contain any new comments when you revisit an item's comments
-- Manual highlighting of recent comments when new comments can't automatically be highlighted
-- User muting: mute a user to hide their comments and replies to them; manage muted users on your own profile page
+- Default comment folding controls are replaced with a Reddit-style left-aligned control, with a slightly larger hit target
+- Manually highlight the X most-recent comments when new comments can't automatically be highlighted
+- Mute users to hide their comments and replies to them - muted users can be managed on your own profile page
+- Add your own notes to other users on their profile page - the first line will be displayed next to their comments
+- Toggle display of "reply" links below comments to make more room for comments on the screen
 
-## Other Tweaks
+### Other features
 
-- Add an "upvoted" link to the header to make it easier to get back to previously visited stories, using upvote as a bookmark (default: on)
-- Toggle display of "reply" links below comments to make more room for comments on the screen (default: off)
-- Replaces built-in comment folding controls with a Reddit-style left-aligned control, with a slightly larger hit target for folding
+- Add an "upvoted" link to the header to make it easier to get back to previously visited stories, using upvote as a bookmark
+- Improved navigation links on mobile, displayed below the other header contents
 
 ## Screenshots
 
