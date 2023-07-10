@@ -7,7 +7,7 @@
     "description": "<= 112 characters"
   },
   "addUpvotedToHeader": {
-    "message": "Add \"upvoted\" to header"
+    "message": "Add \"upvoted\""
   },
   "autoCollapseNotNew": {
     "message": "Auto collapse threads without new comments"
