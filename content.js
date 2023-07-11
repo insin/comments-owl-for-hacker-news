@@ -6,6 +6,7 @@
 // @version     42
 // ==/UserScript==
 let debug = false
+let isSafari = navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test(navigator.userAgent)
 
 const HIGHLIGHT_COLOR = '#ffffde'
 const TOGGLE_HIDE = '[–]'
@@ -706,16 +707,24 @@ function commentPage() {
       }
       toggleDisplay(this.$collapsedChildCount, !this.isCollapsed)
 
-      // Completely show/hide any child comments
+      // Show/hide child comments which aren't already hidden due to other child
+      // comments being collapsed or muted.
       if (updateChildren) {
-        this.childComments.forEach((child) => {
+        for (let i = 0; i < this.childComments.length; i++) {
+          let child = this.childComments[i]
           if (!child.isMuted) {
             toggleDisplay(child.$wrapper, this.isCollapsed)
           }
-        })
+          if (child.isMuted || child.isCollapsed) {
+            i += child.childComments.length
+          }
+        }
       }
     }
 
+    /**
+     * Completely hides this comment and all its children.
+     */
     hide() {
       toggleDisplay(this.$wrapper, true)
       this.childComments.forEach((child) => toggleDisplay(child.$wrapper, true))
@@ -965,7 +974,7 @@ function commentPage() {
   configureCss()
   initComments()
   comments.filter(comment => comment.isCollapsed).forEach(comment => comment.updateDisplay(false))
-  if (hasNewComments && autoHighlightNew) {
+  if (hasNewComments && (autoHighlightNew || autoCollapseNotNew)) {
     if (autoHighlightNew) {
       highlightNewComments(true, lastVisit.maxCommentId)
     }
@@ -1264,10 +1273,9 @@ function main() {
 
   if (location.pathname.startsWith('/login')) {
     log('login screen')
-    let isSafari = navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test(navigator.userAgent)
     if (isSafari) {
       log('trying to prevent Safari zooming in on the autofocused input')
-      addStyle('login', `input[type="text"], input[type="password"] { font-size: 16px; }`)
+      addStyle('login-safari', `input[type="text"], input[type="password"] { font-size: 16px; }`)
       setTimeout(() => {
         document.querySelector('input[type="password"]').focus()
         document.querySelector('input[type="text"]').focus()
@@ -1278,6 +1286,10 @@ function main() {
 
   if (location.pathname.startsWith('/muted')) {
     document.documentElement.innerHTML = LOGGED_OUT_USER_PAGE
+    // Safari on macOS has a default dark background in dark mode
+    if (isSafari) {
+      addStyle('muted-safari', 'html { background-color: #fff; }')
+    }
   }
 
   // Add a 'muted' link next to 'login' for logged-out users
