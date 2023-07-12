@@ -696,16 +696,18 @@ function commentPage() {
       this.$toggleControl.textContent = this.isCollapsed ? TOGGLE_SHOW : TOGGLE_HIDE
 
       // Show/hide the number of child comments when collapsed
-      if (this.isCollapsed && this.$collapsedChildCount == null) {
-        let collapsedCommentCount = [
-          this.isDeleted ? '(' : ' | (',
-          this.childCommentCount,
-          ` child${s(this.childCommentCount, 'ren')})`,
-        ].join('')
-        this.$collapsedChildCount = h('span', null, collapsedCommentCount)
-        this.$comhead.appendChild(this.$collapsedChildCount)
+      if (this.childCommentCount > 0) {
+        if (this.isCollapsed && this.$collapsedChildCount == null) {
+          let collapsedCommentCount = [
+            this.isDeleted ? '(' : ' | (',
+            this.childCommentCount,
+            ` child${s(this.childCommentCount, 'ren')})`,
+          ].join('')
+          this.$collapsedChildCount = h('span', null, collapsedCommentCount)
+          this.$comhead.appendChild(this.$collapsedChildCount)
+        }
+        toggleDisplay(this.$collapsedChildCount, !this.isCollapsed)
       }
-      toggleDisplay(this.$collapsedChildCount, !this.isCollapsed)
 
       // Show/hide child comments which aren't already hidden due to other child
       // comments being collapsed or muted.
