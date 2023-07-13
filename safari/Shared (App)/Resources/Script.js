@@ -2,10 +2,10 @@ function show(platform, enabled, useSettingsInsteadOfPreferences) {
     document.body.classList.add(`platform-${platform}`);
 
     if (useSettingsInsteadOfPreferences) {
-        document.getElementsByClassName('platform-mac state-on')[0].innerText = "Comments Owl for Hacker News’s extension is currently on. You can turn it off in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('platform-mac state-off')[0].innerText = "Comments Owl for Hacker News’s extension is currently off. You can turn it on in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('platform-mac state-unknown')[0].innerText = "You can turn on Comments Owl for Hacker News’s extension in the Extensions section of Safari Settings.";
-        document.getElementsByClassName('platform-mac open-preferences')[0].innerText = "Quit and Open Safari Settings…";
+        document.querySelector('.platform-mac.state-on').innerText = "Comments Owl for Hacker News’ extension is currently on. You can turn it off in the Extensions section of Safari Settings.";
+        document.querySelector('.platform-mac.state-off').innerText = "Comments Owl for Hacker News’ extension is currently off. You can turn it on in the Extensions section of Safari Settings.";
+        document.querySelector('.platform-mac.state-unknown').innerText = "You can turn on Comments Owl for Hacker News’ extension in the Extensions section of Safari Settings.";
+        document.querySelector('.open-preferences').innerText = "Quit and Open Safari Settings…";
     }
 
     if (typeof enabled === "boolean") {
@@ -14,6 +14,10 @@ function show(platform, enabled, useSettingsInsteadOfPreferences) {
     } else {
         document.body.classList.remove(`state-on`);
         document.body.classList.remove(`state-off`);
+    }
+
+    if (platform === 'ios') {
+        document.querySelector('.open-preferences').innerText = "Open Safari Extensions Preferences…";
     }
 }
 
