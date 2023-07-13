@@ -3,7 +3,7 @@
     "message": "Comments Owl for Hacker News"
   },
   "extensionDescription": {
-    "message": "Highlight new comments, manage users, and other tweaks for Hacker News",
+    "message": "Highlight new comments, mute users, and other tweaks for Hacker News",
     "description": "<= 112 characters"
   },
   "addUpvotedToHeader": {
