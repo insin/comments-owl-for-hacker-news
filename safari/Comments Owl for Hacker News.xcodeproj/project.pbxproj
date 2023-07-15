@@ -67,6 +67,8 @@
 		FB6A6D922A59ABA800636A10 /* toolbar-icon32.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D872A59ABA800636A10 /* toolbar-icon32.png */; };
 		FB6A6D932A59ABA800636A10 /* toolbar-icon38.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D882A59ABA800636A10 /* toolbar-icon38.png */; };
 		FB6A6D942A59ABA800636A10 /* toolbar-icon38.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D882A59ABA800636A10 /* toolbar-icon38.png */; };
+		FB6A6D9B2A60DCAA00636A10 /* Ad.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D982A60DC2200636A10 /* Ad.png */; };
+		FB6A6D9C2A60DCAB00636A10 /* Ad.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D982A60DC2200636A10 /* Ad.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -153,6 +155,7 @@
 		FB6A6D862A59ABA800636A10 /* toolbar-icon16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-icon16.png"; path = "../../../icons/toolbar-icon16.png"; sourceTree = "<group>"; };
 		FB6A6D872A59ABA800636A10 /* toolbar-icon32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-icon32.png"; path = "../../../icons/toolbar-icon32.png"; sourceTree = "<group>"; };
 		FB6A6D882A59ABA800636A10 /* toolbar-icon38.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-icon38.png"; path = "../../../icons/toolbar-icon38.png"; sourceTree = "<group>"; };
+		FB6A6D982A60DC2200636A10 /* Ad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Ad.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -213,6 +216,7 @@
 		FB6A6CD62A595D2500636A10 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				FB6A6D982A60DC2200636A10 /* Ad.png */,
 				FB6A6CD72A595D2500636A10 /* Main.html */,
 				FB6A6CD92A595D2500636A10 /* Icon.png */,
 				FB6A6CDA2A595D2500636A10 /* Style.css */,
@@ -437,6 +441,7 @@
 				FB6A6D222A595D2600636A10 /* Script.js in Resources */,
 				FB6A6D262A595D2600636A10 /* Assets.xcassets in Resources */,
 				FB6A6CF92A595D2600636A10 /* Main.storyboard in Resources */,
+				FB6A6D9C2A60DCAB00636A10 /* Ad.png in Resources */,
 				FB6A6D202A595D2600636A10 /* Style.css in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -449,6 +454,7 @@
 				FB6A6D212A595D2600636A10 /* Style.css in Resources */,
 				FB6A6D052A595D2600636A10 /* Main.storyboard in Resources */,
 				FB6A6D232A595D2600636A10 /* Script.js in Resources */,
+				FB6A6D9B2A60DCAA00636A10 /* Ad.png in Resources */,
 				FB6A6D272A595D2600636A10 /* Assets.xcassets in Resources */,
 				FB6A6D1D2A595D2600636A10 /* Main.html in Resources */,
 			);
