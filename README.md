@@ -1,8 +1,12 @@
 # Comments Owl for Hacker News
 
+_1. Draw some circles_
+
 ![](promo/draw-the-rest-of-the-owl.gif)
 
-A browser extension which draws the rest of the friendly owl for Hacker News comment threads to make them actually followable over time, by automatically highlighting new comments, showing which items have new comments, muting and adding notes to users, as well as various other UX tweaks for Hacker News.
+_2. Draw the rest of the friendly owl_
+
+Browser extension which makes it easer to follow comment threads on [Hacker News ](https://news.ycombinator.com) across multiple visits, showing which items have new comments, highlighting new comments and collapsing threads without new comments. It also adds the ability to annotate and mute other users, plus other UI and UX tweaks.
 
 * [Install Chrome Extension](https://chrome.google.com/webstore/detail/hn-comments-owl/kpoggabejgbenjahggloahnnaolmfock)
 * [Install Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/hn-comments-owl/)
@@ -15,7 +19,7 @@ A browser extension which draws the rest of the friendly owl for Hacker News com
 - Show new comment counts since you last viewed each item - clicking on the "X new" link will  highlight new comments and collapse comment trees which don't contain any new comments
 - Prevent accidental flagging on mobile by hiding the flag control or requiring confirmation
 
-### Comment pages
+### Item pages
 
 - Highlight new comments and collapse comment trees which don't contain any new comments when you revisit an item's comments - you can configure whether or not this happens automatically when you revisit
 - Default comment folding controls are replaced with a Reddit-style left-aligned control, with a slightly larger hit target
