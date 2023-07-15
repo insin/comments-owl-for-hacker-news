@@ -46,19 +46,23 @@ Browser extension which makes it easer to follow comment threads on [Hacker News
 
 ![](screenshots/auto_highlight_new.png)
 
-### Mid-thread view of new comment highlighting & collapsing
-
-![](screenshots/new_comment_highlighting.png)
-
 ### Manual highlighting of recent comments
 
 ![](screenshots/highlight_past_comments.png)
 
-### User muting
+### User muting and notes
 
-| Mute users by hovering over a comment | Mute/unmute users via their profile page | Manage muted users on your own profile page |
-|:-------:|:------:|:------:|
-| ![](screenshots/mute_user_comment.png) | ![](screenshots/mute_user_profile.png) | ![](screenshots/muted_users.png) |
+#### Mute users by hovering over a comment
+
+![](screenshots/mute_user_comment.png)
+
+#### Mute/unmute users and edit notes via their profile page
+
+![](screenshots/mute_user_profile.png)
+
+#### Manage muted users on your own profile page
+
+![](screenshots/muted_users.png)
 
 ## Icon Attribution
 
