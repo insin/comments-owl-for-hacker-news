@@ -1,6 +1,7 @@
 {
   "scripts": {
     "create-browser-action": "node ./scripts/create-browser-action.js",
+    "release": "node ./scripts/release.js",
     "prebuild": "npm run create-browser-action",
     "build": "web-ext build",
     "lint": "web-ext lint",
@@ -38,6 +39,7 @@
   "devDependencies": {
     "@types/chrome": "0.0.x",
     "@types/greasemonkey": "4.x",
+    "semver": "7.x",
     "web-ext": "7.x"
   }
 }
