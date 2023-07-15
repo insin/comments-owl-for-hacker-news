@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name        Comments Owl for Hacker News
 // @description Highlight new comments, mute users, and other tweaks for Hacker News
-// @namespace   https://github.com/insin/hn-comments-owl/
+// @namespace   https://github.com/insin/comments-owl-for-hacker-news/
 // @match       https://news.ycombinator.com/*
-// @version     42
+// @version     43
 // ==/UserScript==
 let debug = false
 let isSafari = navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test(navigator.userAgent)

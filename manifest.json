@@ -3,8 +3,8 @@
   "default_locale": "en",
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "homepage_url": "https://github.com/insin/hn-comments-owl",
-  "version": "1.6",
+  "homepage_url": "https://github.com/insin/comments-owl-for-hacker-news/",
+  "version": "2.0.0",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
