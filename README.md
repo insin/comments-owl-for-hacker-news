@@ -1,6 +1,6 @@
 # Comments Owl for Hacker News
 
-![](icons/thumbnail.gif)
+![](promo/draw-the-rest-of-the-owl.gif)
 
 A browser extension which draws the rest of the friendly owl for Hacker News comment threads to make them actually followable over time, by automatically highlighting new comments, showing which items have new comments, muting and adding notes to users, as well as various other UX tweaks for Hacker News.
 

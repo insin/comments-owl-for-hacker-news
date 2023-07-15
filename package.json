@@ -28,6 +28,7 @@
       "icons/toolbar-*.png",
       "jsconfig.json",
       "package.json",
+      "promo/",
       "safari/",
       "screenshots/",
       "scripts/",
