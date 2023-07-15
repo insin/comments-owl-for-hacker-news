@@ -23,7 +23,7 @@ Browser extension which makes it easer to follow comment threads on [Hacker News
 
 - Highlight new comments and collapse comment trees which don't contain any new comments when you revisit an item's comments - you can configure whether or not this happens automatically when you revisit
 - Default comment folding controls are replaced with a Reddit-style left-aligned control, with a slightly larger hit target
-- Manually highlight the X most-recent comments
+- Manually highlight the X most-recent comments using the new "highlight comments" link on an item
 - Mute users to hide their comments and replies to them - muted users can be managed on your own profile page
   - Logged out users get a new 'muted' link in the header they can use to manage their muted users
 - Add your own notes to other users on their profile page - the first line will be displayed next to their comments
