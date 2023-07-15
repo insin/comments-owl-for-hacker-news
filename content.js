@@ -1133,10 +1133,12 @@ function itemListPage() {
   //#endregion
 
   //#region Main
-  for (let $flagLink of document.querySelectorAll('span.subline > a[href^="flag"]')) {
-    // Wrap the '|' before flag links in an element so they can be hidden
-    $flagLink.previousSibling.replaceWith(h('span', {className: 'flag-sep'}, ' | '))
-    $flagLink.addEventListener('click', confirmFlag)
+  if (location.pathname != '/flagged') {
+    for (let $flagLink of document.querySelectorAll('span.subline > a[href^="flag"]')) {
+      // Wrap the '|' before flag links in an element so they can be hidden
+      $flagLink.previousSibling.replaceWith(h('span', {className: 'flag-sep'}, ' | '))
+      $flagLink.addEventListener('click', confirmFlag)
+    }
   }
 
   let commentLinks = /** @type {NodeListOf<HTMLAnchorElement>} */ (document.querySelectorAll('span.subline > a[href^="item?id="]:last-child'))
