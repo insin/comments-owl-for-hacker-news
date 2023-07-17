@@ -11,6 +11,8 @@ let isSafari = navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test
 const HIGHLIGHT_COLOR = '#ffffde'
 const TOGGLE_HIDE = '[–]'
 const TOGGLE_SHOW = '[+]'
+const MUTED_USERS_KEY = 'mutedUsers'
+const USER_NOTES_KEY = 'userNotes'
 const LOGGED_OUT_USER_PAGE = `<head>
   <meta name="referrer" content="origin">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -123,21 +125,21 @@ function storeVisit(itemId, visit) {
 }
 
 /** @returns {Set<string>} */
-function getMutedUsers() {
-  return new Set(JSON.parse(localStorage.mutedUsers || '[]'))
+function getMutedUsers(json = localStorage[MUTED_USERS_KEY]) {
+  return new Set(JSON.parse(json || '[]'))
 }
 
 /** @returns {Record<string, string>} */
-function getUserNotes() {
-  return JSON.parse(localStorage.userNotes || '{}')
+function getUserNotes(json = localStorage[USER_NOTES_KEY]) {
+  return JSON.parse(json || '{}')
 }
 
 function storeMutedUsers(mutedUsers) {
-  localStorage.mutedUsers = JSON.stringify(Array.from(mutedUsers))
+  localStorage[MUTED_USERS_KEY] = JSON.stringify(Array.from(mutedUsers))
 }
 
 function storeUserNotes(userNotes) {
-  localStorage.userNotes = JSON.stringify(userNotes)
+  localStorage[USER_NOTES_KEY] = JSON.stringify(userNotes)
 }
 //#endregion
 
@@ -1220,23 +1222,25 @@ function userProfilePage() {
   let currentUser = $currentUserLink?.innerText ?? ''
   let mutedUsers = getMutedUsers()
   let userNotes = getUserNotes()
-  let $tbody = $userLink.closest('table').querySelector('tbody')
+  let $table = $userLink.closest('table')
 
   if (userId == currentUser || location.pathname.startsWith('/muted')) {
     //#region Logged-in user's profile
-    if (mutedUsers.size == 0) {
-      $tbody.appendChild(
-        h('tr', null,
-          h('td', {valign: 'top'}, 'muted:'),
-          h('td', null, 'No muted users.')
-        )
-      )
-    }
+    let $mutedUsers = createMutedUsers()
 
-    let first = 0
-    mutedUsers.forEach((mutedUserId) => {
-      $tbody.appendChild(
-        h('tr', null,
+    function createMutedUsers() {
+      if (mutedUsers.size == 0) {
+        return h('tbody', null,
+          h('tr', null,
+            h('td', {valign: 'top'}, 'muted:'),
+            h('td', null, 'No muted users.')
+          )
+        )
+      }
+
+      let first = 0
+      return h('tbody', null,
+        ...Array.from(mutedUsers).map((mutedUserId) => h('tr', null,
           h('td', {valign: 'top'}, first++ == 0 ? 'muted:' : ''),
           h('td', null,
             h('a', {href: `user?id=${mutedUserId}`}, mutedUserId),
@@ -1244,25 +1248,43 @@ function userProfilePage() {
                 href: '#',
                 onClick: function(e) {
                   e.preventDefault()
-                  if (mutedUsers.has(mutedUserId)) {
-                    mutedUsers = getMutedUsers()
-                    mutedUsers.delete(mutedUserId)
-                    this.firstElementChild.innerText = 'mute'
-                  }
-                  else {
-                    mutedUsers = getMutedUsers()
-                    mutedUsers.add(mutedUserId)
-                    this.firstElementChild.innerText = 'unmute'
-                  }
+                  mutedUsers = getMutedUsers()
+                  mutedUsers.delete(mutedUserId)
                   storeMutedUsers(mutedUsers)
+                  replaceMutedUsers()
                 }
               },
               ' (', h('u', null, 'unmute'), ')'
             ),
             userNotes[mutedUserId] ? ` - ${userNotes[mutedUserId].split(/\r?\n/)[0]}` : null,
-          )
-        )
+          ),
+        ))
       )
+    }
+
+    function replaceMutedUsers() {
+      let $newMutedUsers = createMutedUsers()
+      $mutedUsers.replaceWith($newMutedUsers)
+      $mutedUsers = $newMutedUsers
+    }
+
+    $table.append($mutedUsers)
+
+    window.addEventListener('storage', (e) => {
+      if (e.storageArea !== localStorage ||
+          e.newValue == null ||
+          e.key != MUTED_USERS_KEY && e.key != USER_NOTES_KEY) {
+        return
+      }
+
+      if (e.key == MUTED_USERS_KEY) {
+        mutedUsers = getMutedUsers(e.newValue)
+      }
+      else if (e.key == USER_NOTES_KEY) {
+        userNotes = getUserNotes(e.newValue)
+      }
+
+      replaceMutedUsers()
     })
     //#endregion
   }
@@ -1299,6 +1321,35 @@ function userProfilePage() {
       }
     `)
 
+    function getMutedStatusText() {
+      return mutedUsers.has(userId) ? 'unmute' : 'mute'
+    }
+
+    function getUserNote() {
+      return userNotes[userId] || ''
+    }
+
+    function userHasNote() {
+      return userNotes.hasOwnProperty(userId)
+    }
+
+    function saveNotes() {
+      userNotes = getUserNotes()
+      let note = $textArea.value.trim()
+
+      // Don't save initial blanks or duplicates
+      if (userNotes[userId] == note || note == '' && !userHasNote()) return
+
+      userNotes[userId] = $textArea.value.trim()
+      storeUserNotes(userNotes)
+
+      if ($saved.classList.contains('show')) {
+        $saved.classList.remove('show')
+        $saved.offsetHeight
+      }
+      $saved.classList.add('show')
+    }
+
     let $textArea = /** @type {HTMLTextAreaElement} */ (h('textarea', {
       cols: 60,
       value: userNotes[userId] || '',
@@ -1319,26 +1370,10 @@ function userProfilePage() {
       }
     }))
 
+    let $muted = h('u', null, getMutedStatusText())
     let $saved = h('span', {className: 'saved'}, 'saved')
 
-    function saveNotes() {
-      let userNotes = getUserNotes()
-      let note = $textArea.value.trim()
-
-      // Don't save initial blanks or duplicates
-      if (userNotes[userId] == note || note == '' && !userNotes.hasOwnProperty(userId)) return
-
-      userNotes[userId] = $textArea.value.trim()
-      storeUserNotes(userNotes)
-
-      if ($saved.classList.contains('show')) {
-        $saved.classList.remove('show')
-        $saved.offsetHeight
-      }
-      $saved.classList.add('show')
-    }
-
-    $tbody.append(
+    $table.querySelector('tbody').append(
       h('tr', null,
         h('td'),
         h('td', null,
@@ -1359,7 +1394,7 @@ function userProfilePage() {
                 storeMutedUsers(mutedUsers)
               }
             },
-            h('u', null, mutedUsers.has(userId) ? 'unmute' : 'mute')
+            $muted
           )
         )
       ),
@@ -1370,6 +1405,23 @@ function userProfilePage() {
     )
 
     autosizeTextArea($textArea)
+
+    window.addEventListener('storage', (e) => {
+      if (e.storageArea !== localStorage || e.newValue == null) return
+
+      if (e.key == MUTED_USERS_KEY) {
+        mutedUsers = getMutedUsers(e.newValue)
+        if ($muted.textContent != getMutedStatusText()) {
+          $muted.textContent = getMutedStatusText()
+        }
+      }
+      else if (e.key == USER_NOTES_KEY) {
+        userNotes = getUserNotes(e.newValue)
+        if (userHasNote() && $textArea.value.trim() != getUserNote()) {
+          $textArea.value = getUserNote()
+        }
+      }
+    })
     //#endregion
   }
 }
