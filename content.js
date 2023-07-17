@@ -122,19 +122,21 @@ function storeVisit(itemId, visit) {
   localStorage.setItem(itemId, JSON.stringify(visit))
 }
 
+/** @returns {Set<string>} */
 function getMutedUsers() {
   return new Set(JSON.parse(localStorage.mutedUsers || '[]'))
 }
 
+/** @returns {Record<string, string>} */
 function getUserNotes() {
   return JSON.parse(localStorage.userNotes || '{}')
 }
 
-function setMutedUsers(mutedUsers) {
+function storeMutedUsers(mutedUsers) {
   localStorage.mutedUsers = JSON.stringify(Array.from(mutedUsers))
 }
 
-function setUserNotes(userNotes) {
+function storeUserNotes(userNotes) {
   localStorage.userNotes = JSON.stringify(userNotes)
 }
 //#endregion
@@ -701,8 +703,9 @@ function commentPage() {
     }
 
     mute() {
+      mutedUsers = getMutedUsers()
       mutedUsers.add(this.user)
-      setMutedUsers(mutedUsers)
+      storeMutedUsers(mutedUsers)
 
       // Invalidate non-muted child caches and update child counts on any
       // comments which have been collapsed.
@@ -1218,9 +1221,9 @@ function userProfilePage() {
   let mutedUsers = getMutedUsers()
   let userNotes = getUserNotes()
   let $tbody = $userLink.closest('table').querySelector('tbody')
-  let editingNote = false
 
   if (userId == currentUser || location.pathname.startsWith('/muted')) {
+    //#region Logged-in user's profile
     if (mutedUsers.size == 0) {
       $tbody.appendChild(
         h('tr', null,
@@ -1242,14 +1245,16 @@ function userProfilePage() {
                 onClick: function(e) {
                   e.preventDefault()
                   if (mutedUsers.has(mutedUserId)) {
+                    mutedUsers = getMutedUsers()
                     mutedUsers.delete(mutedUserId)
                     this.firstElementChild.innerText = 'mute'
                   }
                   else {
+                    mutedUsers = getMutedUsers()
                     mutedUsers.add(mutedUserId)
                     this.firstElementChild.innerText = 'unmute'
                   }
-                  setMutedUsers(mutedUsers)
+                  storeMutedUsers(mutedUsers)
                 }
               },
               ' (', h('u', null, 'unmute'), ')'
@@ -1259,8 +1264,80 @@ function userProfilePage() {
         )
       )
     })
+    //#endregion
   }
   else {
+    //#region Other user profile
+    addStyle('profile-static', `
+      .saved {
+        color: #000;
+        opacity: 0;
+      }
+      .saved.show {
+        animation: flash 2s forwards;
+      }
+      @keyframes flash {
+        from {
+          opacity: 0;
+        }
+        15% {
+          opacity: 1;
+          animation-timing-function: ease-in;
+        }
+        75% {
+          opacity: 1;
+        }
+        to {
+          opacity: 0;
+          animation-timing-function: ease-out;
+        }
+      }
+      .notes {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+    `)
+
+    let $textArea = /** @type {HTMLTextAreaElement} */ (h('textarea', {
+      cols: 60,
+      value: userNotes[userId] || '',
+      className: 'notes',
+      style: {resize: 'none'},
+      onInput() {
+        autosizeTextArea(this)
+      },
+      onKeydown(e) {
+        // Save on Use Ctrl+Enter / Cmd+Return
+        if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
+          e.preventDefault()
+          saveNotes()
+        }
+      },
+      onBlur() {
+        saveNotes()
+      }
+    }))
+
+    let $saved = h('span', {className: 'saved'}, 'saved')
+
+    function saveNotes() {
+      let userNotes = getUserNotes()
+      let note = $textArea.value.trim()
+
+      // Don't save initial blanks or duplicates
+      if (userNotes[userId] == note || note == '' && !userNotes.hasOwnProperty(userId)) return
+
+      userNotes[userId] = $textArea.value.trim()
+      storeUserNotes(userNotes)
+
+      if ($saved.classList.contains('show')) {
+        $saved.classList.remove('show')
+        $saved.offsetHeight
+      }
+      $saved.classList.add('show')
+    }
+
     $tbody.append(
       h('tr', null,
         h('td'),
@@ -1270,14 +1347,16 @@ function userProfilePage() {
               onClick: function(e) {
                 e.preventDefault()
                 if (mutedUsers.has(userId)) {
+                  mutedUsers = getMutedUsers()
                   mutedUsers.delete(userId)
                   this.firstElementChild.innerText = 'mute'
                 }
                 else {
+                  mutedUsers = getMutedUsers()
                   mutedUsers.add(userId)
                   this.firstElementChild.innerText = 'unmute'
                 }
-                setMutedUsers(mutedUsers)
+                storeMutedUsers(mutedUsers)
               }
             },
             h('u', null, mutedUsers.has(userId) ? 'unmute' : 'mute')
@@ -1286,62 +1365,12 @@ function userProfilePage() {
       ),
       h('tr', null,
         h('td', {vAlign: 'top'}, 'notes:'),
-        h('td', null,
-          userNotes[userId] ? h('div', {style: {whiteSpace: 'pre-line'}}, userNotes[userId] || '') : null,
-          h('button', {
-            style: {
-              marginTop: userNotes[userId] ? '4px' : '0'
-            },
-            onClick: function(e) {
-              e.preventDefault()
-              if (!editingNote) {
-                let notes = userNotes[userId] || ''
-                let $textArea = /** @type {HTMLTextAreaElement} */ (h('textarea', {
-                  cols: 60,
-                  value: notes,
-                  style: {resize: 'none'},
-                  onInput() {
-                    autosizeTextArea(this)
-                  },
-                  // Use Ctrl/Cmd + Enter to save
-                  onKeydown(e) {
-                    if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
-                      e.preventDefault()
-                      this.parentElement.nextElementSibling.click()
-                    }
-                  }
-                }))
-                if (this.previousElementSibling) {
-                  this.previousElementSibling.replaceWith(h('div', null, $textArea))
-                } else {
-                  this.insertAdjacentElement('beforebegin', h('div', null, $textArea))
-                }
-                autosizeTextArea($textArea)
-                $textArea.focus()
-                $textArea.setSelectionRange(notes.length, notes.length)
-                this.innerText = 'save'
-                this.style.marginTop = '4px'
-              }
-              else {
-                let notes = this.previousElementSibling.firstElementChild.value
-                userNotes[userId] = notes
-                setUserNotes(userNotes)
-                if (notes) {
-                  this.previousElementSibling.replaceWith(
-                    h('div', {style: {whiteSpace: 'pre-line'}}, notes)
-                  )
-                } else {
-                  this.previousElementSibling.remove()
-                }
-                this.innerText = notes ? 'edit' : 'add'
-                this.style.marginTop = notes ? '4px' : '0'
-              }
-              editingNote = !editingNote
-            }
-          }, userNotes[userId] ? 'edit' : 'add')
-        )
+        h('td', {className: 'notes'}, $textArea, $saved),
       ),
     )
+
+    autosizeTextArea($textArea)
+    //#endregion
   }
 }
 //#endregion
