@@ -1317,6 +1317,7 @@ function userProfilePage() {
       .notes {
         display: flex;
         flex-direction: column;
+        align-items: flex-start;
         gap: 3px;
       }
     `)

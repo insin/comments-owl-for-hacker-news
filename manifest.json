@@ -4,7 +4,7 @@
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
   "homepage_url": "https://github.com/insin/comments-owl-for-hacker-news/",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
