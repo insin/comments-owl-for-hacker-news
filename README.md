@@ -8,9 +8,15 @@ _2. Draw the rest of the friendly owl_
 
 Browser extension which makes it easer to follow comment threads on [Hacker News ](https://news.ycombinator.com) across multiple visits, showing which items have new comments, highlighting new comments and collapsing threads without new comments. It also adds the ability to annotate and mute other users, plus other UI and UX tweaks.
 
-* [Install Chrome Extension](https://chrome.google.com/webstore/detail/kpoggabejgbenjahggloahnnaolmfock) - can also be installed in Edge, Opera, and Brave on desktop, and [Kiwi Browser](https://play.google.com/store/apps/details?id=com.kiwibrowser.browser) on Android
-* [Install Firefox Add-on](https://addons.mozilla.org/en-US/firefox/addon/hn-comments-owl/) - can also be installed in [Firefox Beta](#install-in-firefox-beta-on-android) on Android
-* [Install as a user script](https://greasyfork.org/en/scripts/18066-comments-owl-for-hacker-news) (requires a [user script manager](https://greasyfork.org/en#home-step-1))
+## Install
+
+* [Safari Extension](https://apps.apple.com/us/app/comments-owl-for-hacker-news/id6451333500) - for iPhone, iPad and Mac
+
+  [![Download on the App Store](promo/app-store.png)](https://apps.apple.com/us/app/comments-owl-for-hacker-news/id6451333500)
+
+* [Chrome Extension](https://chrome.google.com/webstore/detail/kpoggabejgbenjahggloahnnaolmfock) - can also be installed in Edge, Opera, and Brave on desktop, and [Kiwi Browser](https://play.google.com/store/apps/details?id=com.kiwibrowser.browser) on Android
+* [Firefox Extension](https://addons.mozilla.org/en-US/firefox/addon/hn-comments-owl/) - can also be installed in [Firefox Beta](#install-in-firefox-beta-on-android) on Android
+* [User script version](https://greasyfork.org/en/scripts/18066-comments-owl-for-hacker-news) - requires a [user script manager](https://greasyfork.org/en#home-step-1)
 
 ### Install in Firefox Beta on Android
 
@@ -43,6 +49,10 @@ Mozilla Add-ons currently only lets you install a [small, curated list of extens
   <p>You'll now be able to install Comments Owl for Hacker News via the Add-ons page.</p>
   <img src="https://raw.githubusercontent.com/insin/comments-owl-for-hacker-news/master/screenshots/install_addons.jpg" alt="Screenshot of the Add-ons page in Firefox Beta setting up the Custom Add-on collection with the details above" style="max-width:100%;">
 </details>
+
+## Releases / What's New?
+
+The [Comments Owl for Hacker News Releases page](https://github.com/insin/comments-owl-for-hacker-news/releases) highlights new features, changes and fixes in each version, and shows which version is currently published on each of the browser extension stores.
 
 ## Features
 
