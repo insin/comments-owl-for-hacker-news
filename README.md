@@ -10,9 +10,9 @@ Browser extension which makes it easer to follow comment threads on [Hacker News
 
 ## Install
 
-* [Safari Extension](https://apps.apple.com/us/app/comments-owl-for-hacker-news/id6451333500) - for iPhone, iPad and Mac
+* [Safari Extension](https://apps.apple.com/us/app/comments-owl-for-hacker-news/id6451333500?platform=iphone) - for iPhone, iPad and Mac
 
-  [![Download on the App Store](promo/app-store.png)](https://apps.apple.com/us/app/comments-owl-for-hacker-news/id6451333500)
+  [![Download on the App Store](promo/app-store.png)](https://apps.apple.com/us/app/comments-owl-for-hacker-news/id6451333500?platform=iphone)
 
 * [Chrome Extension](https://chrome.google.com/webstore/detail/kpoggabejgbenjahggloahnnaolmfock) - can also be installed in Edge, Opera, and Brave on desktop, and [Kiwi Browser](https://play.google.com/store/apps/details?id=com.kiwibrowser.browser) on Android
 * [Firefox Extension](https://addons.mozilla.org/en-US/firefox/addon/hn-comments-owl/) - can also be installed in [Firefox Beta](#install-in-firefox-beta-on-android) on Android
