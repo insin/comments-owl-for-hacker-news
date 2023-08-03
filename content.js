@@ -421,9 +421,6 @@ function commentPage() {
     a.togg {
       display: none;
     }
-    .navs {
-      display: none;
-    }
     .toggle {
       cursor: pointer;
       margin-right: 3px;
