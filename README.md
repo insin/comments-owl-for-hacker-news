@@ -59,7 +59,7 @@ The [Comments Owl for Hacker News Releases page](https://github.com/insin/commen
 ### List pages
 
 - Show new comment counts since you last viewed each item - clicking on the "X new" link will  highlight new comments and collapse comment trees which don't contain any new comments
-- Prevent accidental flagging on mobile by hiding the flag control or requiring confirmation
+- Prevent accidental flagging and hiding on mobile by making the "flag" and "hide" controls require confirmation, or hiding them
 
 ### Item pages
 
@@ -71,6 +71,7 @@ The [Comments Owl for Hacker News Releases page](https://github.com/insin/commen
 - Add your own notes to other users on their profile page - the first line will be displayed next to their comments
 - Toggle display of "reply" links below comments to make more room for comments on the screen
 - Increased distance between the upvote and downvote arrows on mobile
+- Increase the contrast of submission text
 
 ### Navigation
 
