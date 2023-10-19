@@ -33,11 +33,14 @@
   "hideSubmitNav": {
     "message": "Hide \"submit\""
   },
+  "listPageAccidentallyInfo": {
+    "message": "Prevent accidental flagging/hiding on mobile"
+  },
   "listPageFlagging": {
     "message": "Flagging"
   },
-  "listPageFlaggingInfo": {
-    "message": "Prevent accidental flagging on mobile"
+  "listPageHiding": {
+    "message": "Hiding"
   },
   "listPagesOptions": {
     "message": "List pages"

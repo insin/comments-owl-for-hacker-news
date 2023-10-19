@@ -8,4 +8,5 @@ export type Config = {
   hideReplyLinks: boolean
   hideSubmitNav: boolean
   listPageFlagging: 'enabled' | 'disabled' | 'confirm'
+  listPageHiding: 'enabled' | 'disabled' | 'confirm'
 }

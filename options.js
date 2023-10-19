@@ -21,8 +21,9 @@ for (let translationId of [
   'hidePastNav',
   'hideReplyLinks',
   'hideSubmitNav',
+  'listPageAccidentallyInfo',
   'listPageFlagging',
-  'listPageFlaggingInfo',
+  'listPageHiding',
   'listPagesOptions',
   'navigationOptions',
 ]) {
@@ -60,6 +61,7 @@ let defaultConfig = {
   hideReplyLinks: false,
   hideSubmitNav: false,
   listPageFlagging: 'enabled',
+  listPageHiding: 'enabled',
 }
 
 /** @type {import("./types").Config} */

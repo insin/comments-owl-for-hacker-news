@@ -82,6 +82,7 @@ let config = {
   hideReplyLinks: false,
   hideSubmitNav: false,
   listPageFlagging: 'enabled',
+  listPageHiding: 'enabled',
 }
 //#endregion
 
@@ -1119,6 +1120,12 @@ function itemListPage() {
         .flag-sep, .flag-sep + a {
           display: none;
         }
+      `,
+      // Hide hide links
+      config.listPageHiding == 'disabled' && `
+        .hide-sep, .hide-sep + a {
+          display: none;
+        }
       `
     ].filter(Boolean).map(dedent).join('\n')
   }
@@ -1132,6 +1139,14 @@ function itemListPage() {
       e.preventDefault()
     }
   }
+
+  function confirmHide(e) {
+    if (config.listPageHiding != 'confirm') return
+    let title = e.target.closest('tr').previousElementSibling.querySelector('.titleline a')?.textContent || 'this item'
+    if (!confirm(`Are you sure you want to hide "${title}"?`)) {
+      e.preventDefault()
+    }
+  }
   //#endregion
 
   //#region Main
@@ -1140,6 +1155,14 @@ function itemListPage() {
       // Wrap the '|' before flag links in an element so they can be hidden
       $flagLink.previousSibling.replaceWith(h('span', {className: 'flag-sep'}, ' | '))
       $flagLink.addEventListener('click', confirmFlag)
+    }
+  }
+
+  if (location.pathname != '/hidden') {
+    for (let $hideLink of document.querySelectorAll('span.subline > a[href^="hide"]')) {
+      // Wrap the '|' before hide links in an element so they can be hidden
+      $hideLink.previousSibling.replaceWith(h('span', {className: 'hide-sep'}, ' | '))
+      $hideLink.addEventListener('click', confirmHide)
     }
   }
 
@@ -1197,6 +1220,10 @@ function itemListPage() {
   chrome.storage.onChanged.addListener((changes) => {
     if ('listPageFlagging' in changes) {
       config.listPageFlagging = changes['listPageFlagging'].newValue
+      configureCss()
+    }
+    if ('listPageHiding' in changes) {
+      config.listPageHiding = changes['listPageHiding'].newValue
       configureCss()
     }
   })
