@@ -25,6 +25,7 @@ for (let translationId of [
   'listPageFlagging',
   'listPageHiding',
   'listPagesOptions',
+  'makeSubmissionTextReadable',
   'navigationOptions',
 ]) {
   document.getElementById(translationId).textContent = chrome.i18n.getMessage(translationId)
@@ -62,6 +63,7 @@ let defaultConfig = {
   hideSubmitNav: false,
   listPageFlagging: 'enabled',
   listPageHiding: 'enabled',
+  makeSubmissionTextReadable: true,
 }
 
 /** @type {import("./types").Config} */

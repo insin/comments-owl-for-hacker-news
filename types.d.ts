@@ -9,4 +9,5 @@ export type Config = {
   hideSubmitNav: boolean
   listPageFlagging: 'enabled' | 'disabled' | 'confirm'
   listPageHiding: 'enabled' | 'disabled' | 'confirm'
+  makeSubmissionTextReadable: boolean
 }

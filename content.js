@@ -83,6 +83,7 @@ let config = {
   hideSubmitNav: false,
   listPageFlagging: 'enabled',
   listPageHiding: 'enabled',
+  makeSubmissionTextReadable: true,
 }
 //#endregion
 
@@ -490,7 +491,12 @@ function commentPage() {
         div.reply p {
           display: none;
         }
-      `
+      `,
+      config.makeSubmissionTextReadable && `
+        div.toptext {
+          color: #000;
+        }
+      `,
     ].filter(Boolean).map(dedent).join('\n')
   }
   //#endregion
@@ -1071,6 +1077,10 @@ function commentPage() {
   chrome.storage.onChanged.addListener((changes) => {
     if ('hideReplyLinks' in changes) {
       config.hideReplyLinks = changes['hideReplyLinks'].newValue
+      configureCss()
+    }
+    if ('makeSubmissionTextReadable' in changes) {
+      config.makeSubmissionTextReadable = changes['makeSubmissionTextReadable'].newValue
       configureCss()
     }
   })

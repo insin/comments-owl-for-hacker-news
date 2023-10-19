@@ -45,6 +45,9 @@
   "listPagesOptions": {
     "message": "List pages"
   },
+  "makeSubmissionTextReadable": {
+    "message": "Increase contrast of submission text"
+  },
   "navigationOptions": {
     "message": "Navigation"
   },
