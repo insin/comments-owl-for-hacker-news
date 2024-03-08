@@ -1146,7 +1146,10 @@ function itemListPage() {
     if (config.listPageFlagging != 'confirm') return
     let title = e.target.closest('tr').previousElementSibling.querySelector('.titleline a')?.textContent || 'this item'
     if (!confirm(`Are you sure you want to flag "${title}"?`)) {
+      e.stopPropagation()
+      e.stopImmediatePropagation()
       e.preventDefault()
+      return false
     }
   }
 
@@ -1154,7 +1157,10 @@ function itemListPage() {
     if (config.listPageHiding != 'confirm') return
     let title = e.target.closest('tr').previousElementSibling.querySelector('.titleline a')?.textContent || 'this item'
     if (!confirm(`Are you sure you want to hide "${title}"?`)) {
+      e.stopPropagation()
+      e.stopImmediatePropagation()
       e.preventDefault()
+      return false
     }
   }
   //#endregion
@@ -1164,7 +1170,7 @@ function itemListPage() {
     for (let $flagLink of document.querySelectorAll('span.subline > a[href^="flag"]')) {
       // Wrap the '|' before flag links in an element so they can be hidden
       $flagLink.previousSibling.replaceWith(h('span', {className: 'flag-sep'}, ' | '))
-      $flagLink.addEventListener('click', confirmFlag)
+      $flagLink.addEventListener('click', confirmFlag, true)
     }
   }
 
@@ -1172,7 +1178,7 @@ function itemListPage() {
     for (let $hideLink of document.querySelectorAll('span.subline > a[href^="hide"]')) {
       // Wrap the '|' before hide links in an element so they can be hidden
       $hideLink.previousSibling.replaceWith(h('span', {className: 'hide-sep'}, ' | '))
-      $hideLink.addEventListener('click', confirmHide)
+      $hideLink.addEventListener('click', confirmHide, true)
     }
   }
 
