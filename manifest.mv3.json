@@ -1,9 +1,9 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "default_locale": "en",
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
-  "homepage_url": "https://github.com/insin/comments-owl-for-hacker-news/",
+  "homepage_url": "https://soitis.dev/comments-owl-for-hacker-news",
   "version": "2.2.0",
   "icons": {
     "16": "icons/icon16.png",
@@ -13,9 +13,7 @@
     "128": "icons/icon128.png"
   },
   "background": {
-    "scripts": [
-      "background.js"
-    ]
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
@@ -28,12 +26,9 @@
     }
   ],
   "options_ui": {
-    "browser_style": true,
-    "chrome_style": false,
     "page": "options.html"
   },
-  "browser_action": {
-    "browser_style": true,
+  "action": {
     "default_title": "__MSG_extensionName__",
     "default_popup": "browser_action.html"
   },

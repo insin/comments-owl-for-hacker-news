@@ -1,19 +1,21 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "default_locale": "en",
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
   "homepage_url": "https://soitis.dev/comments-owl-for-hacker-news",
   "version": "2.2.0",
   "icons": {
-    "48": "icon48.png",
-    "96": "icon96.png",
-    "128": "icon128.png",
-    "256": "icon256.png",
-    "512": "icon512.png"
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "64": "icons/icon64.png",
+    "96": "icons/icon96.png",
+    "128": "icons/icon128.png"
   },
   "background": {
-    "service_worker": "background.js"
+    "scripts": [
+      "background.js"
+    ]
   },
   "content_scripts": [
     {
@@ -26,22 +28,22 @@
     }
   ],
   "options_ui": {
+    "browser_style": true,
+    "chrome_style": false,
     "page": "options.html"
   },
-  "action": {
+  "browser_action": {
+    "browser_style": true,
     "default_title": "__MSG_extensionName__",
-    "default_popup": "browser_action.html",
-    "default_icon": {
-      "16": "toolbar-icon16.png",
-      "19": "toolbar-icon19.png",
-      "32": "toolbar-icon32.png",
-      "38": "toolbar-icon38.png",
-      "48": "toolbar-icon48.png",
-      "72": "toolbar-icon72.png"
-    }
+    "default_popup": "browser_action.html"
   },
   "permissions": [
     "contextMenus",
     "storage"
-  ]
+  ],
+  "browser_specific_settings": {
+    "gecko_android": {
+      "strict_min_version": "113.0"
+    }
+  }
 }

@@ -83,7 +83,7 @@ chrome.storage.local.get((storedConfig) => {
     chrome.storage.local.set({[prop]: value})
   })
 
-  chrome.storage.onChanged.addListener((changes) => {
+  chrome.storage.local.onChanged.addListener((changes) => {
     for (let prop in changes) {
       optionsConfig[prop] = changes[prop].newValue
       setFormValue(prop, changes[prop].newValue)

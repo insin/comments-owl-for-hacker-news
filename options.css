@@ -1,5 +1,6 @@
 :root {
   color-scheme: light dark;
+  --border-color: #f0f0f0;
 }
 
 body {
@@ -8,14 +9,17 @@ body {
   margin: 0;
   /* XXX These are defaults for Chrome, do something else instead */
   font-size: 13px;
-  font-family: Roboto, "Segoe UI", Tahoma, sans-serif;
+  font-family: system-ui, sans-serif;
 }
 
 body.browserAction {
-  min-width: 450px;
+  min-width: 400px;
 }
 body.iOS.browserAction {
   min-width: 0;
+}
+body.macOS.browserAction {
+  min-width: 340px;
 }
 
 body:not(.iOS.safari) .toggle {
@@ -25,7 +29,7 @@ body:not(.iOS.safari) .toggle {
 label {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   padding: 4px 12px;
   margin: 8px 0;
   cursor: pointer;
@@ -46,7 +50,7 @@ section.group > label:not(.checkbox) {
 }
 
 section:not(:first-of-type) {
-  border-top: 1px solid #f0f0f0;
+  border-top: 1px solid var(--border-color);
 }
 
 section.group > section {
@@ -55,6 +59,10 @@ section.group > section {
 
 section.group > label {
   margin-bottom: 12px;
+}
+
+form > section.group:first-of-type > label {
+  margin-bottom: 8px;
 }
 
 section.group > section > * {
@@ -68,8 +76,13 @@ section.group > p {
 }
 
 section.group > section > p {
-  margin: 0 60px 12px 0;
+  margin: 0 40px 12px 0;
   font-size: 12px;
+}
+#version {
+  text-align: center;
+  font-size: 75%;
+  margin-top: 12px;
 }
 
 /* Firefox overrides */
@@ -80,10 +93,10 @@ section.group > section > p {
   }
   body.browserAction {
     min-width: auto;
-    max-width: 450px;
+    max-width: 400px;
   }
-  section:not(:first-of-type) {
-    border-color: #d7d7db;
+  section {
+    --border-color: #d7d7db;
   }
   section.group > p,
   section.group > section > * {
@@ -97,11 +110,10 @@ section.group > section > p {
 
 /* Edge overrides */
 body.edge {
-  font-family: "system-ui", sans-serif;
   font-size: 14px;
 }
-body.edge section:not(:first-of-type) {
-  border-color: #B6B6B6;
+body.edge section {
+  --border-color: #B6B6B6;
 }
 body.edge section.group > label {
   font-weight: 600;
@@ -113,7 +125,6 @@ body.edge section.group > section > * {
 
 /* Safari overrides */
 body.safari {
-  font-family: system-ui;
   -webkit-user-select: none;
 }
 
@@ -235,7 +246,7 @@ body.iOS.safari form > section.labelled > label {
   top: -32px;
   text-transform: uppercase;
   font-size: 75%;
-  color: rgb(133,133,135);
+  color: rgb(133, 133, 135);
 }
 body.iOS.safari form > section.labelled > label + section,
 body.iOS.safari form > section.labelled > label + section.desktop + section {
@@ -247,11 +258,11 @@ body.iOS.safari form > section.labelled > label + p {
 }
 /* A checkbox options with nested options should indent their names */
 body.iOS.safari section.checkbox > section:not(.group) > label {
-  padding-left:18px
+  padding-left: 18px
 }
 /* A checkbox option with nested group should indent it */
 body.iOS.safari section.checkbox > section.group {
-  margin-left:18px
+  margin-left: 18px
 }
 body.iOS.safari summary {
   padding-left: 0;
@@ -270,8 +281,11 @@ body.iOS.safari .checkbox input[type="checkbox"] {
   position: absolute;
   overflow: hidden;
   clip: rect(0 0 0 0);
-  height: 1px; width: 1px;
-  margin: -1px; padding: 0; border: 0;
+  height: 1px;
+  width: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
 }
 body.iOS.safari .checkbox .toggle {
   position: relative;
@@ -326,8 +340,8 @@ body.iOS.safari input:checked + .toggle::after {
   transform: translate3d(22px, 2px, 0);
 }
 body.iOS.safari .checkbox input:focus + .toggle {
- outline: 5px auto Highlight;
- outline: 5px auto -webkit-focus-ring-color;
+  outline: 5px auto Highlight;
+  outline: 5px auto -webkit-focus-ring-color;
 }
 
 /* Dark mode overrides */
@@ -336,8 +350,8 @@ body.iOS.safari .checkbox input:focus + .toggle {
     background-color: #292a2d;
     color: #e8eaed;
   }
-  section:not(:first-of-type) {
-    border-color: #3f4042;
+  section {
+    --border-color: #3f4042;
   }
   section.group > p,
   section.group > section > * {
@@ -352,8 +366,8 @@ body.iOS.safari .checkbox input:focus + .toggle {
   body.edge section.group > label {
     color: #fff;
   }
-  body.edge section:not(:first-of-type) {
-    border-color: #737373;
+  body.edge section {
+    --border-color: #737373;
   }
   body.edge section.group > p,
   body.edge section.group > section > * {
@@ -365,8 +379,8 @@ body.iOS.safari .checkbox input:focus + .toggle {
     body {
       background-color: #23222b;
     }
-    section:not(:first-of-type) {
-      border-color: #4e4d54;
+    section {
+      --border-color: #4e4d54;
     }
     section.group > p,
     section.group > section > * {
@@ -385,10 +399,10 @@ body.iOS.safari .checkbox input:focus + .toggle {
     background-color: rgb(28, 28, 30);
   }
   body.iOS.safari form > section.labelled > label {
-    color: rgb(115,115,121);
+    color: rgb(115, 115, 121);
   }
   body.iOS.safari section.group section {
-    border-color: rgb(35, 35, 37);
+    --border-color: rgb(35, 35, 37);
   }
   body.iOS.safari p {
     color: rgb(132, 132, 138) !important;

@@ -366,7 +366,7 @@ function tweakNav() {
 
   configureCss()
 
-  chrome.storage.onChanged.addListener((changes) => {
+  chrome.storage.local.onChanged.addListener((changes) => {
     for (let [configProp, change] of Object.entries(changes)) {
       if (['hidePastNav', 'hideCommentsNav', 'hideJobsNav', 'hideSubmitNav', 'addUpvotedToHeader'].includes(configProp)) {
         config[configProp] = change.newValue
@@ -1074,7 +1074,7 @@ function commentPage() {
     newCommentCount,
   })
 
-  chrome.storage.onChanged.addListener((changes) => {
+  chrome.storage.local.onChanged.addListener((changes) => {
     if ('hideReplyLinks' in changes) {
       config.hideReplyLinks = changes['hideReplyLinks'].newValue
       configureCss()
@@ -1233,7 +1233,7 @@ function itemListPage() {
 
   configureCss()
 
-  chrome.storage.onChanged.addListener((changes) => {
+  chrome.storage.local.onChanged.addListener((changes) => {
     if ('listPageFlagging' in changes) {
       config.listPageFlagging = changes['listPageFlagging'].newValue
       configureCss()
