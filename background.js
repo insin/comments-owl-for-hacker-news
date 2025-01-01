@@ -1,43 +1,28 @@
 const TOGGLE_REPLY_LINKS = 'toggle-reply-links'
-const ITEM_URL_PATTERN = 'https://news.ycombinator.com/item*'
 
-/** @type {import("./types").Config} */
-let config = {
-  addUpvotedToHeader: true,
-  autoCollapseNotNew: true,
-  autoHighlightNew: true,
-  hideCommentsNav: false,
-  hideJobsNav: false,
-  hidePastNav: false,
-  hideReplyLinks: false,
-  hideSubmitNav: false,
-  listPageFlagging: 'enabled',
-}
-
-function createMenuItems() {
+chrome.runtime.onInstalled.addListener(async () => {
+  let {hideReplyLinks} = await chrome.storage.local.get('hideReplyLinks')
   chrome.contextMenus.create({
     id: TOGGLE_REPLY_LINKS,
     type: 'checkbox',
     contexts: ['page'],
-    checked: config.hideReplyLinks,
-    title: `Hide reply links`,
-    onclick: toggleHideReplyLinks,
-    documentUrlPatterns: [ITEM_URL_PATTERN],
+    checked: Boolean(hideReplyLinks),
+    title: 'Hide reply links',
+    documentUrlPatterns: ['https://news.ycombinator.com/item*'],
   })
-}
-
-function toggleHideReplyLinks() {
-  chrome.storage.local.set({hideReplyLinks: !config.hideReplyLinks})
-}
-
-chrome.storage.local.get((storedConfig) => {
-  Object.assign(config, storedConfig)
-  createMenuItems()
 })
 
-chrome.storage.onChanged.addListener((changes) => {
-  if ('hideReplyLinks' in changes) {
-    config.hideReplyLinks = changes['hideReplyLinks'].newValue
-    chrome.contextMenus.update(TOGGLE_REPLY_LINKS, {checked: config.hideReplyLinks})
+chrome.contextMenus.onClicked.addListener(async (info) => {
+  if (info.menuItemId == TOGGLE_REPLY_LINKS) {
+    let {hideReplyLinks} = await chrome.storage.local.get('hideReplyLinks')
+    chrome.storage.local.set({hideReplyLinks: !hideReplyLinks})
+  }
+})
+
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area == 'local' && 'hideReplyLinks' in changes) {
+    chrome.contextMenus.update(TOGGLE_REPLY_LINKS, {
+      checked: Boolean(changes['hideReplyLinks'].newValue)
+    })
   }
 })

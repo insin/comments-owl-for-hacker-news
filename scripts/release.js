@@ -3,13 +3,12 @@ const fs = require('fs')
 const semver = require('semver')
 
 const contentPath = './content.js'
-const manifestV2Path = './manifest.json'
-const manifestV3Path = './safari/Shared (Extension)/Resources/manifest.json'
+const manifestPaths = ['./manifest.mv2.json', './manifest.mv3.json', './Safari/Shared (Extension)/Resources/manifest.json']
 const safariProjectPath = './safari/Comments Owl for Hacker News.xcodeproj/project.pbxproj'
 
 let releaseType = process.argv[2]
 
-if (!releaseType) {
+if (releaseType != 'patch' && releaseType != 'minor' && releaseType != 'major') {
   console.log(`
 Usage:
   npm run release (patch|minor|major)
@@ -17,7 +16,7 @@ Usage:
   process.exit(1)
 }
 
-let currentVersion = JSON.parse(fs.readFileSync(manifestV2Path, {encoding: 'utf8'})).version
+let currentVersion = JSON.parse(fs.readFileSync(manifestPaths[0], {encoding: 'utf8'})).version
 let nextVersion = semver.inc(currentVersion, releaseType)
 
 fs.writeFileSync(
@@ -27,7 +26,7 @@ fs.writeFileSync(
   {encoding: 'utf8'}
 )
 
-for (let manifestPath of [manifestV2Path, manifestV3Path]) {
+for (let manifestPath of manifestPaths) {
   fs.writeFileSync(
     manifestPath,
     fs.readFileSync(manifestPath, {encoding: 'utf8'})
