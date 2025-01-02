@@ -2,7 +2,7 @@
 
 [![](promo/draw-the-rest-of-the-owl.gif)](https://soitis.dev/comments-owl-for-hacker-news)
 
-**Comments Owl for Hacker News is a Browser extension which makes it easer to follow comment threads on [Hacker News ](https://news.ycombinator.com) across multiple visits, adds the ability to annotate and mute other users, plus other UI and UX tweaks**
+**Comments Owl for Hacker News is a browser extension which makes it easer to follow comment threads on [Hacker News ](https://news.ycombinator.com) across multiple visits, adds the ability to annotate and mute other users, plus other UI and UX tweaks**
 
 > [!IMPORTANT]
 > This is the support repository for Comments Owl for Hacker News - for installation links, information about the extension, screenshots, and FAQs, please visit the [Comments Owl for Hacker News website](https://soitis.dev/comments-owl-for-hacker-news).
