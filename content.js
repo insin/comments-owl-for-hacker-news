@@ -426,6 +426,11 @@ function commentPage() {
     .toggle {
       cursor: pointer;
       margin-right: 3px;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      color: inherit;
+      font-family: inherit;
     }
     /* Display the mute control on hover, unless the comment is collapsed */
     .mute {
@@ -672,7 +677,7 @@ function commentPage() {
       this.$comhead = this.$topBar.querySelector('span.comhead')
 
       /** @type {HTMLElement} */
-      this.$toggleControl = h('span', {
+      this.$toggleControl = h('button', {
         className: 'toggle',
         onclick: () => this.toggleCollapsed(),
       }, this.isCollapsed ? TOGGLE_SHOW : TOGGLE_HIDE)
