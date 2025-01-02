@@ -59,19 +59,27 @@ class ViewController: PlatformViewController, WKNavigationDelegate, WKScriptMess
             if UIApplication.shared.canOpenURL(url){
                 UIApplication.shared.open(url, options: [:], completionHandler: nil)
             }
-            return;
+            return
         }
 #endif
 
         if (message.body as! String != "open-preferences") {
-            return;
-        }
-#if os(iOS)
-        let url = URL(string: "App-Prefs:Safari&path=WEB_EXTENSIONS")!
-        guard UIApplication.shared.canOpenURL(url) else {
             return
         }
-        UIApplication.shared.open(url)
+#if os(iOS)
+        if #available(iOS 18.0, *) {
+            let url = URL(string: "App-Prefs:com.apple.mobilesafari")!
+            guard UIApplication.shared.canOpenURL(url) else {
+                return
+            }
+            UIApplication.shared.open(url)
+        } else {
+            let url = URL(string: "App-Prefs:Safari&path=WEB_EXTENSIONS")!
+            guard UIApplication.shared.canOpenURL(url) else {
+                return
+            }
+            UIApplication.shared.open(url)
+        }
 #elseif os(macOS)
         SFSafariApplication.showPreferencesForExtension(withIdentifier: extensionBundleIdentifier) { error in
             guard error == nil else {
