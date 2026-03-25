@@ -7,6 +7,7 @@
   "version": "3.0.0",
   "icons": {
     "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
     "48": "icons/icon48.png",
     "64": "icons/icon64.png",
     "96": "icons/icon96.png",
@@ -15,7 +16,9 @@
   "background": {
     "scripts": [
       "background.js"
-    ]
+    ],
+    "persistent": false,
+    "type": "module"
   },
   "content_scripts": [
     {
@@ -26,6 +29,9 @@
         "content.js"
       ]
     }
+  ],
+  "web_accessible_resources": [
+    "settings.js"
   ],
   "options_ui": {
     "browser_style": true,
@@ -42,6 +48,9 @@
     "storage"
   ],
   "browser_specific_settings": {
+    "gecko": {
+      "id": "{fe5c37b2-15f8-4d14-8154-013939b935a3}"
+    },
     "gecko_android": {
       "strict_min_version": "113.0"
     }

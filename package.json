@@ -1,6 +1,7 @@
 {
   "scripts": {
     "create-browser-action": "node ./scripts/create-browser-action.js",
+    "watch-options-html": "npx -y chokidar-cli options.html -c \"npm run create-browser-action\" --initial",
     "release": "node ./scripts/release.js",
     "prebuild": "npm run create-browser-action",
     "build": "node ./scripts/build.js",
@@ -32,8 +33,7 @@
     ]
   },
   "devDependencies": {
-    "@types/chrome": "0.0.x",
-    "@types/greasemonkey": "4.x",
+    "@types/chrome": "0.x",
     "semver": "7.x",
     "web-ext": "7.x"
   }

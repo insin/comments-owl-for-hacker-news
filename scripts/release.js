@@ -2,7 +2,6 @@ const fs = require('fs')
 
 const semver = require('semver')
 
-const contentPath = './content.js'
 const manifestPaths = ['./manifest.mv2.json', './manifest.mv3.json', './Safari/Shared (Extension)/Resources/manifest.json']
 const optionsPath = './options.html'
 const safariProjectPath = './safari/Comments Owl for Hacker News.xcodeproj/project.pbxproj'
@@ -19,13 +18,6 @@ Usage:
 
 let currentVersion = JSON.parse(fs.readFileSync(manifestPaths[0], {encoding: 'utf8'})).version
 let nextVersion = semver.inc(currentVersion, releaseType)
-
-fs.writeFileSync(
-  contentPath,
-  fs.readFileSync(contentPath, {encoding: 'utf8'})
-    .replace(/@version     (\d+)/g, (_, current) => `@version     ${Number(current) + 1}`),
-  {encoding: 'utf8'}
-)
 
 for (let manifestPath of manifestPaths) {
   fs.writeFileSync(

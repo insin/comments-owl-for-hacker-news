@@ -3,110 +3,168 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title></title>
+  <title>Comments Owl for Hacker News</title>
   <link rel="stylesheet" href="options.css">
 </head>
 <body>
   <form>
-    <section class="group labelled">
-      <label id="listPagesOptions">
-        List pages
+    <section class="group labelled collapsible">
+      <label data-collapse-id="list">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">
+          <path d="m6.24 8.999 3.614-3.613a.498.498 0 0 0 0-.707.5.5 0 0 0-.707 0L5.999 7.826 2.854 4.68a.5.5 0 0 0-.707.707L5.759 9l.481-.001z"/>
+        </svg>
+        <span id="listPagesOptions">List pages</span>
       </label>
-      <section class="select">
-        <label>
-          <span id="listPageFlagging">Flagging</span>
-          <select name="listPageFlagging">
-            <option value="enabled">Enabled</option>
-            <option value="disabled">Disabled</option>
-            <option value="confirm">Confirm</option>
-          </select>
-        </label>
-        <label>
-          <span id="listPageHiding">Hiding</span>
-          <select name="listPageHiding">
-            <option value="enabled">Enabled</option>
-            <option value="disabled">Disabled</option>
-            <option value="confirm">Confirm</option>
-          </select>
-        </label>
-        <p id="listPageAccidentallyInfo">Prevent accidental flagging/hiding on mobile</p>
-      </section>
+      <div class="options">
+        <section class="select">
+          <label>
+            <span id="listPageFlagging">Flagging</span>
+            <select name="listPageFlagging">
+              <option value="enabled">Enabled</option>
+              <option value="disabled">Disabled</option>
+              <option value="confirm">Confirm</option>
+            </select>
+          </label>
+          <label>
+            <span id="listPageHiding">Hiding</span>
+            <select name="listPageHiding">
+              <option value="enabled">Enabled</option>
+              <option value="disabled">Disabled</option>
+              <option value="confirm">Confirm</option>
+            </select>
+          </label>
+          <p id="listPageAccidentallyInfo">Prevent accidental flagging/hiding</p>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="hideAiItems">Hide "AI" items</span>
+            <input type="checkbox" name="hideAiItems">
+            <span class="toggle"></span>
+          </label>
+          <div class="sub-options hidingAiItems">
+            <section class="textarea">
+              <label id="hideAiTitleRegex" for="hideAiTitleRegex">Title regex</label>
+              <a href="#" id="hideAiTitleRegexResetLink" class="resetLink">reset</a>
+              <textarea id="hideAiTitleRegex"></textarea>
+              <div id="hideAiTitleRegexError" class="error text-error" hidden></div>
+            </section>
+            <section class="textarea">
+              <label id="hideAiSiteRegex" for="hideAiSiteRegex">Site regex</label>
+              <a href="#" id="hideAiSiteRegexResetLink" class="resetLink">reset</a>
+              <textarea id="hideAiSiteRegex"></textarea>
+              <div id="hideAiSiteRegexError" class="error text-error" hidden></div>
+            </section>
+          </div>
+        </section>
+      </div>
     </section>
-    <section class="group labelled">
-      <label id="commentPagesOptions">
-        Comment pages
+
+    <section class="group labelled collapsible">
+      <label data-collapse-id="comment">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">
+          <path d="m6.24 8.999 3.614-3.613a.498.498 0 0 0 0-.707.5.5 0 0 0-.707 0L5.999 7.826 2.854 4.68a.5.5 0 0 0-.707.707L5.759 9l.481-.001z"/>
+        </svg>
+        <span id="commentPagesOptions">Comment pages</span>
       </label>
-      <section class="checkbox">
-        <label>
-          <span id="autoHighlightNew">Auto highlight new comments</span>
-          <input type="checkbox" name="autoHighlightNew">
-          <span class="toggle"></span>
-        </label>
-      </section>
-      <section class="checkbox">
-        <label>
-          <span id="autoCollapseNotNew">Auto collapse threads without new comments</span>
-          <input type="checkbox" name="autoCollapseNotNew">
-          <span class="toggle"></span>
-        </label>
-      </section>
-      <section class="checkbox">
-        <label>
-          <span id="hideReplyLinks">Hide "reply" links under comments</span>
-          <input type="checkbox" name="hideReplyLinks">
-          <span class="toggle"></span>
-        </label>
-      </section>
-      <section class="checkbox">
-        <label>
-          <span id="makeSubmissionTextReadable">Increase contrast of submission text</span>
-          <input type="checkbox" name="makeSubmissionTextReadable">
-          <span class="toggle"></span>
-        </label>
-      </section>
+      <div class="options">
+        <section class="checkbox">
+          <label>
+            <span id="autoHighlightNew">Auto highlight new comments</span>
+            <input type="checkbox" name="autoHighlightNew">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="autoCollapseNotNew">Auto collapse threads without new comments</span>
+            <input type="checkbox" name="autoCollapseNotNew">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="hideReplyLinks">Hide "reply" links under comments</span>
+            <input type="checkbox" name="hideReplyLinks">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="makeSubmissionTextReadable">Increase contrast of submission text</span>
+            <input type="checkbox" name="makeSubmissionTextReadable">
+            <span class="toggle"></span>
+          </label>
+        </section>
+      </div>
     </section>
-    <section class="group labelled">
-      <label id="navigationOptions">
-        Navigation
+
+    <section class="group labelled collapsible">
+      <label data-collapse-id="navigation">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">
+          <path d="m6.24 8.999 3.614-3.613a.498.498 0 0 0 0-.707.5.5 0 0 0-.707 0L5.999 7.826 2.854 4.68a.5.5 0 0 0-.707.707L5.759 9l.481-.001z"/>
+        </svg>
+        <span id="navigationOptions">Navigation</span>
       </label>
-      <section class="checkbox">
-        <label>
-          <span id="hidePastNav">Hide "past"</span>
-          <input type="checkbox" name="hidePastNav">
-          <span class="toggle"></span>
-        </label>
-      </section>
-      <section class="checkbox">
-        <label>
-          <span id="hideCommentsNav">Hide "comments"</span>
-          <input type="checkbox" name="hideCommentsNav">
-          <span class="toggle"></span>
-        </label>
-      </section>
-      <section class="checkbox">
-        <label>
-          <span id="hideJobsNav">Hide "jobs"</span>
-          <input type="checkbox" name="hideJobsNav">
-          <span class="toggle"></span>
-        </label>
-      </section>
-      <section class="checkbox">
-        <label>
-          <span id="hideSubmitNav">Hide "submit"</span>
-          <input type="checkbox" name="hideSubmitNav">
-          <span class="toggle"></span>
-        </label>
-      </section>
-      <section class="checkbox">
-        <label>
-          <span id="addUpvotedToHeader">Add "upvoted"</span>
-          <input type="checkbox" name="addUpvotedToHeader">
-          <span class="toggle"></span>
-        </label>
-      </section>
+      <div class="options">
+        <section class="checkbox">
+          <label>
+            <span id="hidePastNav">Hide "past"</span>
+            <input type="checkbox" name="hidePastNav">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="hideCommentsNav">Hide "comments"</span>
+            <input type="checkbox" name="hideCommentsNav">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="hideJobsNav">Hide "jobs"</span>
+            <input type="checkbox" name="hideJobsNav">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="hideSubmitNav">Hide "submit"</span>
+            <input type="checkbox" name="hideSubmitNav">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="addUpvotedToHeader">Add "upvoted"</span>
+            <input type="checkbox" name="addUpvotedToHeader">
+            <span class="toggle"></span>
+          </label>
+        </section>
+      </div>
     </section>
+
+    <section class="group labelled collapsible">
+      <label data-collapse-id="developer">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">
+          <path d="m6.24 8.999 3.614-3.613a.498.498 0 0 0 0-.707.5.5 0 0 0-.707 0L5.999 7.826 2.854 4.68a.5.5 0 0 0-.707.707L5.759 9l.481-.001z"/>
+        </svg>
+        <span id="developerOptions">Developer</span>
+      </label>
+      <div class="options">
+        <section class="checkbox">
+          <label>
+            <span id="debug">Debug</span>
+            <input type="checkbox" name="debug">
+            <span class="toggle"></span>
+          </label>
+          <p id="debugInfo">Enables debug logging</p>
+        </section>
+      </div>
+    </section>
+
     <div id="version">v3.0.0</div>
   </form>
-  <script src="options.js"></script>
+  <script src="options.js" type="module"></script>
 </body>
 </html>

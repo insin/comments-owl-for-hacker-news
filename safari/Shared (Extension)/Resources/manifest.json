@@ -6,6 +6,7 @@
   "homepage_url": "https://soitis.dev/comments-owl-for-hacker-news",
   "version": "3.0.0",
   "icons": {
+    "32": "icon32.png",
     "48": "icon48.png",
     "96": "icon96.png",
     "128": "icon128.png",
@@ -13,7 +14,8 @@
     "512": "icon512.png"
   },
   "background": {
-    "service_worker": "background.js"
+    "service_worker": "background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
@@ -22,6 +24,16 @@
       ],
       "js": [
         "content.js"
+      ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "settings.js"
+      ],
+      "matches": [
+        "https://news.ycombinator.com/*"
       ]
     }
   ],
