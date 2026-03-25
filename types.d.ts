@@ -2,6 +2,13 @@ export type Config = {
   addUpvotedToHeader: boolean
   autoCollapseNotNew: boolean
   autoHighlightNew: boolean
+  collapsedGroups: string[]
+  debug: boolean
+  hideAiItems: boolean
+  hideAiSiteRegex: string
+  hideAiSiteRegexError?: string | null
+  hideAiTitleRegex: string
+  hideAiTitleRegexError?: string | null
   hideCommentsNav: boolean
   hideJobsNav: boolean
   hidePastNav: boolean

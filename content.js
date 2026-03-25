@@ -1,10 +1,3 @@
-// ==UserScript==
-// @name        Comments Owl for Hacker News
-// @description Highlight new comments, mute users, and other tweaks for Hacker News
-// @namespace   https://github.com/insin/comments-owl-for-hacker-news/
-// @match       https://news.ycombinator.com/*
-// @version     48
-// ==/UserScript==
 let debug = false
 let isSafari = navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test(navigator.userAgent)
 
@@ -72,19 +65,9 @@ const LOGGED_OUT_USER_PAGE = `<head>
 
 //#region Config
 /** @type {import("./types").Config} */
-let config = {
-  addUpvotedToHeader: true,
-  autoCollapseNotNew: true,
-  autoHighlightNew: true,
-  hideCommentsNav: false,
-  hideJobsNav: false,
-  hidePastNav: false,
-  hideReplyLinks: false,
-  hideSubmitNav: false,
-  listPageFlagging: 'enabled',
-  listPageHiding: 'enabled',
-  makeSubmissionTextReadable: true,
-}
+let DEFAULT_CONFIG
+/** @type {import("./types").Config} */
+let config
 //#endregion
 
 //#region Storage
@@ -367,6 +350,9 @@ function tweakNav() {
   configureCss()
 
   chrome.storage.local.onChanged.addListener((changes) => {
+    if (changes.debug) {
+      debug = changes.debug.newValue
+    }
     for (let [configProp, change] of Object.entries(changes)) {
       if (['hidePastNav', 'hideCommentsNav', 'hideJobsNav', 'hideSubmitNav', 'addUpvotedToHeader'].includes(configProp)) {
         config[configProp] = change.newValue
@@ -1080,12 +1066,15 @@ function commentPage() {
   })
 
   chrome.storage.local.onChanged.addListener((changes) => {
-    if ('hideReplyLinks' in changes) {
-      config.hideReplyLinks = changes['hideReplyLinks'].newValue
+    if (changes.debug) {
+      debug = changes.debug.newValue
+    }
+    if (changes.hideReplyLinks) {
+      config.hideReplyLinks = changes.hideReplyLinks.newValue
       configureCss()
     }
-    if ('makeSubmissionTextReadable' in changes) {
-      config.makeSubmissionTextReadable = changes['makeSubmissionTextReadable'].newValue
+    if (changes.makeSubmissionTextReadable) {
+      config.makeSubmissionTextReadable = changes.makeSubmissionTextReadable.newValue
       configureCss()
     }
   })
@@ -1098,14 +1087,29 @@ function commentPage() {
  * Each item on an item list page has the following structure:
  *
  * ```html
- * <tr class="athing">…</td> (rank, upvote control, title/link and domain)
+ * <tr id="12345678" class="athing submission">
+ *   <td class="title">
+ *     <span class="rank">1.</span>
+ *   </td>
+ *   <td class="votelinks">…</td>
+ *   <td class="title">
+ *     <span class="titleline">
+ *       <a>Example item title</a>
+ *       <span class="sitebit">
+ *         <a href="from?site=example.com">
+ *           (<span class="sitestr">example.com</span>)
+ *         </a>
+ *       </span>
+ *     </span>
+ *   </td>
+ * </tr>
  * <tr>
- *   <td>…</td> (spacer)
+ *   <td colspan="2"></td>
  *   <td class="subtext">
  *     <span class="subline">…</span> (item meta info)
  *   </td>
  * </tr>
- * <tr class="spacer">…</tr>
+ * <tr class="spacer"></tr>
  * ```
  *
  * Using the comment count stored when you visit a comment page, we'll display
@@ -1126,6 +1130,19 @@ function itemListPage() {
   log('item list page')
 
   //#region CSS
+  addStyle('list-static', `
+    tr.submission.ai {
+      display: none;
+      & + tr {
+        display: none;
+      }
+      & + tr + tr.spacer {
+        display: none;
+      }
+      /* outline: 1px solid red; */
+    }
+  `)
+
   let $style = addStyle('list-dynamic')
 
   function configureCss() {
@@ -1166,6 +1183,77 @@ function itemListPage() {
       e.stopImmediatePropagation()
       e.preventDefault()
       return false
+    }
+  }
+
+  function toggleAiItems() {
+    if (!['/', '/ask', '/front', '/newest', '/news', '/show', '/shownew'].includes(location.pathname)) return
+
+    let titleRE
+    if (config.hideAiTitleRegexError || !config.hideAiTitleRegex) {
+      warn('falling back to default AI title regex')
+      titleRE = new RegExp(DEFAULT_CONFIG.hideAiTitleRegex, 'i')
+    } else {
+      titleRE = new RegExp(config.hideAiTitleRegex, 'i')
+    }
+    let siteRE
+      if (config.hideAiSiteRegexError || !config.hideAiSiteRegex) {
+      warn('falling back to default AI site regex')
+      siteRE = new RegExp(DEFAULT_CONFIG.hideAiSiteRegex, 'i')
+    } else {
+      siteRE = new RegExp(config.hideAiSiteRegex, 'i')
+    }
+    let aiCount = 0
+    let totalCount = 0
+    let matches = []
+
+    for (let $submission of document.querySelectorAll('tr.submission')) {
+      let isAi = false
+      if (config.hideAiItems) {
+        let $link = $submission.querySelector('.titleline > a')
+        if (debug) {
+          let match = $link?.textContent.match(titleRE)
+          if (match) {
+            matches.push(`[title] "${match[0]}" → ${$link.textContent}`)
+          }
+        }
+        isAi = titleRE.test($link?.textContent)
+        if (!isAi) {
+          let $site = $submission.querySelector('.sitebit > a')
+          if (debug) {
+            let match = $site?.textContent.match(siteRE)
+            if (match) {
+              matches.push(`[site] ${$site.textContent} → ${$link.textContent}`)
+            }
+          }
+          isAi = siteRE.test($site?.textContent)
+        }
+      }
+      if (isAi) {
+        aiCount++
+      }
+      totalCount++
+      $submission.classList.toggle('ai', isAi)
+    }
+
+    if (config.hideAiItems) {
+      log(`${aiCount} AI item${s(aiCount)}${
+        aiCount > 0 ? ` (${Math.round(aiCount / totalCount * 100)}%)` : ''
+      }${
+        matches.length > 0 ? `\n${matches.join('\n')}` : ''
+      }`)
+    }
+
+    // Adjust item numbers
+    let rank = null
+    for (let $submission of document.querySelectorAll('tr.submission')) {
+      let $rank = $submission.querySelector('.rank')
+      if (rank == null) {
+        rank = parseInt($rank.textContent)
+      }
+      if (!$submission.classList.contains('ai')) {
+        $rank.textContent = `${rank++}.`
+      }
     }
   }
   //#endregion
@@ -1237,14 +1325,31 @@ function itemListPage() {
   }
 
   configureCss()
+  if (config.hideAiItems) {
+    toggleAiItems()
+  }
 
   chrome.storage.local.onChanged.addListener((changes) => {
-    if ('listPageFlagging' in changes) {
-      config.listPageFlagging = changes['listPageFlagging'].newValue
+    if (changes.debug) {
+      debug = changes.debug.newValue
+    }
+    let hasHideAiChanges = false
+    for (let [configProp, change] of Object.entries(changes)) {
+      if (['hideAiItems', 'hideAiTitleRegex', 'hideAiTitleRegexError', 'hideAiSiteRegex', 'hideAiSiteRegexError'].includes(configProp)) {
+        // Reset regexes to the default when they're removed
+        config[configProp] = change.newValue === undefined ? DEFAULT_CONFIG[configProp] : change.newValue
+        hasHideAiChanges = true
+      }
+    }
+    if (hasHideAiChanges) {
+      toggleAiItems()
+    }
+    if (changes.listPageFlagging) {
+      config.listPageFlagging = changes.listPageFlagging.newValue
       configureCss()
     }
-    if ('listPageHiding' in changes) {
-      config.listPageHiding = changes['listPageHiding'].newValue
+    if (changes.listPageHiding) {
+      config.listPageHiding = changes.listPageHiding.newValue
       configureCss()
     }
   })
@@ -1475,6 +1580,7 @@ function userProfilePage() {
 
 //#region Main
 function main() {
+  debug = config.debug
   log('config', config)
 
   if (location.pathname.startsWith('/login')) {
@@ -1483,8 +1589,8 @@ function main() {
       log('trying to prevent Safari zooming in on the autofocused input')
       addStyle('login-safari', `input[type="text"], input[type="password"] { font-size: 16px; }`)
       setTimeout(() => {
-        document.querySelector('input[type="password"]').focus()
-        document.querySelector('input[type="text"]').focus()
+        document.querySelector('input[type="password"]')?.focus()
+        document.querySelector('input[type="text"]')?.focus()
       })
     }
     return
@@ -1502,7 +1608,7 @@ function main() {
 
   let path = location.pathname.slice(1)
 
-  if (/^($|active|ask|best($|\?)|flagged|front|hidden|invited|launches|news|newest|noobstories|pool|show|submitted|upvoted)/.test(path) ||
+  if (/^($|active|ask|best($|\?)|flagged|front|hidden|invited|launches|news|newest|noobstories|pool|show|shownew|submitted|upvoted)/.test(path) ||
       /^favorites/.test(path) && !location.search.includes('&comments=t')) {
     itemListPage()
   }
@@ -1514,17 +1620,10 @@ function main() {
   }
 }
 
-if (
-  typeof GM == 'undefined' &&
-  typeof chrome != 'undefined' &&
-  typeof chrome.storage != 'undefined'
-) {
-  chrome.storage.local.get((storedConfig) => {
-    Object.assign(config, storedConfig)
-    main()
-  })
-}
-else {
+chrome.storage.local.get(async (storedConfig) => {
+  let settings = await import(chrome.runtime.getURL('settings.js'))
+  DEFAULT_CONFIG = settings.DEFAULT_CONFIG
+  config = {...settings.DEFAULT_CONFIG, ...storedConfig}
   main()
-}
+})
 //#endregion

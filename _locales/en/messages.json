@@ -18,6 +18,27 @@
   "commentPagesOptions": {
     "message": "Comment pages"
   },
+  "debug": {
+    "message": "Debug"
+  },
+  "debugInfo": {
+    "message": "Enables debug logging"
+  },
+  "developerOptions": {
+    "message": "Developer"
+  },
+  "hideAiItems": {
+    "message": "Hide \"AI\" items"
+  },
+  "hideAiItemsMenuItem": {
+    "message": "Hide \"AI\" Items"
+  },
+  "hideAiSiteRegex": {
+    "message": "Site regex"
+  },
+  "hideAiTitleRegex": {
+    "message": "Title regex"
+  },
   "hideCommentsNav": {
     "message": "Hide \"comments\""
   },
@@ -30,11 +51,14 @@
   "hideReplyLinks": {
     "message": "Hide \"reply\" links under comments"
   },
+  "hideReplyLinksMenuItem": {
+    "message": "Hide Reply Links"
+  },
   "hideSubmitNav": {
     "message": "Hide \"submit\""
   },
   "listPageAccidentallyInfo": {
-    "message": "Prevent accidental flagging/hiding on mobile"
+    "message": "Prevent accidental flagging/hiding"
   },
   "listPageFlagging": {
     "message": "Flagging"
@@ -59,5 +83,14 @@
   },
   "option_enabled": {
     "message": "Enabled"
+  },
+  "resetLink": {
+    "message": "reset"
+  },
+  "showAiItemsMenuItem": {
+    "message": "Show \"AI\" Items"
+  },
+  "showReplyLinksMenuItem": {
+    "message": "Show Reply Links"
   }
 }

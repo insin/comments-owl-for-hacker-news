@@ -69,6 +69,12 @@
 		FB6A6D942A59ABA800636A10 /* toolbar-icon38.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D882A59ABA800636A10 /* toolbar-icon38.png */; };
 		FB6A6D9B2A60DCAA00636A10 /* Ad.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D982A60DC2200636A10 /* Ad.png */; };
 		FB6A6D9C2A60DCAB00636A10 /* Ad.png in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6D982A60DC2200636A10 /* Ad.png */; };
+		FB7EC3212F77D3F30021A73A /* storage.js in Resources */ = {isa = PBXBuildFile; fileRef = FB7EC3202F77D3F30021A73A /* storage.js */; };
+		FB7EC3222F77D3F30021A73A /* settings.js in Resources */ = {isa = PBXBuildFile; fileRef = FB7EC31F2F77D3F30021A73A /* settings.js */; };
+		FB7EC3232F77D3F30021A73A /* storage.js in Resources */ = {isa = PBXBuildFile; fileRef = FB7EC3202F77D3F30021A73A /* storage.js */; };
+		FB7EC3242F77D3F30021A73A /* settings.js in Resources */ = {isa = PBXBuildFile; fileRef = FB7EC31F2F77D3F30021A73A /* settings.js */; };
+		FB7EC3292F77D44E0021A73A /* icon32.png in Resources */ = {isa = PBXBuildFile; fileRef = FB7EC3282F77D44E0021A73A /* icon32.png */; };
+		FB7EC32A2F77D44E0021A73A /* icon32.png in Resources */ = {isa = PBXBuildFile; fileRef = FB7EC3282F77D44E0021A73A /* icon32.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -156,6 +162,9 @@
 		FB6A6D872A59ABA800636A10 /* toolbar-icon32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-icon32.png"; path = "../../../icons/toolbar-icon32.png"; sourceTree = "<group>"; };
 		FB6A6D882A59ABA800636A10 /* toolbar-icon38.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = "toolbar-icon38.png"; path = "../../../icons/toolbar-icon38.png"; sourceTree = "<group>"; };
 		FB6A6D982A60DC2200636A10 /* Ad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Ad.png; sourceTree = "<group>"; };
+		FB7EC31F2F77D3F30021A73A /* settings.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = settings.js; path = ../../../settings.js; sourceTree = "<group>"; };
+		FB7EC3202F77D3F30021A73A /* storage.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = storage.js; path = ../../../storage.js; sourceTree = "<group>"; };
+		FB7EC3282F77D44E0021A73A /* icon32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon32.png; path = ../../../icons/icon32.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -241,6 +250,7 @@
 				FB6A6D512A599C9800636A10 /* background.js */,
 				FB6A6D4D2A599C9800636A10 /* browser_action.html */,
 				FB6A6D4B2A599C9800636A10 /* content.js */,
+				FB7EC3282F77D44E0021A73A /* icon32.png */,
 				FB6A6D652A599D2F00636A10 /* icon48.png */,
 				FB6A6D632A599D2F00636A10 /* icon96.png */,
 				FB6A6D642A599D2F00636A10 /* icon128.png */,
@@ -250,6 +260,8 @@
 				FB6A6D4A2A599C9700636A10 /* options.css */,
 				FB6A6D4C2A599C9800636A10 /* options.html */,
 				FB6A6D502A599C9800636A10 /* options.js */,
+				FB7EC31F2F77D3F30021A73A /* settings.js */,
+				FB7EC3202F77D3F30021A73A /* storage.js */,
 				FB6A6D862A59ABA800636A10 /* toolbar-icon16.png */,
 				FB6A6D832A59ABA800636A10 /* toolbar-icon19.png */,
 				FB6A6D872A59ABA800636A10 /* toolbar-icon32.png */,
@@ -465,6 +477,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB6A6D542A599C9800636A10 /* content.js in Resources */,
+				FB7EC3212F77D3F30021A73A /* storage.js in Resources */,
+				FB7EC3222F77D3F30021A73A /* settings.js in Resources */,
 				FB6A6D5E2A599C9800636A10 /* options.js in Resources */,
 				FB6A6D6C2A599D2F00636A10 /* icon48.png in Resources */,
 				FB6A6D6A2A599D2F00636A10 /* icon128.png in Resources */,
@@ -475,6 +489,7 @@
 				FB6A6D8B2A59ABA800636A10 /* toolbar-icon48.png in Resources */,
 				FB6A6D912A59ABA800636A10 /* toolbar-icon32.png in Resources */,
 				FB6A6D932A59ABA800636A10 /* toolbar-icon38.png in Resources */,
+				FB7EC3292F77D44E0021A73A /* icon32.png in Resources */,
 				FB6A6D602A599C9800636A10 /* background.js in Resources */,
 				FB6A6D8F2A59ABA800636A10 /* toolbar-icon16.png in Resources */,
 				FB6A6D662A599D2F00636A10 /* icon256.png in Resources */,
@@ -491,6 +506,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB6A6D552A599C9800636A10 /* content.js in Resources */,
+				FB7EC3232F77D3F30021A73A /* storage.js in Resources */,
+				FB7EC3242F77D3F30021A73A /* settings.js in Resources */,
 				FB6A6D5F2A599C9800636A10 /* options.js in Resources */,
 				FB6A6D6D2A599D2F00636A10 /* icon48.png in Resources */,
 				FB6A6D6B2A599D2F00636A10 /* icon128.png in Resources */,
@@ -501,6 +518,7 @@
 				FB6A6D8C2A59ABA800636A10 /* toolbar-icon48.png in Resources */,
 				FB6A6D922A59ABA800636A10 /* toolbar-icon32.png in Resources */,
 				FB6A6D942A59ABA800636A10 /* toolbar-icon38.png in Resources */,
+				FB7EC32A2F77D44E0021A73A /* icon32.png in Resources */,
 				FB6A6D612A599C9800636A10 /* background.js in Resources */,
 				FB6A6D902A59ABA800636A10 /* toolbar-icon16.png in Resources */,
 				FB6A6D672A599D2F00636A10 /* icon256.png in Resources */,
