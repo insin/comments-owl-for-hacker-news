@@ -12,7 +12,7 @@ for (let manifestVersion of manifestVersions) {
   let manifestFile = `manifest.mv${manifestVersion}.json`
   let manifestData = require(`../${manifestFile}`)
   fs.copyFileSync(`./${manifestFile}`, './manifest.json')
-  execSync(`node_modules/.bin/web-ext${process.platform == 'win32' ? '.cmd' : ''} build`, {stdio: 'inherit'})
+  execSync('web-ext build', {stdio: 'inherit'})
   let renameTo = `./web-ext-artifacts/comments_owl_for_hacker_news-${manifestData['version']}.mv${manifestVersion}.zip`
   fs.renameSync(
     `./web-ext-artifacts/comments_owl_for_hacker_news-${manifestData['version']}.zip`,
