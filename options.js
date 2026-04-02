@@ -97,8 +97,13 @@ let $hideAiTitleRegexResetLink = document.querySelector('a#hideAiTitleRegexReset
 
 //#region Utility functions
 function autoResize($textarea) {
+  if (!$textarea.offsetParent) return
+  if (!$textarea.hasAttribute('data-border-height')) {
+    let {borderBottomWidth, borderTopWidth} = getComputedStyle($textarea)
+    $textarea.setAttribute('data-border-height', parseFloat(borderBottomWidth) + parseFloat(borderTopWidth))
+  }
   $textarea.style.height = 'auto';
-  $textarea.style.height = Math.ceil($textarea.scrollHeight + 2) + 'px';
+  $textarea.style.height = Math.ceil($textarea.scrollHeight) + parseFloat($textarea.getAttribute('data-border-height')) + 'px'
 }
 
 function clearError($input, $error) {
