@@ -80,7 +80,7 @@ textarea {
   resize: none;
   padding: 4px;
   box-sizing: border-box;
-  max-height: 15rem;
+  max-height: 15em;
   overflow-y: auto;
 }
 textarea.invalid {
