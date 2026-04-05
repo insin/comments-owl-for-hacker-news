@@ -15,11 +15,6 @@
   color-scheme: light dark;
 }
 
-html {
-  overflow: auto;
-  scrollbar-gutter: stable;
-}
-
 /* #region Utilities */
 .text-error {
   color: var(--text-error);
@@ -38,11 +33,29 @@ body {
 body.browserAction {
   min-width: 450px;
 }
+body.browser-firefox.browserAction {
+  min-width: auto;
+  max-width: 450px;
+}
 body.browser-ios.browserAction {
   min-width: 0;
 }
-body.mac.browserAction {
+body.browser-mac.browserAction {
   min-width: 400px;
+}
+
+.firefoxSizer {
+  display: none;
+}
+body.browser-firefox .firefoxSizer {
+  display: block;
+  height: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  line-height: 0;
+  font-size: 1px;
+  pointer-events: none;
+  user-select: none;
 }
 
 body:not(.hidingAiItems) .hidingAiItems,
