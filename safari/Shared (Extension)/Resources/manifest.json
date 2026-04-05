@@ -4,7 +4,7 @@
   "name": "__MSG_extensionName__",
   "description": "__MSG_extensionDescription__",
   "homepage_url": "https://soitis.dev/comments-owl-for-hacker-news",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "icons": {
     "32": "icon32.png",
     "48": "icon48.png",
