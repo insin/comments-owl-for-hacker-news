@@ -19,3 +19,10 @@ export type Config = {
   listPageHiding: 'enabled' | 'disabled' | 'confirm'
   makeSubmissionTextReadable: boolean
 }
+
+export type UserProfile = {
+  username: string
+  green: boolean
+  created: string
+  karma: string
+}

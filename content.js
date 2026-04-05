@@ -405,7 +405,7 @@ function commentPage() {
 
   //#region CSS
   addStyle('comments-static', `
-    /* Hide default toggle and nav links */
+    /* Hide built-in toggles */
     a.togg {
       display: none;
     }
@@ -418,15 +418,9 @@ function commentPage() {
       color: inherit;
       font-family: inherit;
     }
-    /* Display the mute control on hover, unless the comment is collapsed */
+    /* Only show mute control at mobile widths */
     .mute {
       display: none;
-    }
-    /* Prevent :hover causing double-tap on comment functionality in iOS Safari */
-    @media(hover: hover) and (pointer: fine) {
-      tr.comtr:hover td.votelinks:not(.nosee) + td .mute {
-        display: inline;
-      }
     }
     /* Don't show notes on collapsed comments */
     td.votelinks.nosee + td .note {
@@ -499,34 +493,25 @@ function commentPage() {
   }
   //#endregion
 
-  //#region Variables
+  //#region State
   /** @type {boolean} */
   let autoCollapseNotNew = config.autoCollapseNotNew || location.search.includes('?shownew')
-
   /** @type {boolean} */
   let autoHighlightNew = config.autoHighlightNew || location.search.includes('?shownew')
-
   /** @type {HNComment[]} */
   let comments = []
-
   /** @type {Record<string, HNComment>} */
   let commentsById = {}
-
   /** @type {boolean} */
   let hasNewComments = false
-
   /** @type {string} */
   let itemId = /id=(\d+)/.exec(location.search)[1]
-
   /** @type {Visit} */
   let lastVisit
-
   /** @type {number} */
   let maxCommentId
-
   /** @type {Set<string>} */
   let mutedUsers = getMutedUsers()
-
   /** @type {Record<string, string>} */
   let userNotes = getUserNotes()
 
@@ -538,9 +523,6 @@ function commentPage() {
   //#endregion
 
   class HNComment {
-    /**
-     * returns {boolean}
-     */
     get isMuted() {
       return mutedUsers.has(this.user)
     }
@@ -620,6 +602,10 @@ function commentPage() {
       this.$comment = $wrapper.querySelector('div.comment')
 
       /** @type {HTMLElement} */
+      this.$note = h('span', {className: 'note'})
+      this.updateNote()
+
+      /** @type {HTMLElement} */
       this.$topBar = $wrapper.querySelector('td.default > div')
 
       /** @type {HTMLElement} */
@@ -681,54 +667,31 @@ function commentPage() {
         this.id = Number($permalink.href.split('=').pop())
         this.when = $permalink?.textContent.replace('minute', 'min')
       }
-    }
 
-    addControls() {
-      this.$comhead.insertAdjacentText('afterbegin', ' ')
-      this.$comhead.insertAdjacentElement('afterbegin', this.$toggleControl)
-      this.$comhead.append(...[
-        // User note
-        userNotes[this.user] && h('span', {className: 'note'},
-          ` | nb: ${userNotes[this.user].split(/\r?\n/)[0]}`,
-        ),
-        // Mute control
-        this.user && h('span', {className: 'mute'}, ' | ', h('a', {
-          href: `mute?id=${this.user}`,
-          onclick: (e) => {
-            e.preventDefault()
-            this.mute()
-          }
-        }, 'mute'))
-      ].filter(Boolean))
-      this.$comhead.parentElement.addEventListener('click', (e) => {
+      this.$comhead?.parentElement.addEventListener('click', (e) => {
         if (!config.clickHeaderToCollapse) return
         if (e.target !== e.currentTarget) return
         this.toggleCollapsed()
       })
     }
 
-    mute() {
-      mutedUsers = getMutedUsers()
-      mutedUsers.add(this.user)
-      storeMutedUsers(mutedUsers)
-
-      // Invalidate non-muted child caches and update child counts on any
-      // comments which have been collapsed.
-      for (let i = 0; i < comments.length; i++) {
-        let comment = comments[i]
-
-        if (comment.isMuted) {
-          i += comment.childComments.length
-          continue
-        }
-
-        comment._nonMutedChildComments = null
-        if (comment.$childCount) {
-          comment.$childCount.textContent = comment.collapsedChildrenText
-        }
+    addControls() {
+      this.$comhead.insertAdjacentText('afterbegin', ' ')
+      this.$comhead.insertAdjacentElement('afterbegin', this.$toggleControl)
+      this.$comhead.append(this.$note)
+      if (this.user && this.user != currentUser) {
+        this.$comhead.append(
+          h('span', {className: 'mute'}, ' | ', h('a', {
+            href: `mute?id=${this.user}`,
+            onclick: (e) => {
+              e.preventDefault()
+              if (confirm(`Are you sure you want to mute "${this.user}"?`)) {
+                muteUser(this.user)
+              }
+            }
+          }, 'mute'))
+        )
       }
-
-      hideMutedUsers()
     }
 
     /**
@@ -760,6 +723,10 @@ function commentPage() {
           }
         }
       }
+    }
+
+    updateNote() {
+      this.$note.textContent = userNotes[this.user] ? ` | nb: ${userNotes[this.user].split(/\r?\n/)[0]}` : ''
     }
 
     /**
@@ -1022,6 +989,13 @@ function commentPage() {
     hasNewComments = lastVisit != null && newCommentCount > 0
   }
 
+  function muteUser(user) {
+    mutedUsers = getMutedUsers()
+    mutedUsers.add(user)
+    storeMutedUsers(mutedUsers)
+    updateMutedUsersDisplay()
+  }
+
   // TODO Only store visit data when the item header is present (i.e. not a comment permalink)
   // TODO Only store visit data for commentable items (a reply box / reply links are visible)
   // TODO Clear any existing stored visit if the item is no longer commentable
@@ -1032,9 +1006,47 @@ function commentPage() {
       time: new Date(),
     }))
   }
+
+  function updateMutedUsersDisplay() {
+    // Invalidate non-muted child caches and update child counts on any
+    // comments which have been collapsed.
+    for (let i = 0; i < comments.length; i++) {
+      let comment = comments[i]
+
+      if (comment.isMuted) {
+        i += comment.childComments.length
+        continue
+      }
+
+      comment._nonMutedChildComments = null
+      if (comment.$childCount) {
+        comment.$childCount.textContent = comment.collapsedChildrenText
+      }
+    }
+
+    hideMutedUsers()
+  }
+
+  function updateUserNotes(username) {
+    for (let comment of comments) {
+      if (comment.user == username) {
+        comment.updateNote()
+      }
+    }
+  }
   //#endregion
 
   //#region Main
+  userHovercards({
+    onNotesChanged: (username) => {
+      userNotes = getUserNotes()
+      updateUserNotes(username)
+    },
+    onMutesChanged: () => {
+      mutedUsers = getMutedUsers()
+      updateMutedUsersDisplay()
+    }
+  })
   lastVisit = getLastVisit(itemId)
 
   let $commentsLink = document.querySelector('span.subline > a[href^=item]')
@@ -1370,23 +1382,33 @@ function itemListPage() {
 //#endregion
 
 //#region Profile page
-function userProfilePage() {
+let $profileStyle
+/**
+ * @param {{
+ *   $context?: Document | HTMLElement
+ *   textAreaProps?: any
+ *   onMutesChanged?: () => void
+ *   onNotesChanged?: () => void
+ * }} options
+ */
+function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMutesChanged, onNotesChanged} = {}) {
   log('user profile page')
 
-  let $userLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a.hnuser'))
+  let $userLink = /** @type {HTMLAnchorElement} */ ($context.querySelector('a.hnuser'))
   if ($userLink == null) {
     warn('not a valid user')
     return
   }
 
   let userId = $userLink.innerText
-  let $currentUserLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a#me'))
-  let currentUser = $currentUserLink?.innerText ?? ''
   let mutedUsers = getMutedUsers()
   let userNotes = getUserNotes()
   let $table = $userLink.closest('table')
 
-  if (userId == currentUser || location.pathname.startsWith('/muted')) {
+  let isCurrentUser = userId == currentUser || location.pathname.startsWith('/muted')
+  if (isCurrentUser && $context !== document) return
+
+  if (isCurrentUser) {
     //#region Logged-in user's profile
     let $mutedUsers = createMutedUsers()
 
@@ -1452,37 +1474,39 @@ function userProfilePage() {
   }
   else {
     //#region Other user profile
-    addStyle('profile-static', `
-      .saved {
-        color: #000;
-        opacity: 0;
-      }
-      .saved.show {
-        animation: flash 2s forwards;
-      }
-      @keyframes flash {
-        from {
+    if (!$profileStyle) {
+      $profileStyle = addStyle('profile-static', `
+        .saved {
+          color: #000;
           opacity: 0;
         }
-        15% {
-          opacity: 1;
-          animation-timing-function: ease-in;
+        .saved.show {
+          animation: flash 2s forwards;
         }
-        75% {
-          opacity: 1;
+        @keyframes flash {
+          from {
+            opacity: 0;
+          }
+          15% {
+            opacity: 1;
+            animation-timing-function: ease-in;
+          }
+          75% {
+            opacity: 1;
+          }
+          to {
+            opacity: 0;
+            animation-timing-function: ease-out;
+          }
         }
-        to {
-          opacity: 0;
-          animation-timing-function: ease-out;
+        .notes {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 3px;
         }
-      }
-      .notes {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 3px;
-      }
-    `)
+      `)
+    }
 
     function getMutedStatusText() {
       return mutedUsers.has(userId) ? 'unmute' : 'mute'
@@ -1505,6 +1529,7 @@ function userProfilePage() {
 
       userNotes[userId] = $textArea.value.trim()
       storeUserNotes(userNotes)
+      onNotesChanged?.()
 
       if ($saved.classList.contains('show')) {
         $saved.classList.remove('show')
@@ -1513,11 +1538,12 @@ function userProfilePage() {
       $saved.classList.add('show')
     }
 
+    let {style: textAreaStyle, ...textAreaRest} = textAreaProps
     let $textArea = /** @type {HTMLTextAreaElement} */ (h('textarea', {
-      cols: 60,
+      ...textAreaRest,
       value: userNotes[userId] || '',
       className: 'notes',
-      style: {resize: 'none'},
+      style: {resize: 'none', ...textAreaStyle},
       onInput() {
         autosizeTextArea(this)
       },
@@ -1541,7 +1567,7 @@ function userProfilePage() {
         h('td'),
         h('td', null,
           h('a', {
-              href: '#',
+              href: `mute?id=${userId}`,
               onClick: function(e) {
                 e.preventDefault()
                 if (mutedUsers.has(userId)) {
@@ -1555,6 +1581,7 @@ function userProfilePage() {
                   this.firstElementChild.innerText = 'unmute'
                 }
                 storeMutedUsers(mutedUsers)
+                onMutesChanged?.()
               }
             },
             $muted
@@ -1590,10 +1617,242 @@ function userProfilePage() {
 }
 //#endregion
 
+//#region User hovercards
+/**
+ * @param {{
+ *   onMutesChanged?: () => void
+ *   onNotesChanged?: (username: string) => void
+ * }} [options]
+ */
+function userHovercards({onMutesChanged, onNotesChanged} = {}) {
+  const noteTextAreaProps = {style: {width: '100%', maxHeight: '12em', overflowY: 'auto'}}
+
+  //#region CSS
+  addStyle('hovercard-static', `
+    .hovercard {
+      background: #f6f6ef;
+      border: 1px solid #828282;
+      box-shadow: 0 8px 24px rgba(0,0,0,.15);
+      inset: auto;
+      margin: 8px 0;
+      max-height: min(70vh, 500px);
+      overflow: auto;
+      padding: 4px 8px;
+      position-anchor: --username-anchor;
+      position-area: bottom span-right;
+      position-try-fallbacks: top span-right, bottom span-left, top span-left;
+      position: fixed;
+      width: 300px;
+    }
+    .hovercard-anchor {
+      anchor-name: --username-anchor;
+    }
+  `)
+  //#endregion
+
+  //#region State
+  /** @type {string} */
+  let activeUser
+  /** @type {ReturnType<typeof setTimeout>} */
+  let closeTimer
+  /** @type {ReturnType<typeof setTimeout>} */
+  let openTimer
+  /** @type {Map<string, Promise<import("./types").UserProfile>>} */
+  let profileCache = new Map()
+  /** @type {HTMLAnchorElement} */
+  let $userAnchor
+  //#endregion
+
+  //#region Functions
+  function clearUserAnchor() {
+    if ($userAnchor) {
+      $userAnchor.classList.remove('hovercard-anchor')
+      $userAnchor = null
+    }
+  }
+
+  /**
+   * @param {string} username
+   * @param {string} href
+   * @returns {Promise<import("./types").UserProfile>}
+   */
+  function fetchUserProfile(username, href) {
+    if (profileCache.has(username)) {
+      return profileCache.get(username)
+    }
+
+    let promise = (async () => {
+      let res = await fetch(href, {credentials: 'same-origin'})
+      if (!res.ok) throw new Error(`Failed to fetch profile for ${username}`)
+
+      let html = await res.text()
+      let doc = new DOMParser().parseFromString(html, 'text/html')
+      let profile = {
+        username,
+        green: false,
+        created: '',
+        karma: '',
+      }
+
+      for (let $row of doc.querySelectorAll('#bigbox tr')) {
+        let $cells = $row.querySelectorAll('td')
+        let label = $cells[0]?.textContent
+        if (!label) break
+        if (label == 'user:') profile.green = Boolean($cells[1]?.querySelector('font[color="#3c963c"]'))
+        if (label === 'created:') profile.created = $cells[1]?.textContent ?? ''
+        if (label === 'karma:') profile.karma = $cells[1]?.textContent ?? ''
+      }
+
+      return profile
+    })()
+
+    profileCache.set(username, promise)
+    return promise
+  }
+
+  function hideHovercard() {
+    clearTimeout(openTimer)
+    clearTimeout(closeTimer)
+
+    closeTimer = setTimeout(hideHovercardImmediately, 250)
+  }
+
+  function hideHovercardImmediately() {
+    activeUser = null
+    clearUserAnchor()
+    if ($hovercard.matches(':popover-open')) {
+      $hovercard.hidePopover()
+    }
+  }
+
+  /** @param {import("./types").UserProfile} profile */
+  function renderHovercardContents(profile) {
+    $hovercard.innerHTML = ''
+    $hovercard.append(
+      h('table', {border: '0', style: {width: '100%'}},
+        h('col', {style: {width: '1px'}}),
+        h('tbody', null,
+          h('tr', null,
+            h('td', {valign: 'top'}, 'user:'),
+            h('td', null, h('a', {className: 'hnuser'},
+              profile.green ? h('font', {color: '#3c963c'}, profile.username) : profile.username),
+            ),
+          ),
+          h('tr', null,
+            h('td', {valign: 'top'}, 'created:'),
+            h('td', null, profile.created),
+          ),
+          h('tr', null,
+            h('td', {valign: 'top'}, 'karma:'),
+            h('td', null, profile.karma),
+          ),
+          h('tr', null,
+            h('td'),
+            h('td', null,
+              h('a', {href: `threads?id=${profile.username}`},
+                h('u', null, 'comments')
+              ),
+            ),
+          ),
+        )
+      )
+    )
+  }
+
+  /** @param {HTMLAnchorElement} $user */
+  function setUserAnchor($user) {
+    if ($userAnchor && $userAnchor !== $user) {
+      $userAnchor.classList.remove('hovercard-anchor')
+    }
+    $userAnchor = $user
+    activeUser = $user.textContent
+    $userAnchor.classList.add('hovercard-anchor')
+  }
+
+  /** @param {HTMLAnchorElement} $user */
+  function showHovercard($user) {
+    let username = $user.textContent
+
+    clearTimeout(closeTimer)
+    clearTimeout(openTimer)
+
+    openTimer = setTimeout(async () => {
+      setUserAnchor($user)
+
+      if (!profileCache.has(username)) {
+        renderHovercardContents({username, green: false, created: '···', karma: '···'})
+        $hovercard.showPopover()
+        userProfilePage({
+          $context: $hovercard,
+          textAreaProps: noteTextAreaProps,
+        })
+      } else {
+        $hovercard.innerHTML = ''
+        $hovercard.showPopover()
+      }
+
+      try {
+        let profile = await fetchUserProfile(username, $user.href)
+        if (activeUser !== username) return
+        renderHovercardContents(profile)
+        // XXX Cache for the onNotesChanged callback if the user edits and mouses out
+        let profileUser = activeUser
+        userProfilePage({
+          $context: $hovercard,
+          onMutesChanged: () => {
+            if (onMutesChanged) hideHovercardImmediately()
+              onMutesChanged?.()
+          },
+          onNotesChanged: () => {
+            onNotesChanged?.(profileUser)
+          },
+          textAreaProps: noteTextAreaProps,
+        })
+      } catch (error) {
+        $hovercard.textContent = 'Could not load profile'
+        warn(error)
+      }
+    }, 150)
+  }
+  //#endregion
+
+  //#region Main
+  let $hovercard = h('div', {
+    className: 'hovercard',
+    popover: 'manual',
+  })
+  $hovercard.addEventListener('mouseenter', () => {
+    clearTimeout(closeTimer)
+  })
+  $hovercard.addEventListener('mouseleave', () => {
+    hideHovercard()
+  })
+  document.body.appendChild($hovercard)
+  document.addEventListener('mouseover', (e) => {
+    if (!(e.target instanceof HTMLElement && e.target.closest('a.hnuser') && !$hovercard.contains(e.target))) return
+    showHovercard(e.target.closest('a.hnuser'))
+  })
+  document.addEventListener('mouseout', (e) => {
+    if (!(e.target instanceof HTMLElement && e.target.closest('a.hnuser') && !$hovercard.contains(e.target))) return
+    hideHovercard()
+  })
+  window.addEventListener('pagehide', () => {
+    clearTimeout(openTimer)
+    clearTimeout(closeTimer)
+    hideHovercardImmediately()
+  })
+  //#endregion
+}
+//#endregion
+
 //#region Main
+let currentUser
 function main() {
   debug = config.debug
   log('config', config)
+
+  let $currentUserLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a#me'))
+  currentUser = $currentUserLink?.innerText ?? ''
 
   if (location.pathname.startsWith('/login')) {
     log('login screen')
