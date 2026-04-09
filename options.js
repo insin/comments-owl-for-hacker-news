@@ -39,6 +39,7 @@ for (let translationId of [
   'addUpvotedToHeader',
   'autoCollapseNotNew',
   'autoHighlightNew',
+  'clickHeaderToCollapse',
   'commentPagesOptions',
   'debug',
   'debugInfo',

@@ -15,6 +15,9 @@
   "autoHighlightNew": {
     "message": "Auto highlight new comments"
   },
+  "clickHeaderToCollapse": {
+    "message": "Click comment header to collapse"
+  },
   "commentPagesOptions": {
     "message": "Comment pages"
   },

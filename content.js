@@ -475,6 +475,13 @@ function commentPage() {
 
   function configureCss() {
     $style.textContent = [
+      // Make comments full width so the header can always be clicked
+      config.clickHeaderToCollapse && `
+        .comment-tree,
+        .comment-tree td.default {
+          width: 100%;
+        }
+      `,
       config.hideReplyLinks && `
         div.reply {
           margin-top: 8px;
@@ -644,6 +651,7 @@ function commentPage() {
        * Comments whose text has been removed but are still displayed may have
        * their text replaced with [flagged], [dead] or similar - we'll take any
        * word in square brackets as indication of this.
+       * e.g. https://news.ycombinator.com/item?id=1942859 has a [dead] comment
        * @type {boolean}
        */
       this.isDeleted = /^\s*\[\w+]\s*$/.test(this.$comment.firstChild.nodeValue)
@@ -676,13 +684,8 @@ function commentPage() {
     }
 
     addControls() {
-      // We want to use the comment meta bar for the folding control, so put
-      // it back above the deleted comment placeholder.
-      if (this.isDeleted) {
-        this.$topBar.style.marginBottom = '4px'
-      }
-      this.$topBar.insertAdjacentText('afterbegin', ' ')
-      this.$topBar.insertAdjacentElement('afterbegin', this.$toggleControl)
+      this.$comhead.insertAdjacentText('afterbegin', ' ')
+      this.$comhead.insertAdjacentElement('afterbegin', this.$toggleControl)
       this.$comhead.append(...[
         // User note
         userNotes[this.user] && h('span', {className: 'note'},
@@ -697,6 +700,11 @@ function commentPage() {
           }
         }, 'mute'))
       ].filter(Boolean))
+      this.$comhead.parentElement.addEventListener('click', (e) => {
+        if (!config.clickHeaderToCollapse) return
+        if (e.target !== e.currentTarget) return
+        this.toggleCollapsed()
+      })
     }
 
     mute() {
@@ -1068,6 +1076,10 @@ function commentPage() {
   chrome.storage.local.onChanged.addListener((changes) => {
     if (changes.debug) {
       debug = changes.debug.newValue
+    }
+    if (changes.clickHeaderToCollapse) {
+      config.clickHeaderToCollapse = changes.clickHeaderToCollapse.newValue
+      configureCss()
     }
     if (changes.hideReplyLinks) {
       config.hideReplyLinks = changes.hideReplyLinks.newValue

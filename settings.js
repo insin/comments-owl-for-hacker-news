@@ -3,6 +3,7 @@ export const DEFAULT_CONFIG = {
   addUpvotedToHeader: true,
   autoCollapseNotNew: true,
   autoHighlightNew: true,
+  clickHeaderToCollapse: true,
   collapsedGroups: ['developer'],
   debug: false,
   hideAiItems: false,

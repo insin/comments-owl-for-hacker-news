@@ -2,6 +2,7 @@ export type Config = {
   addUpvotedToHeader: boolean
   autoCollapseNotNew: boolean
   autoHighlightNew: boolean
+  clickHeaderToCollapse: boolean
   collapsedGroups: string[]
   debug: boolean
   hideAiItems: boolean
