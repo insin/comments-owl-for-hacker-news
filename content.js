@@ -466,11 +466,20 @@ function commentPage() {
 
   function configureCss() {
     $style.textContent = [
-      // Make comments full width so the header can always be clicked
+
       config.clickHeaderToCollapse && `
+        /* Make comments full width so the comment header can always be clicked */
         .comment-tree,
         .comment-tree td.default {
           width: 100%;
+        }
+        .comhead-wrap {
+          /* Negative margin gets removed from the click target in some browsers */
+          margin-bottom: 2px !important;
+          /* Adjust for the <br> in the markup by moving the comment up instead */
+          ~ .comment {
+            margin-top: -12px;
+          }
         }
       `,
       config.hideReplyLinks && `
@@ -665,6 +674,7 @@ function commentPage() {
         this.when = $permalink?.textContent.replace('minute', 'min')
       }
 
+      this.$comhead?.parentElement.classList.add('comhead-wrap')
       this.$comhead?.parentElement.addEventListener('click', (e) => {
         if (!config.clickHeaderToCollapse) return
         if (e.target !== e.currentTarget) return
