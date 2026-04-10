@@ -348,7 +348,6 @@ body.ios {
     padding-bottom: 8px;
   }
   p {
-    font-size: inherit !important;
     margin-right: 18px;
   }
   summary {
@@ -406,6 +405,9 @@ body.ios {
     padding: 0;
     &:first-of-type {
       border-top: none;
+    }
+    & > * + :is(p) {
+      margin-top: 0;
     }
   }
 
@@ -537,8 +539,8 @@ body.mac {
 body.ios {
   --background: rgb(242, 242, 247);
   --body-padding: 18px;
-  --font-size-primary: inherit;
-  --font-size-secondary: inherit;
+  --font-size-primary: 16px;
+  --font-size-secondary: 12px;
   --group-label-weight: 400;
   --outside-label-color: rgb(133, 133, 139);
   --text-secondary: rgb(95, 99, 104);
