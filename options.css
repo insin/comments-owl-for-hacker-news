@@ -359,6 +359,9 @@ body.ios {
   section.labelled {
     margin-top: 46px;
     position: relative;
+    &:first-of-type {
+      margin-top: 8px;
+    }
   }
   section.labelled > label {
     color: var(--outside-label-color);
