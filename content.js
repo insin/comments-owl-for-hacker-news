@@ -1676,7 +1676,11 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
     clearTimeout(openTimer)
     clearTimeout(closeTimer)
 
-    closeTimer = setTimeout(hideHovercardImmediately, 250)
+    closeTimer = setTimeout(() => {
+      // Don't close if the notes input is active
+      if ($hovercard.contains(document.activeElement) && document.activeElement.tagName == 'TEXTAREA') return
+      hideHovercardImmediately()
+    }, 250)
   }
 
   function hideHovercardImmediately() {
@@ -1781,7 +1785,7 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
   //#region Main
   let $hovercard = h('div', {
     className: 'hovercard',
-    popover: 'manual',
+    popover: 'auto',
   })
   $hovercard.addEventListener('mouseenter', () => {
     clearTimeout(closeTimer)
