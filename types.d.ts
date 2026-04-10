@@ -15,9 +15,8 @@ export type Config = {
   hidePastNav: boolean
   hideReplyLinks: boolean
   hideSubmitNav: boolean
-  listPageFlagging: 'enabled' | 'disabled' | 'confirm'
-  listPageHiding: 'enabled' | 'disabled' | 'confirm'
   makeSubmissionTextReadable: boolean
+  preventAccidentally: boolean
 }
 
 export type UserProfile = {

@@ -60,15 +60,6 @@
   "hideSubmitNav": {
     "message": "Hide \"submit\""
   },
-  "listPageAccidentallyInfo": {
-    "message": "Prevent accidental flagging/hiding"
-  },
-  "listPageFlagging": {
-    "message": "Flagging"
-  },
-  "listPageHiding": {
-    "message": "Hiding"
-  },
   "listPagesOptions": {
     "message": "List pages"
   },
@@ -86,6 +77,12 @@
   },
   "option_enabled": {
     "message": "Enabled"
+  },
+  "preventAccidentally": {
+    "message": "Prevent accidental flagging & hiding"
+  },
+  "preventAccidentallyInfo": {
+    "message": "Makes flagging & hiding require confirmation"
   },
   "resetLink": {
     "message": "reset"

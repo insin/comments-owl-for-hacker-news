@@ -52,12 +52,11 @@ for (let translationId of [
   'hidePastNav',
   'hideReplyLinks',
   'hideSubmitNav',
-  'listPageAccidentallyInfo',
-  'listPageFlagging',
-  'listPageHiding',
   'listPagesOptions',
   'makeSubmissionTextReadable',
   'navigationOptions',
+  'preventAccidentally',
+  'preventAccidentallyInfo',
 ]) {
   let $el = document.getElementById(translationId)
   if ($el) {

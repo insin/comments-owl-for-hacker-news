@@ -1166,30 +1166,11 @@ function itemListPage() {
       /* outline: 1px solid red; */
     }
   `)
-
-  let $style = addStyle('list-dynamic')
-
-  function configureCss() {
-    $style.textContent = [
-      // Hide flag links
-      config.listPageFlagging == 'disabled' && `
-        .flag-sep, .flag-sep + a {
-          display: none;
-        }
-      `,
-      // Hide hide links
-      config.listPageHiding == 'disabled' && `
-        .hide-sep, .hide-sep + a {
-          display: none;
-        }
-      `
-    ].filter(Boolean).map(dedent).join('\n')
-  }
   //#endregion
 
   //#region Functions
   function confirmFlag(e) {
-    if (config.listPageFlagging != 'confirm') return
+    if (!config.preventAccidentally) return
     let title = e.target.closest('tr').previousElementSibling.querySelector('.titleline a')?.textContent || 'this item'
     if (!confirm(`Are you sure you want to flag "${title}"?`)) {
       e.stopPropagation()
@@ -1200,7 +1181,7 @@ function itemListPage() {
   }
 
   function confirmHide(e) {
-    if (config.listPageHiding != 'confirm') return
+    if (!config.preventAccidentally) return
     let title = e.target.closest('tr').previousElementSibling.querySelector('.titleline a')?.textContent || 'this item'
     if (!confirm(`Are you sure you want to hide "${title}"?`)) {
       e.stopPropagation()
@@ -1285,16 +1266,12 @@ function itemListPage() {
   //#region Main
   if (location.pathname != '/flagged') {
     for (let $flagLink of document.querySelectorAll('span.subline > a[href^="flag"]')) {
-      // Wrap the '|' before flag links in an element so they can be hidden
-      $flagLink.previousSibling.replaceWith(h('span', {className: 'flag-sep'}, ' | '))
       $flagLink.addEventListener('click', confirmFlag, true)
     }
   }
 
   if (location.pathname != '/hidden') {
     for (let $hideLink of document.querySelectorAll('span.subline > a[href^="hide"]')) {
-      // Wrap the '|' before hide links in an element so they can be hidden
-      $hideLink.previousSibling.replaceWith(h('span', {className: 'hide-sep'}, ' | '))
       $hideLink.addEventListener('click', confirmHide, true)
     }
   }
@@ -1348,7 +1325,6 @@ function itemListPage() {
     log(`${noLastVisitCount} item${s(noLastVisitCount, " doesn't,s don't")} have a last visit stored`)
   }
 
-  configureCss()
   if (config.hideAiItems) {
     toggleAiItems()
   }
@@ -1356,6 +1332,9 @@ function itemListPage() {
   chrome.storage.local.onChanged.addListener((changes) => {
     if (changes.debug) {
       debug = changes.debug.newValue
+    }
+    if (changes.preventAccidentally) {
+      config.preventAccidentally = changes.preventAccidentally.newValue
     }
     let hasHideAiChanges = false
     for (let [configProp, change] of Object.entries(changes)) {
@@ -1367,14 +1346,6 @@ function itemListPage() {
     }
     if (hasHideAiChanges) {
       toggleAiItems()
-    }
-    if (changes.listPageFlagging) {
-      config.listPageFlagging = changes.listPageFlagging.newValue
-      configureCss()
-    }
-    if (changes.listPageHiding) {
-      config.listPageHiding = changes.listPageHiding.newValue
-      configureCss()
     }
   })
   //#endregion

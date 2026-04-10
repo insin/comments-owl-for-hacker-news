@@ -64,7 +64,6 @@ export const DEFAULT_CONFIG = {
   hidePastNav: false,
   hideReplyLinks: false,
   hideSubmitNav: false,
-  listPageFlagging: 'enabled',
-  listPageHiding: 'enabled',
   makeSubmissionTextReadable: true,
+  preventAccidentally: false,
 }
