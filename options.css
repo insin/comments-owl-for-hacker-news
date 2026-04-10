@@ -21,6 +21,10 @@
 }
 /* #endregion */
 
+.firefoxSizer {
+  display: none;
+}
+
 body {
   background-color: var(--background);
   color: var(--text-primary);
@@ -36,26 +40,17 @@ body.browserAction {
 body.browser-firefox.browserAction {
   min-width: auto;
   max-width: 450px;
+  .firefoxSizer {
+    display: block;
+    overflow: hidden;
+    line-height: 0;
+  }
 }
 body.browser-ios.browserAction {
   min-width: 0;
 }
 body.browser-mac.browserAction {
   min-width: 400px;
-}
-
-.firefoxSizer {
-  display: none;
-}
-body.browser-firefox .firefoxSizer {
-  display: block;
-  height: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  line-height: 0;
-  font-size: 1px;
-  pointer-events: none;
-  user-select: none;
 }
 
 body:not(.hidingAiItems) .hidingAiItems,
