@@ -20,21 +20,6 @@ $body.classList.add(`browser-${browser}`, theme)
 //#region Localisation
 document.title = chrome.i18n.getMessage('extensionName')
 
-for (let optionValue of [
-  'confirm',
-  'disabled',
-  'enabled',
-]) {
-  let label = chrome.i18n.getMessage(`option_${optionValue}`)
-  let $options = document.querySelectorAll(`option[value="${optionValue}"]`)
-  for (let $option of $options) {
-    $option.textContent = label
-  }
-  if ($options.length == 0) {
-    console.warn('could not find elements for optionValue', optionValue)
-  }
-}
-
 for (let translationId of [
   'addUpvotedToHeader',
   'autoCollapseNotNew',

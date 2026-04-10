@@ -69,15 +69,6 @@
   "navigationOptions": {
     "message": "Navigation"
   },
-  "option_confirm": {
-    "message": "Confirm"
-  },
-  "option_disabled": {
-    "message": "Disabled"
-  },
-  "option_enabled": {
-    "message": "Enabled"
-  },
   "preventAccidentally": {
     "message": "Prevent accidental flagging & hiding"
   },

@@ -1,16 +1,15 @@
-let debug = false
-let isSafari = navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test(navigator.userAgent)
-
 const HIGHLIGHT_COLOR = '#ffffde'
+const IS_SAFARI = navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test(navigator.userAgent)
+const MUTED_USERS_KEY = 'mutedUsers'
 const TOGGLE_HIDE = '[–]'
 const TOGGLE_SHOW = '[+]'
-const MUTED_USERS_KEY = 'mutedUsers'
 const USER_NOTES_KEY = 'userNotes'
-const LOGGED_OUT_USER_PAGE = `<head>
+
+const LOGGED_OUT_USER_PAGE = `<head op="muted">
   <meta name="referrer" content="origin">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" type="text/css" href="news.css">
-  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="icon" href="y18.svg">
   <title>Muted | Comments Owl for Hacker News</title>
 </head>
 <body>
@@ -42,8 +41,8 @@ const LOGGED_OUT_USER_PAGE = `<head>
             </table>
           </td>
         </tr>
-        <tr id="pagespace" title="Muted" style="height: 10px"></tr>
-        <tr>
+        <tr style="height: 10px"></tr>
+        <tr id="bigbox">
           <td>
             <table border="0">
               <tbody>
@@ -64,10 +63,11 @@ const LOGGED_OUT_USER_PAGE = `<head>
 </body>`
 
 //#region Config
-/** @type {import("./types").Config} */
-let DEFAULT_CONFIG
+let debug = false
 /** @type {import("./types").Config} */
 let config
+/** @type {import("./types").Config} */
+let defaultConfig
 //#endregion
 
 //#region Storage
@@ -325,7 +325,7 @@ function tweakNav() {
 
   // Add /upvoted if we're not on it and the user is logged in
   if (!location.pathname.startsWith('/upvoted')) {
-    let $userLink = document.querySelector('span.pagetop a[href^="user?id"]')
+    let $userLink = document.querySelector('a#me')
     if ($userLink) {
       let $submit = $pageTop.querySelector('a[href="submit"]')
       $submit.insertAdjacentElement('afterend', h('a', {href: `upvoted?id=${$userLink.textContent}`}, 'upvoted'))
@@ -340,7 +340,7 @@ function tweakNav() {
 
   // Create a new row for mobile nav
   let $mobileNav = /** @type {HTMLTableCellElement} */ ($pageTop.parentElement.cloneNode(true))
-  $mobileNav.querySelector('b')?.remove()
+  $mobileNav.querySelector('b.hnname')?.remove()
   $mobileNav.colSpan = 3
   $pageTop.closest('tbody').append(h('tr', {className: 'mobilenav'}, $mobileNav))
 
@@ -350,9 +350,6 @@ function tweakNav() {
   configureCss()
 
   chrome.storage.local.onChanged.addListener((changes) => {
-    if (changes.debug) {
-      debug = changes.debug.newValue
-    }
     for (let [configProp, change] of Object.entries(changes)) {
       if (['hidePastNav', 'hideCommentsNav', 'hideJobsNav', 'hideSubmitNav', 'addUpvotedToHeader'].includes(configProp)) {
         config[configProp] = change.newValue
@@ -1086,9 +1083,6 @@ function commentPage() {
   })
 
   chrome.storage.local.onChanged.addListener((changes) => {
-    if (changes.debug) {
-      debug = changes.debug.newValue
-    }
     if (changes.clickHeaderToCollapse) {
       config.clickHeaderToCollapse = changes.clickHeaderToCollapse.newValue
       configureCss()
@@ -1197,14 +1191,14 @@ function itemListPage() {
     let titleRE
     if (config.hideAiTitleRegexError || !config.hideAiTitleRegex) {
       warn('falling back to default AI title regex')
-      titleRE = new RegExp(DEFAULT_CONFIG.hideAiTitleRegex, 'i')
+      titleRE = new RegExp(defaultConfig.hideAiTitleRegex, 'i')
     } else {
       titleRE = new RegExp(config.hideAiTitleRegex, 'i')
     }
     let siteRE
       if (config.hideAiSiteRegexError || !config.hideAiSiteRegex) {
       warn('falling back to default AI site regex')
-      siteRE = new RegExp(DEFAULT_CONFIG.hideAiSiteRegex, 'i')
+      siteRE = new RegExp(defaultConfig.hideAiSiteRegex, 'i')
     } else {
       siteRE = new RegExp(config.hideAiSiteRegex, 'i')
     }
@@ -1330,9 +1324,6 @@ function itemListPage() {
   }
 
   chrome.storage.local.onChanged.addListener((changes) => {
-    if (changes.debug) {
-      debug = changes.debug.newValue
-    }
     if (changes.preventAccidentally) {
       config.preventAccidentally = changes.preventAccidentally.newValue
     }
@@ -1340,7 +1331,7 @@ function itemListPage() {
     for (let [configProp, change] of Object.entries(changes)) {
       if (['hideAiItems', 'hideAiTitleRegex', 'hideAiTitleRegexError', 'hideAiSiteRegex', 'hideAiSiteRegexError'].includes(configProp)) {
         // Reset regexes to the default when they're removed
-        config[configProp] = change.newValue === undefined ? DEFAULT_CONFIG[configProp] : change.newValue
+        config[configProp] = change.newValue === undefined ? defaultConfig[configProp] : change.newValue
         hasHideAiChanges = true
       }
     }
@@ -1822,18 +1813,20 @@ function main() {
   debug = config.debug
   log('config', config)
 
+  chrome.storage.local.onChanged.addListener((changes) => {
+    if (changes.debug) {
+      debug = changes.debug.newValue
+    }
+  })
+
   let $currentUserLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a#me'))
   currentUser = $currentUserLink?.innerText ?? ''
 
   if (location.pathname.startsWith('/login')) {
     log('login screen')
-    if (isSafari) {
+    if (IS_SAFARI) {
       log('trying to prevent Safari zooming in on the autofocused input')
       addStyle('login-safari', `input[type="text"], input[type="password"] { font-size: 16px; }`)
-      setTimeout(() => {
-        document.querySelector('input[type="password"]')?.focus()
-        document.querySelector('input[type="text"]')?.focus()
-      })
     }
     return
   }
@@ -1841,7 +1834,7 @@ function main() {
   if (location.pathname.startsWith('/muted')) {
     document.documentElement.innerHTML = LOGGED_OUT_USER_PAGE
     // Safari on macOS has a default dark background in dark mode
-    if (isSafari) {
+    if (IS_SAFARI) {
       addStyle('muted-safari', 'html { background-color: #fff; }')
     }
   }
@@ -1864,7 +1857,7 @@ function main() {
 
 chrome.storage.local.get(async (storedConfig) => {
   let settings = await import(chrome.runtime.getURL('settings.js'))
-  DEFAULT_CONFIG = settings.DEFAULT_CONFIG
+  defaultConfig = settings.DEFAULT_CONFIG
   config = {...settings.DEFAULT_CONFIG, ...storedConfig}
   main()
 })
