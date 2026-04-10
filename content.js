@@ -414,6 +414,7 @@ function commentPage() {
       padding: 0;
       color: inherit;
       font-family: inherit;
+      transition: color .15s ease;
     }
     /* Only show mute control at mobile widths */
     .mute {
@@ -480,6 +481,16 @@ function commentPage() {
           ~ .comment {
             margin-top: -12px;
           }
+          /* Indicate when clicking will activate the toggle */
+          &:hover .toggle {
+            color: #000;
+          }
+        }
+        .comhead:hover .toggle {
+          color: inherit;
+        }
+        .comhead .toggle:hover {
+          color: #000;
         }
       `,
       config.hideReplyLinks && `
