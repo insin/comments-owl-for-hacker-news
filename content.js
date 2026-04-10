@@ -476,10 +476,10 @@ function commentPage() {
         }
         .comhead-wrap {
           /* Negative margin gets removed from the click target in some browsers */
-          margin-bottom: 2px !important;
-          /* Adjust for the <br> in the markup by moving the comment up instead */
-          ~ .comment {
-            margin-top: -12px;
+          margin-bottom: .5em !important;
+          /* Hide the <br> the negative margin was adjusting for */
+          + br {
+            display: none;
           }
           /* Indicate when clicking will activate the toggle */
           &:hover .toggle {
