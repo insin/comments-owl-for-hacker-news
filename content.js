@@ -402,6 +402,10 @@ function commentPage() {
 
   //#region CSS
   addStyle('comments-static', `
+    /* Remove 1px gap between comments */
+    .comment-tree {
+      border-collapse: collapse;
+    }
     /* Hide built-in toggles */
     a.togg {
       display: none;
@@ -467,7 +471,6 @@ function commentPage() {
 
   function configureCss() {
     $style.textContent = [
-
       config.clickHeaderToCollapse && `
         /* Make comments full width so the comment header can always be clicked */
         .comment-tree,
