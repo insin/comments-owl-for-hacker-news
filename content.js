@@ -1806,7 +1806,7 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
     let userProfilePageOptions = {
       $context: $hovercard,
       onMutesChanged: () => {
-        if (onMutesChanged) hideHovercard()
+        if (onMutesChanged) hideHovercard({immediate: true})
         onMutesChanged?.()
       },
       onNotesChanged: () => {
