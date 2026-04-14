@@ -149,6 +149,7 @@ const autosizeTextArea = (() => {
   let textAreaPadding
 
   return function autosizeTextarea($textArea) {
+    if (!$textArea.offsetParent) return
     if (textAreaPadding == null) {
       textAreaPadding = Number(getComputedStyle($textArea).paddingTop.replace('px', '')) * 2
     }
@@ -192,7 +193,7 @@ function h(tagName, attributes, ...children) {
 
   if (attributes) {
     for (let [prop, value] of Object.entries(attributes)) {
-      if (prop.indexOf('on') === 0) {
+      if (prop.indexOf('on') == 0) {
         $el.addEventListener(prop.slice(2).toLowerCase(), value)
       }
       else if (prop.toLowerCase() == 'style') {
@@ -242,7 +243,7 @@ function s(count, suffixes = ',s') {
   if (!suffixes.includes(',')) {
     suffixes = `,${suffixes}`
   }
-  return suffixes.split(',')[count === 1 ? 0 : 1]
+  return suffixes.split(',')[count == 1 ? 0 : 1]
 }
 
 /**
@@ -1066,7 +1067,7 @@ function commentPage() {
     onMutesChanged: () => {
       mutedUsers = getMutedUsers()
       updateMutedUsersDisplay()
-    }
+    },
   })
   lastVisit = getLastVisit(itemId)
 
@@ -1542,7 +1543,8 @@ function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMut
       },
       onBlur() {
         saveNotes()
-      }
+      },
+      rows: 1,
     }))
 
     let $muted = h('u', null, getMutedStatusText())
@@ -1611,7 +1613,11 @@ function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMut
  * }} [options]
  */
 function userHovercards({onMutesChanged, onNotesChanged} = {}) {
-  const noteTextAreaProps = {style: {width: '100%', maxHeight: '12em', overflowY: 'auto'}}
+  const CLOSE_DELAY_MS = 400
+  const FADE_MS = 120
+  const NOTE_TEXT_AREA_PROPS = {style: {width: '100%', maxHeight: '12em', overflowY: 'auto'}}
+  const OPEN_DELAY_MS = 800
+  const PREFETCH_DELAY_MS = 100
 
   //#region CSS
   addStyle('hovercard-static', `
@@ -1628,6 +1634,7 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
       position-area: bottom span-right;
       position-try-fallbacks: top span-right, bottom span-left, top span-left;
       position: fixed;
+      transition: opacity ${FADE_MS}ms ease;
       width: 300px;
     }
     .hovercard-anchor {
@@ -1637,23 +1644,25 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
   //#endregion
 
   //#region State
-  /** @type {string} */
-  let activeUser
   /** @type {ReturnType<typeof setTimeout>} */
-  let closeTimer
+  let hideTimer
   /** @type {ReturnType<typeof setTimeout>} */
-  let openTimer
-  /** @type {Map<string, Promise<import("./types").UserProfile>>} */
-  let profileCache = new Map()
+  let prefetchTimer
+  /** @type {Map<string, import("./types").UserProfile>} */
+  let profileData = new Map()
+    /** @type {Map<string, Promise<import("./types").UserProfile>>} */
+  let profileRequests = new Map()
+  /** @type {ReturnType<typeof setTimeout>} */
+  let showTimer
   /** @type {HTMLAnchorElement} */
-  let $userAnchor
+  let $activeUser
   //#endregion
 
   //#region Functions
-  function clearUserAnchor() {
-    if ($userAnchor) {
-      $userAnchor.classList.remove('hovercard-anchor')
-      $userAnchor = null
+  function clearActiveUser() {
+    if ($activeUser) {
+      $activeUser.classList.remove('hovercard-anchor')
+      $activeUser = null
     }
   }
 
@@ -1662,63 +1671,84 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
    * @param {string} href
    * @returns {Promise<import("./types").UserProfile>}
    */
-  function fetchUserProfile(username, href) {
-    if (profileCache.has(username)) {
-      return profileCache.get(username)
+  async function fetchUserProfile(username, href) {
+    let res = await fetch(href, {credentials: 'same-origin'})
+    if (!res.ok) throw new Error(`Failed to fetch profile for ${username}`)
+
+    let html = await res.text()
+    let doc = new DOMParser().parseFromString(html, 'text/html')
+    let profile = {
+      username,
+      green: false,
+      created: '',
+      karma: '',
+    }
+
+    for (let $row of doc.querySelectorAll('#bigbox tr')) {
+      let $cells = $row.querySelectorAll('td')
+      let label = $cells[0]?.textContent
+      if (!label) break
+      if (label == 'user:') profile.green = Boolean($cells[1]?.querySelector('font[color="#3c963c"]'))
+      if (label == 'created:') profile.created = $cells[1]?.textContent ?? ''
+      if (label == 'karma:') profile.karma = $cells[1]?.textContent ?? ''
+    }
+
+    return profile
+  }
+
+  /** @param {HTMLAnchorElement} $user */
+  function getUserProfile($user) {
+    let username = $user.textContent
+    if (profileData.has(username)) {
+      return Promise.resolve(profileData.get(username))
+    }
+
+    if (profileRequests.has(username)) {
+      return profileRequests.get(username)
     }
 
     let promise = (async () => {
-      let res = await fetch(href, {credentials: 'same-origin'})
-      if (!res.ok) throw new Error(`Failed to fetch profile for ${username}`)
-
-      let html = await res.text()
-      let doc = new DOMParser().parseFromString(html, 'text/html')
-      let profile = {
-        username,
-        green: false,
-        created: '',
-        karma: '',
-      }
-
-      for (let $row of doc.querySelectorAll('#bigbox tr')) {
-        let $cells = $row.querySelectorAll('td')
-        let label = $cells[0]?.textContent
-        if (!label) break
-        if (label == 'user:') profile.green = Boolean($cells[1]?.querySelector('font[color="#3c963c"]'))
-        if (label === 'created:') profile.created = $cells[1]?.textContent ?? ''
-        if (label === 'karma:') profile.karma = $cells[1]?.textContent ?? ''
-      }
-
+      let profile = await fetchUserProfile(username, $user.href)
+      profileData.set(username, profile)
+      profileRequests.delete(username)
       return profile
     })()
 
-    profileCache.set(username, promise)
+    profileRequests.set(username, promise)
     return promise
   }
 
-  function hideHovercard() {
-    clearTimeout(openTimer)
-    clearTimeout(closeTimer)
+  function scheduleHideHovercard({force = false} = {}) {
+    clearTimeout(hideTimer)
 
-    closeTimer = setTimeout(() => {
-      // Don't close if the notes input is active
-      if ($hovercard.contains(document.activeElement) && document.activeElement.tagName == 'TEXTAREA') return
-      hideHovercardImmediately()
-    }, 250)
+    hideTimer = setTimeout(() => {
+      if (!force) {
+        // Don't hide if the notes are focused
+        if ($hovercard.contains(document.activeElement) && document.activeElement.tagName == 'TEXTAREA') return
+      }
+      hideHovercard()
+    }, CLOSE_DELAY_MS)
   }
 
-  function hideHovercardImmediately() {
-    activeUser = null
-    clearUserAnchor()
-    if ($hovercard.matches(':popover-open')) {
+  function hideHovercard({immediate = false} = {}) {
+    if (!$hovercard.matches(':popover-open')) return
+
+    if (immediate) {
       $hovercard.hidePopover()
+      clearActiveUser()
+      return
     }
+
+    $hovercard.style.opacity = '0'
+    setTimeout(() => {
+      $hovercard.hidePopover()
+      clearActiveUser()
+    }, FADE_MS)
   }
 
   /** @param {import("./types").UserProfile} profile */
   function renderHovercardContents(profile) {
-    $hovercard.innerHTML = ''
-    $hovercard.append(
+    $hovercard.replaceChildren(
       h('table', {border: '0', style: {width: '100%'}},
         h('col', {style: {width: '1px'}}),
         h('tbody', null,
@@ -1740,69 +1770,83 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
             h('td'),
             h('td', null,
               h('a', {href: `threads?id=${profile.username}`},
-                h('u', null, 'comments')
+                h('u', null, 'comments'),
               ),
             ),
           ),
-        )
+        ),
       )
     )
   }
 
   /** @param {HTMLAnchorElement} $user */
-  function setUserAnchor($user) {
-    if ($userAnchor && $userAnchor !== $user) {
-      $userAnchor.classList.remove('hovercard-anchor')
+  function setActiveUser($user) {
+    if ($activeUser && $activeUser !== $user) {
+      $activeUser.classList.remove('hovercard-anchor')
     }
-    $userAnchor = $user
-    activeUser = $user.textContent
-    $userAnchor.classList.add('hovercard-anchor')
+    $activeUser = $user
+    $activeUser.classList.add('hovercard-anchor')
   }
 
   /** @param {HTMLAnchorElement} $user */
   function showHovercard($user) {
+    if ($hovercard.matches(':popover-open')) {
+      // Don't hide or re-show if the user mouses over the active user link
+      if ($activeUser === $user) {
+        clearTimeout(hideTimer)
+        return
+      }
+      // Hide if another user's notes are focused
+      if ($hovercard.contains(document.activeElement) && document.activeElement.tagName == 'TEXTAREA') {
+        scheduleHideHovercard({force: true})
+      }
+    }
+
     let username = $user.textContent
+    let userProfilePageOptions = {
+      $context: $hovercard,
+      onMutesChanged: () => {
+        if (onMutesChanged) hideHovercard()
+        onMutesChanged?.()
+      },
+      onNotesChanged: () => {
+        onNotesChanged?.(username)
+      },
+      textAreaProps: NOTE_TEXT_AREA_PROPS,
+    }
 
-    clearTimeout(closeTimer)
-    clearTimeout(openTimer)
+    clearTimeout(prefetchTimer)
+    clearTimeout(showTimer)
 
-    openTimer = setTimeout(async () => {
-      setUserAnchor($user)
+    if (!profileRequests.has(username) && !profileData.has(username)) {
+      prefetchTimer = setTimeout(() => {
+        getUserProfile($user)
+      }, PREFETCH_DELAY_MS)
+    }
 
-      if (!profileCache.has(username)) {
-        renderHovercardContents({username, green: false, created: '···', karma: '···'})
-        $hovercard.showPopover()
-        userProfilePage({
-          $context: $hovercard,
-          textAreaProps: noteTextAreaProps,
-        })
-      } else {
-        $hovercard.innerHTML = ''
-        $hovercard.showPopover()
+    showTimer = setTimeout(async () => {
+      setActiveUser($user)
+      $hovercard.style.opacity = '0'
+      let profile = profileData.get(username)
+      renderHovercardContents(profile ?? {username, green: false, created: '···', karma: '···'})
+      $hovercard.showPopover()
+      userProfilePage(userProfilePageOptions)
+      requestAnimationFrame(() => {
+        $hovercard.style.opacity = '1'
+      })
+
+      if (!profile) {
+        try {
+          profile = await getUserProfile($user)
+          if ($activeUser !== $user) return
+          renderHovercardContents(profile)
+          userProfilePage(userProfilePageOptions)
+        } catch (error) {
+          $hovercard.textContent = 'Could not load profile'
+          warn(error)
+        }
       }
-
-      try {
-        let profile = await fetchUserProfile(username, $user.href)
-        if (activeUser !== username) return
-        renderHovercardContents(profile)
-        // XXX Cache for the onNotesChanged callback if the user edits and mouses out
-        let profileUser = activeUser
-        userProfilePage({
-          $context: $hovercard,
-          onMutesChanged: () => {
-            if (onMutesChanged) hideHovercardImmediately()
-              onMutesChanged?.()
-          },
-          onNotesChanged: () => {
-            onNotesChanged?.(profileUser)
-          },
-          textAreaProps: noteTextAreaProps,
-        })
-      } catch (error) {
-        $hovercard.textContent = 'Could not load profile'
-        warn(error)
-      }
-    }, 150)
+    }, OPEN_DELAY_MS)
   }
   //#endregion
 
@@ -1812,10 +1856,10 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
     popover: 'auto',
   })
   $hovercard.addEventListener('mouseenter', () => {
-    clearTimeout(closeTimer)
+    clearTimeout(hideTimer)
   })
   $hovercard.addEventListener('mouseleave', () => {
-    hideHovercard()
+    scheduleHideHovercard()
   })
   document.body.appendChild($hovercard)
   document.addEventListener('mouseover', (e) => {
@@ -1824,18 +1868,22 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
   })
   document.addEventListener('mouseout', (e) => {
     if (!(e.target instanceof HTMLElement && e.target.closest('a.hnuser') && !$hovercard.contains(e.target))) return
-    hideHovercard()
+    clearTimeout(prefetchTimer)
+    clearTimeout(showTimer)
+    scheduleHideHovercard()
   })
   window.addEventListener('pagehide', () => {
-    clearTimeout(openTimer)
-    clearTimeout(closeTimer)
-    hideHovercardImmediately()
+    clearTimeout(hideTimer)
+    clearTimeout(prefetchTimer)
+    clearTimeout(showTimer)
+    hideHovercard({immediate: true})
   })
   //#endregion
 }
 //#endregion
 
 //#region Main
+/** @type {string} */
 let currentUser
 function main() {
   debug = config.debug
