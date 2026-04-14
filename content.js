@@ -398,9 +398,7 @@ function tweakNav() {
  * On each comment page view, we store the current comment count, the max
  * comment id on the page and the current time as the last visit time.
  */
-function commentPage() {
-  log('comment page')
-
+function itemPage() {
   //#region CSS
   addStyle('comments-static', `
     /* Remove 1px gap between comments */
@@ -512,6 +510,8 @@ function commentPage() {
       `,
     ].filter(Boolean).map(dedent).join('\n')
   }
+
+  configureCss()
   //#endregion
 
   //#region State
@@ -523,6 +523,8 @@ function commentPage() {
   let comments = []
   /** @type {Record<string, HNComment>} */
   let commentsById = {}
+  /** @type {FocusedComment} */
+  let focusedComment
   /** @type {boolean} */
   let hasNewComments = false
   /** @type {string} */
@@ -543,68 +545,9 @@ function commentPage() {
   let replyToMutedCommentCount = 0
   //#endregion
 
+  //#region Classes
   class HNComment {
-    get isMuted() {
-      return mutedUsers.has(this.user)
-    }
-
-    /**
-     * @returns {HNComment[]}
-     */
-    get childComments() {
-      if (this._childComments == null) {
-        this._childComments = []
-        for (let i = this.index + 1; i < comments.length; i++) {
-          if (comments[i].indent <= this.indent) {
-            break
-          }
-          this._childComments.push(comments[i])
-        }
-      }
-      return this._childComments
-    }
-
-    get collapsedChildrenText() {
-      return this.childCommentCount == 0 ? '' : [
-        this.isDeleted ? '(' : ' | (',
-        this.childCommentCount,
-        ` child${s(this.childCommentCount, 'ren')})`,
-      ].join('')
-    }
-
-    /**
-     * @returns {HNComment[]}
-     */
-    get nonMutedChildComments() {
-      if (this._nonMutedChildComments == null) {
-        let muteIndent = null
-        this._nonMutedChildComments = this.childComments.filter(comment => {
-          if (muteIndent != null) {
-            if (comment.indent > muteIndent) {
-              return false
-            }
-            muteIndent = null
-          }
-
-          if (comment.isMuted) {
-            muteIndent = comment.indent
-            return false
-          }
-
-          return true
-        })
-      }
-      return this._nonMutedChildComments
-    }
-
-    /**
-     * returns {number}
-     */
-    get childCommentCount() {
-      return this.nonMutedChildComments.length
-    }
-
-    /**
+      /**
      * @param {HTMLElement} $wrapper
      * @param {number} index
      */
@@ -635,10 +578,10 @@ function commentPage() {
       /** @type {HTMLElement} */
       this.$wrapper = $wrapper
 
-      /** @private @type {HNComment[]} */
+      /** @type {HNComment[]} */
       this._childComments = null
 
-      /** @private @type {HNComment[]} */
+      /** @type {HNComment[]} */
       this._nonMutedChildComments = null
 
       /**
@@ -697,6 +640,57 @@ function commentPage() {
       })
     }
 
+    get isMuted() {
+      return mutedUsers.has(this.user)
+    }
+
+    get childComments() {
+      if (this._childComments == null) {
+        this._childComments = []
+        for (let i = this.index + 1; i < comments.length; i++) {
+          if (comments[i].indent <= this.indent) {
+            break
+          }
+          this._childComments.push(comments[i])
+        }
+      }
+      return this._childComments
+    }
+
+    get collapsedChildrenText() {
+      return this.childCommentCount == 0 ? '' : [
+        this.isDeleted ? '(' : ' | (',
+        this.childCommentCount,
+        ` child${s(this.childCommentCount, 'ren')})`,
+      ].join('')
+    }
+
+    get nonMutedChildComments() {
+      if (this._nonMutedChildComments == null) {
+        let muteIndent = null
+        this._nonMutedChildComments = this.childComments.filter(comment => {
+          if (muteIndent != null) {
+            if (comment.indent > muteIndent) {
+              return false
+            }
+            muteIndent = null
+          }
+
+          if (comment.isMuted) {
+            muteIndent = comment.indent
+            return false
+          }
+
+          return true
+        })
+      }
+      return this._nonMutedChildComments
+    }
+
+    get childCommentCount() {
+      return this.nonMutedChildComments.length
+    }
+
     addControls() {
       this.$comhead.insertAdjacentText('afterbegin', ' ')
       this.$comhead.insertAdjacentElement('afterbegin', this.$toggleControl)
@@ -716,10 +710,7 @@ function commentPage() {
       }
     }
 
-    /**
-     * @param {boolean} updateChildren
-     */
-    updateDisplay(updateChildren = true) {
+    updateDisplay({excludeChildren = false} = {}) {
       // Show/hide this comment, preserving display of the meta bar
       toggleDisplay(this.$comment, this.isCollapsed)
       if (this.$voteLinks) {
@@ -736,7 +727,7 @@ function commentPage() {
         toggleDisplay(this.$childCount, !this.isCollapsed)
       }
 
-      if (updateChildren) {
+      if (!excludeChildren) {
         for (let i = 0; i < this.nonMutedChildComments.length; i++) {
           let child = this.nonMutedChildComments[i]
           toggleDisplay(child.$wrapper, this.isCollapsed)
@@ -791,6 +782,29 @@ function commentPage() {
     }
   }
 
+  class FocusedComment {
+    /**  @param {HTMLElement} $wrapper */
+    constructor($wrapper) {
+      let $user = /** @type {HTMLElement} */ ($wrapper.querySelector('a.hnuser'))
+      /** @type {string} */
+      this.user = $user?.innerText
+
+      /** @type {HTMLElement} */
+      this.$note = h('span', {className: 'note'})
+      this.updateNote()
+
+      let $comhead = $wrapper.querySelector('td.default > div span.comhead')
+      if ($comhead) {
+        $comhead.append(this.$note)
+      }
+    }
+
+    updateNote() {
+      this.$note.textContent = userNotes[this.user] ? ` | nb: ${userNotes[this.user].split(/\r?\n/)[0]}` : ''
+    }
+  }
+  //#endregion
+
   //#region Functions
   function addHighlightCommentsControl($container) {
     let $highlightComments = h('span', null, ' | ', h('a', {
@@ -839,13 +853,12 @@ function commentPage() {
    * Adds the appropriate page controls depending on whether or not there are
    * new comments or any comments at all.
    */
-  function addPageControls() {
+  function addSubmissionPageControls() {
     let $container = /** @type {HTMLElement} */ (document.querySelector('td.subtext'))
     if (!$container) {
-      warn('no container found for page controls')
+      warn('no container found for submission controls')
       return
     }
-
     if (hasNewComments) {
       addNewCommentControls($container)
     }
@@ -878,8 +891,7 @@ function commentPage() {
       // Older comments display `on ${date}` instead of a relative time
       if (fromWhen.startsWith(' on')) {
         fromWhen = fromWhen.replace(' on', 'since')
-      }
-      else {
+      } else {
         fromWhen = `from ${fromWhen}`
       }
       return `${howMany} ${fromWhen}`
@@ -967,66 +979,11 @@ function commentPage() {
     })
   }
 
-  function initComments() {
-    let commentWrappers = /** @type {NodeListOf<HTMLTableRowElement>} */ (document.querySelectorAll('table.comment-tree tr.athing'))
-    log('number of comment wrappers', commentWrappers.length)
-
-    let commentIndex = 0
-    for (let $wrapper of commentWrappers) {
-      let comment = new HNComment($wrapper, commentIndex++)
-      comments.push(comment)
-      if (!comment.isMuted && !comment.isDeleted) {
-        commentsById[comment.id] = comment
-      }
-    }
-
-    let lastVisitMaxCommentId = lastVisit?.maxCommentId ?? -1
-    for (let i = 0; i < comments.length; i++) {
-      let comment = comments[i]
-
-      if (comment.isMuted) {
-        mutedCommentCount++
-        for (let j = i + 1; j <= i + comment.childComments.length; j++) {
-          if (comments[j].isMuted) {
-            mutedCommentCount++
-          } else {
-            replyToMutedCommentCount++
-          }
-        }
-        // Skip child comments as we've already accounted for them
-        i += comment.childComments.length
-        // Don't consider muted comments or their replies when counting new
-        // comments, or add controls to them, as they'll all be hidden.
-        continue
-      }
-
-      if (!comment.isDeleted && comment.isNewerThan(lastVisitMaxCommentId)) {
-        newCommentCount++
-      }
-
-      comment.addControls()
-    }
-
-    maxCommentId = comments.map(comment => comment.id).sort().pop()
-    hasNewComments = lastVisit != null && newCommentCount > 0
-  }
-
   function muteUser(user) {
     mutedUsers = getMutedUsers()
     mutedUsers.add(user)
     storeMutedUsers(mutedUsers)
     updateMutedUsersDisplay()
-  }
-
-  // TODO Only store visit data when the item header is present (i.e. not a comment permalink)
-  // TODO Only store visit data for commentable items (a reply box / reply links are visible)
-  // TODO Clear any existing stored visit if the item is no longer commentable
-  function storePageViewData() {
-    storeVisit(itemId, new Visit({
-      commentCount,
-      maxCommentId,
-      time: new Date(),
-    }))
   }
 
   function updateMutedUsersDisplay() {
@@ -1050,6 +1007,9 @@ function commentPage() {
   }
 
   function updateUserNotes(username) {
+    if (focusedComment && focusedComment.user == username) {
+      focusedComment.updateNote()
+    }
     for (let comment of comments) {
       if (comment.user == username) {
         comment.updateNote()
@@ -1069,43 +1029,116 @@ function commentPage() {
       updateMutedUsersDisplay()
     },
   })
-  lastVisit = getLastVisit(itemId)
 
-  let $commentsLink = document.querySelector('span.subline > a[href^=item]')
-  if ($commentsLink && /^\d+/.test($commentsLink.textContent)) {
-    commentCount = Number($commentsLink.textContent.split(/\s/).shift())
+  // Figure out which type of item page we're on
+  let $submission = document.querySelector('.fatitem tr.submission')
+  let $commentsLink
+  if ($submission) {
+    log('submission page')
+    $commentsLink = document.querySelector('td.subtext .subline > a[href^=item]')
+    if ($commentsLink) {
+      lastVisit = getLastVisit(itemId)
+    } else {
+      log('submission not commentable')
+    }
   } else {
-    warn('number of comments link not found')
+    log('comment thread')
+    let $focusedComment = /** @type {HTMLElement} */ (document.querySelector('.fatitem tr.athing'))
+    if ($focusedComment) {
+      focusedComment = new FocusedComment($focusedComment)
+    }
   }
 
-  configureCss()
-  initComments()
+  //#region Process comment thread
+  let commentWrappers = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.comment-tree tr.athing'))
+  log(commentWrappers.length, `comment element${s(commentWrappers.length)}`)
+
+  let commentIndex = 0
+  for (let $wrapper of commentWrappers) {
+    let comment = new HNComment($wrapper, commentIndex++)
+    comments.push(comment)
+    if (!comment.isMuted && !comment.isDeleted) {
+      commentsById[comment.id] = comment
+    }
+  }
+
+  let lastVisitMaxCommentId = lastVisit?.maxCommentId ?? Infinity
+  for (let i = 0; i < comments.length; i++) {
+    let comment = comments[i]
+
+    if (comment.isMuted) {
+      mutedCommentCount++
+      for (let j = i + 1; j <= i + comment.childComments.length; j++) {
+        if (comments[j].isMuted) {
+          mutedCommentCount++
+        } else {
+          replyToMutedCommentCount++
+        }
+      }
+      // Skip child comments as we've already accounted for them
+      i += comment.childComments.length
+      // Don't consider muted comments or their replies when counting new
+      // comments, or add controls to them, as they'll all be hidden.
+      continue
+    }
+
+    if (!comment.isDeleted && comment.isNewerThan(lastVisitMaxCommentId)) {
+      newCommentCount++
+    }
+
+    comment.addControls()
+  }
+
   // Update display of any comments which were already collapsed by HN's own
   // functionality, e.g. deleted comments
-  comments.filter(comment => comment.isCollapsed).forEach(comment => comment.updateDisplay(false))
-  hideMutedUsers()
-  if (hasNewComments && (autoHighlightNew || autoCollapseNotNew)) {
-    if (autoHighlightNew) {
-      highlightNewComments(true, lastVisit.maxCommentId)
-    }
-    if (autoCollapseNotNew) {
-      collapseThreadsWithoutNewComments(true, lastVisit.maxCommentId)
+  for (let comment of comments) {
+    if (comment.isCollapsed) {
+      comment.updateDisplay({excludeChildren: true})
     }
   }
-  addPageControls()
-  storePageViewData()
 
-  log('page view data', {
-    autoHighlightNew,
-    commentCount,
-    mutedCommentCount,
-    replyToMutedCommentCount,
-    hasNewComments,
-    itemId,
-    lastVisit,
-    maxCommentId,
-    newCommentCount,
-  })
+  hideMutedUsers()
+
+  maxCommentId = comments.map(comment => comment.id).sort().pop()
+  hasNewComments = lastVisit != null && newCommentCount > 0
+  //#endregion
+
+  // Always try to add submission controls
+  addSubmissionPageControls()
+  // New comment highlighting for submission pages with a comment count
+  if ($commentsLink) {
+    if (/^\d+/.test($commentsLink.textContent)) {
+      commentCount = Number($commentsLink.textContent.split(/\s/).shift())
+    } else {
+      commentCount = 0
+    }
+    if (hasNewComments && (autoHighlightNew || autoCollapseNotNew)) {
+      if (autoHighlightNew) {
+        highlightNewComments(true, lastVisit.maxCommentId)
+      }
+      if (autoCollapseNotNew) {
+        collapseThreadsWithoutNewComments(true, lastVisit.maxCommentId)
+      }
+    }
+    if (commentCount > 0) {
+      // TODO Clear If the item is no longer accepting comments (and every comment is older than 45 days?)
+      storeVisit(itemId, new Visit({
+        commentCount,
+        maxCommentId,
+        time: new Date(),
+      }))
+    }
+    log('submission page info', {
+      itemId,
+      commentCount,
+      lastVisit,
+      maxCommentId,
+      newCommentCount,
+      hasNewComments,
+      mutedCommentCount,
+      replyToMutedCommentCount,
+    })
+  }
 
   chrome.storage.local.onChanged.addListener((changes) => {
     if (changes.clickHeaderToCollapse) {
@@ -1379,8 +1412,6 @@ let $profileStyle
  * }} options
  */
 function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMutesChanged, onNotesChanged} = {}) {
-  log('user profile page')
-
   let $userLink = /** @type {HTMLAnchorElement} */ ($context.querySelector('a.hnuser'))
   if ($userLink == null) {
     warn('not a valid user')
@@ -1924,9 +1955,10 @@ function main() {
     itemListPage()
   }
   else if (/^item/.test(path)) {
-    commentPage()
+    itemPage()
   }
   else if (/^(user|muted)/.test(path)) {
+    log('user profile page')
     userProfilePage()
   }
 }
