@@ -862,7 +862,7 @@ function itemPage() {
     if (hasNewComments) {
       addNewCommentControls($container)
     }
-    else if (commentCount > 1) {
+    if (commentCount > 1) {
       addHighlightCommentsControl($container)
     }
   }
@@ -916,7 +916,7 @@ function itemPage() {
       id: 'timeTravelButton',
       onclick() {
         let referenceCommentId = sortedCommentIds[showNewCommentsAfter - 1]
-        log(`manually highlighting ${howMany} comments since ${referenceCommentId}`)
+        log(`highlighting ${howMany} comment${s(howMany)} since ${referenceCommentId}`)
         highlightNewComments(true, referenceCommentId)
         collapseThreadsWithoutNewComments(true, referenceCommentId)
         $timeTravelControl.remove()
@@ -1103,8 +1103,6 @@ function itemPage() {
   hasNewComments = lastVisit != null && newCommentCount > 0
   //#endregion
 
-  // Always try to add submission controls
-  addSubmissionPageControls()
   // New comment highlighting for submission pages with a comment count
   if ($commentsLink) {
     if (/^\d+/.test($commentsLink.textContent)) {
@@ -1139,6 +1137,9 @@ function itemPage() {
       replyToMutedCommentCount,
     })
   }
+
+  // Always try to add submission controls
+  addSubmissionPageControls()
 
   chrome.storage.local.onChanged.addListener((changes) => {
     if (changes.clickHeaderToCollapse) {
