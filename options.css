@@ -33,6 +33,7 @@ body {
   margin: 0;
   padding: var(--body-padding);
   user-select: none;
+  -webkit-user-select: none;
 }
 body.browserAction {
   min-width: 450px;
@@ -249,7 +250,6 @@ section.textarea {
 
 /* #region macOS Safari */
 body.mac {
-  padding-top: 6px;
   form {
     padding: 4px 0;
   }
@@ -272,9 +272,14 @@ body.mac {
     border-top: none;
   }
   /* Option group */
+  /* Space before first option group */
+  section.group:first-of-type,
+  section.labelled:first-of-type {
+    margin-top: 9px;
+  }
   /* Space option groups */
   section.group:not(:first-of-type) {
-    margin-top: 20px;
+    margin-top: 18px;
   }
   /* macOS uses disclosure triangles for collapsible options */
   section.collapsible > label > svg:not(:active) {
@@ -293,12 +298,18 @@ body.mac {
   }
 
   /* Option */
-  .options {
-    margin-left: 32px;
+  section.group .options {
+    margin-left: 12px;
   }
   .options > section {
     padding-bottom: 0;
     &:first-of-type {
+      padding-top: 0;
+    }
+  }
+  section.labelled .options {
+    margin-left: 32px;
+    & > section:first-of-type {
       padding-top: 8px;
     }
   }
@@ -524,6 +535,7 @@ body.edge {
 
 /* #region macOS Safari */
 body.mac {
+  --background: transparent;
   --disclosure-triangle-color: rgb(154, 154, 154);
   --group-label-weight: 400;
   --text-secondary: rgb(123, 123, 123);
@@ -580,7 +592,6 @@ body.ios {
 
   /* #region macOS Safari */
   body.mac {
-    --background: transparent;
     --disclosure-triangle-color: rgb(154, 153, 154);
     --text-secondary: rgb(184, 184, 184);
   }
