@@ -21,6 +21,7 @@ $body.classList.add(`browser-${browser}`, theme)
 document.title = chrome.i18n.getMessage('extensionName')
 
 for (let translationId of [
+  'addActiveToHeader',
   'addUpvotedToHeader',
   'autoCollapseNotNew',
   'autoHighlightNew',

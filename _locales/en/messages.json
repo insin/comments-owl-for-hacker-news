@@ -6,6 +6,9 @@
     "message": "Highlight new comments, mute users, and other tweaks for Hacker News",
     "description": "<= 112 characters"
   },
+  "addActiveToHeader": {
+    "message": "Add \"active\""
+  },
   "addUpvotedToHeader": {
     "message": "Add \"upvoted\""
   },

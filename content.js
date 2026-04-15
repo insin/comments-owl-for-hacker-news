@@ -303,6 +303,7 @@ function tweakNav() {
       config.hideCommentsNav && 'span.comments-sep, span.comments-sep + a',
       config.hideJobsNav && 'span.jobs-sep, span.jobs-sep + a',
       config.hideSubmitNav && 'span.submit-sep, span.submit-sep + a',
+      !config.addActiveToHeader && 'span.active-sep, span.active-sep + a',
       !config.addUpvotedToHeader && 'span.upvoted-sep, span.upvoted-sep + a',
     ].filter(Boolean)
     $style.textContent = hideNavSelectors.length == 0 ? '' : dedent(`
@@ -324,23 +325,39 @@ function tweakNav() {
     )
   }
 
+  let $active
+  let $submit = $pageTop.querySelector('a[href="submit"]')
+
+  // Add /active if we're not on it
+  if ($submit && !location.pathname.startsWith('/active')) {
+    $active = h('a', {href: 'active'}, 'active')
+    $submit.insertAdjacentElement('afterend', $active)
+    $submit.insertAdjacentElement('afterend', h('span', {className: 'active-sep'}, ' | '))
+  }
+
   // Add /upvoted if we're not on it and the user is logged in
-  if (!location.pathname.startsWith('/upvoted')) {
+  if ($submit && !location.pathname.startsWith('/upvoted')) {
     let $userLink = document.querySelector('a#me')
     if ($userLink) {
-      let $submit = $pageTop.querySelector('a[href="submit"]')
-      $submit.insertAdjacentElement('afterend', h('a', {href: `upvoted?id=${$userLink.textContent}`}, 'upvoted'))
-      $submit.insertAdjacentElement('afterend', h('span', {className: 'upvoted-sep'}, ' | '))
+      let $upvoted = h('a', {href: `upvoted?id=${$userLink.textContent}`}, 'upvoted')
+      let $separator = h('span', {className: 'upvoted-sep'}, ' | ')
+      if (location.pathname.startsWith('/active')) {
+        // Add after the "active" page title so positioning is consistent
+        $pageTop.append($separator, $upvoted)
+      } else {
+        let $target = $active || $submit
+        $target.insertAdjacentElement('afterend', $upvoted)
+        $target.insertAdjacentElement('afterend', $separator)
+      }
     }
   }
 
   // Wrap separators in elements so they can be used to hide items
   for (let $node of $pageTop.childNodes) {
-    if ($node.nodeType == Node.TEXT_NODE &&
-        $node.nodeValue == ' | ' &&
-        // Don't wrap the separator for the page title if there is one
-        $node.nextSibling?.nodeName != 'FONT') {
-      $node.replaceWith(h('span', {className: `${$node.nextSibling?.textContent}-sep`}, ' | '))
+    if ($node.nodeType == Node.TEXT_NODE && $node.nodeValue == ' | ') {
+      $node.replaceWith(h('span', {
+        className: `${$node.nextSibling?.nodeName == 'FONT' ? 'page-title' : $node.nextSibling?.textContent}-sep`,
+      }, ' | '))
     }
   }
 
@@ -357,7 +374,7 @@ function tweakNav() {
 
   chrome.storage.local.onChanged.addListener((changes) => {
     for (let [configProp, change] of Object.entries(changes)) {
-      if (['hidePastNav', 'hideCommentsNav', 'hideJobsNav', 'hideSubmitNav', 'addUpvotedToHeader'].includes(configProp)) {
+      if (['hidePastNav', 'hideCommentsNav', 'hideJobsNav', 'hideSubmitNav', 'addActiveToHeader', 'addUpvotedToHeader'].includes(configProp)) {
         config[configProp] = change.newValue
         configureCss()
       }

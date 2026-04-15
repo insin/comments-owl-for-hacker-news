@@ -1,5 +1,6 @@
 /** @type {import("./types").Config} */
 export const DEFAULT_CONFIG = {
+  addActiveToHeader: false,
   addUpvotedToHeader: true,
   autoCollapseNotNew: true,
   autoHighlightNew: true,

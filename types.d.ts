@@ -1,4 +1,5 @@
 export type Config = {
+  addActiveToHeader: boolean
   addUpvotedToHeader: boolean
   autoCollapseNotNew: boolean
   autoHighlightNew: boolean
