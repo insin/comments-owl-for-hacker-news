@@ -335,9 +335,14 @@ function tweakNav() {
   }
 
   // Wrap separators in elements so they can be used to hide items
-  Array.from($pageTop.childNodes)
-       .filter(n => n.nodeType == Node.TEXT_NODE && n.nodeValue == ' | ')
-       .forEach(n => n.replaceWith(h('span', {className: `${n.nextSibling?.textContent}-sep`}, ' | ')))
+  for (let $node of $pageTop.childNodes) {
+    if ($node.nodeType == Node.TEXT_NODE &&
+        $node.nodeValue == ' | ' &&
+        // Don't wrap the separator for the page title if there is one
+        $node.nextSibling?.nodeName != 'FONT') {
+      $node.replaceWith(h('span', {className: `${$node.nextSibling?.textContent}-sep`}, ' | '))
+    }
+  }
 
   // Create a new row for mobile nav
   let $mobileNav = /** @type {HTMLTableCellElement} */ ($pageTop.parentElement.cloneNode(true))
