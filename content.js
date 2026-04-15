@@ -852,7 +852,7 @@ function itemPage() {
    */
   function addNewCommentControls($container) {
     $container.appendChild(
-      h('div', null,
+      h('div', {id: 'new-comments-controls'},
         h('p', null,
           `${newCommentCount} new comment${s(newCommentCount)} since ${lastVisit.time.toLocaleString()}`
         ),
@@ -946,6 +946,7 @@ function itemPage() {
         highlightNewComments(true, referenceCommentId)
         collapseThreadsWithoutNewComments(true, referenceCommentId)
         $timeTravelControl.remove()
+        document.querySelector('#new-comments-controls')?.remove()
       },
       type: 'button',
       value: 'highlight recent',
