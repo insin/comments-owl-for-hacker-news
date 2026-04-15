@@ -1288,7 +1288,7 @@ function itemListPage() {
   }
 
   function toggleAiItems() {
-    if (!['/', '/ask', '/front', '/newest', '/news', '/show', '/shownew'].includes(location.pathname)) return
+    if (!['/', '/active', '/ask', '/front', '/newest', '/news', '/show', '/shownew'].includes(location.pathname)) return
 
     let titleRE
     if (config.hideAiTitleRegexError || !config.hideAiTitleRegex) {
