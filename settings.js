@@ -32,6 +32,7 @@ export const DEFAULT_CONFIG = {
     'coding agents?',
     'Copilot',
     'Cowork',
+    'Gas ?Town',
     'Gemini',
     'Gemma',
     'GenAI',
@@ -46,6 +47,7 @@ export const DEFAULT_CONFIG = {
     // Things which maybe qualify "model"
     '(?:best|embedding|language|local|open(?:[- ]?(?:source|weight))?|small|trained|voice) models?',
     'model (?:collapse|context protocol|training)',
+    'Mythos',
     'Nano Banana',
     'OpenCode',
     'OpenAI',
