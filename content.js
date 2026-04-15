@@ -435,6 +435,7 @@ function itemPage() {
       width: 100%;
     }
     #timeTravelButton {
+      font-family: inherit;
       margin-right: 1em;
     }
 
@@ -597,11 +598,14 @@ function itemPage() {
        */
       this.isCollapsed = $wrapper.classList.contains('coll')
 
+      /** @type {boolean} */
+      this.isHighlighted = false
+
       /**
        * Comments whose text has been removed but are still displayed may have
        * their text replaced with [flagged], [dead] or similar - we'll take any
        * word in square brackets as indication of this.
-       * e.g. https://news.ycombinator.com/item?id=1942859 has a [dead] comment
+       * e.g. https://news.ycombinator.com/item?id=1942859 has a [deleted] comment
        * @type {boolean}
        */
       this.isDeleted = /^\s*\[\w+]\s*$/.test(this.$comment.firstChild.nodeValue)
@@ -779,6 +783,7 @@ function itemPage() {
      */
     toggleHighlighted(highlight) {
       this.$wrapper.style.backgroundColor = highlight ? HIGHLIGHT_COLOR : 'transparent'
+      this.isHighlighted = highlight
     }
   }
 
@@ -806,15 +811,14 @@ function itemPage() {
   //#endregion
 
   //#region Functions
-  function addHighlightCommentsControl($container) {
+  function addHighlightRecentCommentsControl($container) {
     let $highlightComments = h('span', null, ' | ', h('a', {
       href: '#',
       onClick(e) {
         e.preventDefault()
         addTimeTravelCommentControls($container)
-        $highlightComments.remove()
       },
-    }, 'highlight comments'))
+    }, 'highlight recent'))
 
     $container.querySelector('.subline')?.append($highlightComments)
   }
@@ -863,7 +867,7 @@ function itemPage() {
       addNewCommentControls($container)
     }
     if (commentCount > 1) {
-      addHighlightCommentsControl($container)
+      addHighlightRecentCommentsControl($container)
     }
   }
 
@@ -922,7 +926,7 @@ function itemPage() {
         $timeTravelControl.remove()
       },
       type: 'button',
-      value: 'highlight comments',
+      value: 'highlight recent',
     }))
 
     let $timeTravelControl = h('div', {
@@ -933,8 +937,8 @@ function itemPage() {
   }
 
   /**
-   * Collapses threads which don't have any comments newer than the given
-   * comment id.
+   * Toggles collapsing threads which don't have any comments newer than the
+   * given comment id.
    * @param {boolean} collapse
    * @param {number} referenceCommentId
    */
@@ -946,11 +950,16 @@ function itemPage() {
         i += comment.childComments.length
         continue
       }
-      if (!comment.isNewerThan(referenceCommentId) &&
-          !comment.hasChildCommentsNewerThan(referenceCommentId)) {
+      let shouldToggleCollapse = !comment.isNewerThan(referenceCommentId) &&
+                                 !comment.hasChildCommentsNewerThan(referenceCommentId)
+      if (shouldToggleCollapse) {
         comment.toggleCollapsed(collapse)
         // Skip replies as we've already checked them
         i += comment.childComments.length
+      }
+      else if (comment.isCollapsed) {
+        // Expand comments which are collapsed but should no longer be
+        comment.toggleCollapsed(false)
       }
     }
   }
@@ -967,16 +976,27 @@ function itemPage() {
   }
 
   /**
-   * Highlights comments newer than the given comment id.
+   * Toggles highlighting comments newer than the given comment id.
    * @param {boolean} highlight
    * @param {number} referenceCommentId
    */
   function highlightNewComments(highlight, referenceCommentId) {
-    comments.forEach((comment) => {
-      if (!comment.isMuted && comment.isNewerThan(referenceCommentId)) {
+    for (let i = 0; i < comments.length; i++) {
+      let comment = comments[i]
+      if (comment.isMuted) {
+        // Skip muted comments and their replies as they're always hidden
+        i += comment.childComments.length
+        continue
+      }
+      let shouldHighlight = comment.isNewerThan(referenceCommentId)
+      if (shouldHighlight) {
         comment.toggleHighlighted(highlight)
       }
-    })
+      else if (comment.isHighlighted) {
+        // Un-highlight comments which are highlighted but should no longer be
+        comment.toggleHighlighted(false)
+      }
+    }
   }
 
   function muteUser(user) {
