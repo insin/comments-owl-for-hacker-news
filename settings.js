@@ -67,6 +67,7 @@ export const DEFAULT_CONFIG = {
   hidePastNav: false,
   hideReplyLinks: false,
   hideSubmitNav: false,
+  submitTextAreaWithKeyboard: true,
   makeSubmissionTextReadable: true,
   preventAccidentally: false,
 }

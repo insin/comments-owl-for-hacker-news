@@ -64,6 +64,11 @@ for (let translationClass of [
     console.warn('could not find elements for translationClass', translationClass)
   }
 }
+
+document.querySelector('#submitTextAreaWithKeyboard').textContent = chrome.i18n.getMessage(
+  'submitTextAreaWithKeyboard',
+  /^(?:Mac|iPhone|iPad)/.test(navigator.platform) ? '⌘ Return' : 'Ctrl+Enter'
+)
 //#endregion
 
 //#region Config & variables

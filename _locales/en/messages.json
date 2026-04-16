@@ -86,5 +86,13 @@
   },
   "showReplyLinksMenuItem": {
     "message": "Show Reply Links"
+  },
+  "submitTextAreaWithKeyboard": {
+    "message": "Submit comments and forms with $SHORTCUT$",
+    "placeholders": {
+      "SHORTCUT": {
+        "content": "$1"
+      }
+    }
   }
 }

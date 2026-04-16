@@ -18,6 +18,7 @@ export type Config = {
   hideSubmitNav: boolean
   makeSubmissionTextReadable: boolean
   preventAccidentally: boolean
+  submitTextAreaWithKeyboard: boolean
 }
 
 export type UserProfile = {

@@ -1957,6 +1957,39 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
 }
 //#endregion
 
+//#region Submit <textarea> with keyboard
+function submitTextAreaWithKeyboard() {
+  let $textArea = /** @type {HTMLTextAreaElement} */ (document.querySelector('form textarea'))
+  if (!$textArea) return
+
+  /** @param {KeyboardEvent} e */
+  function onKeyDown(e) {
+    if (e.isComposing) return
+    if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault()
+      log('submitting form from textarea')
+      $textArea.form.requestSubmit()
+    }
+  }
+
+  function updateEventHandlers() {
+    log(`${config.submitTextAreaWithKeyboard ? 'en' : 'dis'}abling <textarea> keyboard submission`)
+    $textArea[config.submitTextAreaWithKeyboard ? 'addEventListener' : 'removeEventListener']('keydown', onKeyDown)
+  }
+
+  if (config.submitTextAreaWithKeyboard) {
+    updateEventHandlers()
+  }
+
+  chrome.storage.local.onChanged.addListener((changes) => {
+    if (changes.submitTextAreaWithKeyboard) {
+      config.submitTextAreaWithKeyboard = changes.submitTextAreaWithKeyboard.newValue
+      updateEventHandlers()
+    }
+  })
+}
+//#endregion
+
 //#region Main
 /** @type {string} */
 let currentUser
@@ -1991,6 +2024,7 @@ function main() {
   }
 
   tweakNav()
+  submitTextAreaWithKeyboard()
 
   let path = location.pathname.slice(1)
 
