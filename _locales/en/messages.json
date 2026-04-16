@@ -45,6 +45,9 @@
   "hideAiItemsMenuItem": {
     "message": "Hide \"AI\" Items"
   },
+  "hideCustomItemsMenuItem": {
+    "message": "Hide Filtered Items"
+  },
   "hideCommentsNav": {
     "message": "Hide \"comments\""
   },
@@ -89,6 +92,9 @@
   },
   "showAiItemsMenuItem": {
     "message": "Show \"AI\" Items"
+  },
+  "showCustomItemsMenuItem": {
+    "message": "Show Filtered Items"
   },
   "showReplyLinksMenuItem": {
     "message": "Show Reply Links"
