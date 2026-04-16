@@ -78,6 +78,9 @@
   "preventAccidentallyInfo": {
     "message": "Makes flagging & hiding require confirmation"
   },
+  "regexInfo": {
+    "message": "One pattern per line, # = comment"
+  },
   "resetLink": {
     "message": "reset"
   },

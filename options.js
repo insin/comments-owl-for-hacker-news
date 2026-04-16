@@ -32,8 +32,8 @@ for (let translationId of [
   'debugInfo',
   'developerOptions',
   'hideAiItems',
-  'hideCustomItems',
   'hideCommentsNav',
+  'hideCustomItems',
   'hideJobsNav',
   'hidePastNav',
   'hideReplyLinks',
@@ -53,6 +53,7 @@ for (let translationId of [
 }
 
 for (let translationClass of [
+  'regexInfo',
   'resetLink',
   'saveAndApply',
   'siteRegex',
