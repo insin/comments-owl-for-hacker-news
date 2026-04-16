@@ -5,6 +5,7 @@ export type Config = {
   autoHighlightNew: boolean
   clickHeaderToCollapse: boolean
   collapsedGroups: string[]
+  customCss: string
   debug: boolean
   hideAiItems: boolean
   hideAiSiteRegex: string

@@ -24,6 +24,9 @@
   "commentPagesOptions": {
     "message": "Comment pages"
   },
+  "customCss": {
+    "message": "Custom CSS"
+  },
   "debug": {
     "message": "Debug"
   },
@@ -80,6 +83,9 @@
   },
   "resetLink": {
     "message": "reset"
+  },
+  "saveAndApply": {
+    "message": "Save and apply"
   },
   "showAiItemsMenuItem": {
     "message": "Show \"AI\" Items"

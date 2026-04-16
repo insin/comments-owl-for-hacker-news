@@ -5,7 +5,8 @@ export const DEFAULT_CONFIG = {
   autoCollapseNotNew: true,
   autoHighlightNew: true,
   clickHeaderToCollapse: true,
-  collapsedGroups: ['developer'],
+  collapsedGroups: [],
+  customCss: '',
   debug: false,
   hideAiItems: false,
   hideAiSiteRegex: `^(?:${[

@@ -1990,6 +1990,18 @@ function submitTextAreaWithKeyboard() {
 }
 //#endregion
 
+//#region Custom CSS
+function customCss() {
+  let $style = addStyle('custom-css', config.customCss)
+  chrome.storage.local.onChanged.addListener((changes) => {
+    if (changes.customCss) {
+      config.customCss = changes.customCss.newValue
+      $style.textContent = config.customCss
+    }
+  })
+}
+//#endregion
+
 //#region Main
 /** @type {string} */
 let currentUser
@@ -2039,6 +2051,8 @@ function main() {
     log('user profile page')
     userProfilePage()
   }
+
+  customCss()
 }
 
 chrome.storage.local.get(async (storedConfig) => {

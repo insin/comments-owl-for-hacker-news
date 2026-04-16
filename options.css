@@ -222,6 +222,12 @@ section.textarea {
       "textarea textarea"
       "error       error";
   }
+  &:has(button) {
+    grid-template-areas:
+      "label"
+      "textarea"
+      "button";
+  }
   padding: 12px 14px 12px 0;
   &:last-of-type {
     padding-bottom: 4px;
@@ -246,10 +252,17 @@ section.textarea {
     grid-area: error;
     word-break: break-all;
   }
+  button {
+    grid-area: button;
+    text-align: center;
+  }
 }
 
 /* #region macOS Safari */
 body.mac {
+  button {
+    font-size: var(--font-size-primary);
+  }
   form {
     padding: 4px 0;
   }
@@ -358,6 +371,9 @@ body.ios {
   }
   summary {
     padding-left: 0;
+  }
+  button {
+    font-size: 16px;
   }
 
   /* Labelled option groups should display their label above the box */

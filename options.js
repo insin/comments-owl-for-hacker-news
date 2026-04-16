@@ -27,6 +27,7 @@ for (let translationId of [
   'autoHighlightNew',
   'clickHeaderToCollapse',
   'commentPagesOptions',
+  'customCss',
   'debug',
   'debugInfo',
   'developerOptions',
@@ -54,6 +55,7 @@ for (let translationId of [
 
 for (let translationClass of [
   'resetLink',
+  'saveAndApply',
 ]) {
   let translation = chrome.i18n.getMessage(translationClass)
   let $elements = document.querySelectorAll(`.${translationClass}`)
@@ -77,6 +79,7 @@ let config
 
 // Page elements
 let $collapsibleLabels = document.querySelectorAll('section.labelled.collapsible > label[data-collapse-id]')
+let $customCss = /** @type {HTMLTextAreaElement} */ (document.querySelector('textarea#customCss'))
 let $form = document.querySelector('form')
 let $hideAiSiteRegex = /** @type {HTMLTextAreaElement} */ (document.querySelector('textarea#hideAiSiteRegex'))
 let $hideAiSiteRegexError = document.querySelector('#hideAiSiteRegexError')
@@ -84,17 +87,20 @@ let $hideAiSiteRegexResetLink = document.querySelector('a#hideAiSiteRegexResetLi
 let $hideAiTitleRegex = /** @type {HTMLTextAreaElement} */ (document.querySelector('textarea#hideAiTitleRegex'))
 let $hideAiTitleRegexError = document.querySelector('#hideAiTitleRegexError')
 let $hideAiTitleRegexResetLink = document.querySelector('a#hideAiTitleRegexResetLink')
+let $saveCustomCssButton = document.querySelector('button#saveCustomCss')
 //#endregion
 
 //#region Utility functions
 function autoResize($textarea) {
   if (!$textarea.offsetParent) return
+  if ($textarea._autosizeValue == $textarea.value) return
   if (!$textarea.hasAttribute('data-border-height')) {
     let {borderBottomWidth, borderTopWidth} = getComputedStyle($textarea)
     $textarea.setAttribute('data-border-height', parseFloat(borderBottomWidth) + parseFloat(borderTopWidth))
   }
-  $textarea.style.height = 'auto';
+  $textarea.style.height = 'auto'
   $textarea.style.height = Math.ceil($textarea.scrollHeight) + parseFloat($textarea.getAttribute('data-border-height')) + 'px'
+  $textarea._autosizeValue = $textarea.value
 }
 
 function clearError($input, $error) {
@@ -255,15 +261,27 @@ function onToggleCollapse(e) {
   setState({collapsedGroups})
 }
 
+function saveCustomCss() {
+  let customCss = $customCss.value
+  if (config.customCss == customCss) return
+  config.customCss = customCss
+  storeChanges({customCss})
+}
+
 /**
  * Update display based on config.
  */
 function updateDisplay() {
   $body.classList.toggle('hidingAiItems', config.hideAiItems)
-  if (config.hideAiItems) {
+  if (!config.collapsedGroups.includes('list') && config.hideAiItems) {
     requestAnimationFrame(() => {
       autoResize($hideAiSiteRegex)
       autoResize($hideAiTitleRegex)
+    })
+  }
+  if (!config.collapsedGroups.includes('developer')) {
+    requestAnimationFrame(() => {
+      autoResize($customCss)
     })
   }
   updateCollapsedOptionGroupsDisplay()
@@ -330,7 +348,7 @@ function updateRegexSettingDisplay({key, $error, $resetLink, $textarea}) {
   if (config[`${key}Error`]) {
     showError($textarea, $error, config[`${key}Error`])
   } else {
-    clearError($hideAiTitleRegex, $hideAiTitleRegexError)
+    clearError($textarea, $error)
   }
   if (config[key] != DEFAULT_CONFIG[key]) {
     $resetLink.removeAttribute('hidden')
@@ -348,6 +366,7 @@ async function main() {
   for (let $label of $collapsibleLabels) {
     $label.addEventListener('click', onToggleCollapse)
   }
+  $customCss.addEventListener('input', () => autoResize($customCss))
   $form.addEventListener('change', onFormChanged)
   initRegexSetting({
     key: 'hideAiSiteRegex',
@@ -361,6 +380,7 @@ async function main() {
     $resetLink: $hideAiTitleRegexResetLink,
     $textarea: $hideAiTitleRegex,
   })
+  $saveCustomCssButton.addEventListener('click', saveCustomCss)
 
   chrome.storage.local.onChanged.addListener(onStorageChanged)
   updateFormDisplay()
