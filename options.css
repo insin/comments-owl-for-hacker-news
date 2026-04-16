@@ -629,7 +629,7 @@ body.ios {
     /* Toggles */
     --active-toggle-bg: rgb(48, 209, 88);
     --toggle-bg: rgb(57, 57, 61);
-    .panel > section {
+    section.group {
       background-color: rgb(28, 28, 30);
     }
   }
