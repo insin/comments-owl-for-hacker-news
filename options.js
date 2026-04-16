@@ -367,6 +367,13 @@ async function main() {
     $label.addEventListener('click', onToggleCollapse)
   }
   $customCss.addEventListener('input', () => autoResize($customCss))
+  $customCss.addEventListener('keydown', (e) => {
+    if (e.isComposing) return
+    if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault()
+      saveCustomCss()
+    }
+  })
   $form.addEventListener('change', onFormChanged)
   initRegexSetting({
     key: 'hideAiSiteRegex',
