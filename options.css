@@ -76,7 +76,7 @@ p {
   font-size: var(--font-size-secondary);
   margin-bottom: 0;
   margin-right: 40px;
-  padding-bottom: 4px;
+  padding-bottom: 8px;
 }
 
 input[type=checkbox],
@@ -221,6 +221,8 @@ section.textarea {
   grid-template-areas:
     "label       reset"
     "textarea textarea";
+  gap: 8px;
+  padding: 12px 14px 12px 0;
   &:has(.error:not([hidden])) {
     grid-template-areas:
       "label       reset"
@@ -233,11 +235,9 @@ section.textarea {
       "textarea"
       "button";
   }
-  padding: 12px 14px 12px 0;
   &:last-of-type {
     padding-bottom: 4px;
   }
-  gap: 8px;
   label {
     grid-area: label;
     margin: 0;
@@ -399,8 +399,7 @@ body.ios {
     text-transform: uppercase;
     top: -32px;
   }
-  section.labelled > label + section,
-  section.labelled > label + section.desktop + section {
+  section.labelled > label + section {
     border-top: none;
   }
   section.labelled > label + p {
@@ -457,7 +456,7 @@ body.ios {
     padding: 5px 18px 5px 0;
   }
   section.textarea {
-    padding: 12px 14px 18px 0;
+    padding: 8px 14px 8px 0 !important;
     label {
       padding: 0;
     }
