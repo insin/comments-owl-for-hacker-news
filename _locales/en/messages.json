@@ -79,7 +79,7 @@
     "message": "Makes flagging & hiding require confirmation"
   },
   "regexInfo": {
-    "message": "One pattern per line, # = comment"
+    "message": "One pattern per line, ignores case, # = comment"
   },
   "resetLink": {
     "message": "reset"
