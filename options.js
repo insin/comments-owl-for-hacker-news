@@ -2,6 +2,7 @@ import {DEFAULT_CONFIG} from './settings.js'
 import {get, remove, set} from './storage.js'
 
 let $body = document.body
+$body.classList.toggle('tab', new URLSearchParams(location.search).get('tab') == 'true')
 
 //#region Theme hooks
 /** @type {'chrome' | 'edge' | 'firefox' | 'ios' | 'mac'} */
@@ -93,6 +94,7 @@ let $hideCustomSiteRegex = /** @type {HTMLTextAreaElement} */ (document.querySel
 let $hideCustomSiteRegexError = document.querySelector('#hideCustomSiteRegexError')
 let $hideCustomTitleRegex = /** @type {HTMLTextAreaElement} */ (document.querySelector('textarea#hideCustomTitleRegex'))
 let $hideCustomTitleRegexError = document.querySelector('#hideCustomTitleRegexError')
+let $openInTabLink = /** @type {HTMLAnchorElement} */ (document.querySelector('#openInTabLink'))
 let $saveCustomCssButton = document.querySelector('button#saveCustomCss')
 //#endregion
 
@@ -436,6 +438,14 @@ async function main() {
     key: 'hideCustomTitleRegex',
     $error: $hideCustomTitleRegexError,
     $textarea: $hideCustomTitleRegex,
+  })
+  $openInTabLink.addEventListener('click', (e) => {
+    e.preventDefault()
+    chrome.tabs.create({
+      url: `${chrome.runtime.getURL('options.html')}?tab=true${$openInTabLink.hash}`,
+      active: true,
+    })
+    window.close()
   })
   $saveCustomCssButton.addEventListener('click', saveCustomCss)
 

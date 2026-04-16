@@ -54,6 +54,7 @@ body.browser-mac.browserAction {
   min-width: 400px;
 }
 
+body:is(.browser-ios, .tab) #customCssInfo,
 body:not(.hidingAiItems) .hidingAiItems,
 body:not(.hidingCustomItems) .hidingCustomItems,
 body:not(.ios) .toggle {
@@ -95,6 +96,9 @@ textarea {
 }
 textarea.invalid {
   outline-color: var(--text-error);
+}
+body.tab textarea {
+  max-height: none;
 }
 /* Prevent zooming */
 body.browser-ios textarea {
@@ -255,7 +259,9 @@ section.textarea {
   }
   button {
     grid-area: button;
-    text-align: center;
+    justify-self: end;
+    padding-left: 1em;
+    padding-right: 1em;
   }
 }
 

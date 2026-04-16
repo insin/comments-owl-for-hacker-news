@@ -72,6 +72,12 @@
   "navigationOptions": {
     "message": "Navigation"
   },
+  "needMoreRoom": {
+    "message": "Need more room?"
+  },
+  "openInTabLink": {
+    "message": "open in a tab"
+  },
   "preventAccidentally": {
     "message": "Prevent accidental flagging & hiding"
   },
