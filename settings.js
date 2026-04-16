@@ -20,7 +20,7 @@ export const DEFAULT_CONFIG = {
   ].join('|')})$`,
   hideAiTitleRegex: `\\b(?:${[
     'AGI',
-    'AIs?',
+    'A\\.?I\\.?s?',
     'agent(?:ic|s)?',
     'Anthropic',
     'Apple Intelligence',
