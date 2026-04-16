@@ -170,6 +170,17 @@ function checkbox(attributes, label) {
   )
 }
 
+function createRegExp(source) {
+  let lines = source.split('\n')
+  let parts = []
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i].trim()
+    if (!line || line.startsWith('#')) continue
+    parts.push(`(?:${line})`)
+  }
+  return new RegExp(parts.join('|'), 'i')
+}
+
 /**
  * @param {string} str
  * @return {string}
@@ -1251,7 +1262,7 @@ function itemListPage() {
 
   //#region CSS
   addStyle('list-static', `
-    tr.submission.ai {
+    tr.submission.hidden {
       display: none;
       & + tr {
         display: none;
@@ -1287,61 +1298,108 @@ function itemListPage() {
     }
   }
 
-  function toggleAiItems() {
+  function toggleItemVisibility() {
     if (!['/', '/active', '/ask', '/front', '/newest', '/news', '/show', '/shownew'].includes(location.pathname)) return
 
-    let titleRE
+    let aiTitleRe
     if (config.hideAiTitleRegexError || !config.hideAiTitleRegex) {
       warn('falling back to default AI title regex')
-      titleRE = new RegExp(defaultConfig.hideAiTitleRegex, 'i')
+      aiTitleRe = createRegExp(defaultConfig.hideAiTitleRegex)
     } else {
-      titleRE = new RegExp(config.hideAiTitleRegex, 'i')
+      aiTitleRe = createRegExp(config.hideAiTitleRegex)
     }
-    let siteRE
+    let aiSiteRE
       if (config.hideAiSiteRegexError || !config.hideAiSiteRegex) {
       warn('falling back to default AI site regex')
-      siteRE = new RegExp(defaultConfig.hideAiSiteRegex, 'i')
+      aiSiteRE = createRegExp(defaultConfig.hideAiSiteRegex)
     } else {
-      siteRE = new RegExp(config.hideAiSiteRegex, 'i')
+      aiSiteRE = createRegExp(config.hideAiSiteRegex)
     }
+    let customTitleRe
+    if (config.hideCustomTitleRegex && !config.hideCustomTitleRegexError) {
+      customTitleRe = createRegExp(config.hideCustomTitleRegex)
+      if (customTitleRe.source == '(?:)') customTitleRe = null
+    }
+    let customSiteRe
+    if (config.hideCustomSiteRegex && !config.hideCustomSiteRegexError) {
+      customSiteRe = createRegExp(config.hideCustomSiteRegex)
+      if (customSiteRe.source == '(?:)') customSiteRe = null
+    }
+
     let aiCount = 0
+    let aiMatches = []
+    let customCount = 0
+    let customMatches = []
     let totalCount = 0
-    let matches = []
 
     for (let $submission of document.querySelectorAll('tr.submission')) {
       let isAi = false
+      let isCustom = false
+      let $link = $submission.querySelector('.titleline > a')
+      let $site = $submission.querySelector('.sitebit > a')
+
       if (config.hideAiItems) {
-        let $link = $submission.querySelector('.titleline > a')
         if (debug) {
-          let match = $link?.textContent.match(titleRE)
+          let match = $link?.textContent.match(aiTitleRe)
           if (match) {
-            matches.push(`[title] "${match[0]}" → ${$link.textContent}`)
+            aiMatches.push(`[title] "${match[0]}" → ${$link.textContent}`)
           }
         }
-        isAi = titleRE.test($link?.textContent)
+        isAi = aiTitleRe.test($link?.textContent)
         if (!isAi) {
-          let $site = $submission.querySelector('.sitebit > a')
           if (debug) {
-            let match = $site?.textContent.match(siteRE)
+            let match = $site?.textContent.match(aiSiteRE)
             if (match) {
-              matches.push(`[site] ${$site.textContent} → ${$link.textContent}`)
+              aiMatches.push(`[site] ${$site.textContent} → ${$link.textContent}`)
             }
           }
-          isAi = siteRE.test($site?.textContent)
+          isAi = aiSiteRE.test($site?.textContent)
+        }
+        if (isAi) {
+          aiCount++
         }
       }
-      if (isAi) {
-        aiCount++
+
+      if (!isAi && config.hideCustomItems) {
+        if (customTitleRe) {
+          if (debug) {
+            let match = $link?.textContent.match(customTitleRe)
+            if (match) {
+              customMatches.push(`[title] "${match[0]}" → ${$link.textContent}`)
+            }
+          }
+          isCustom = customTitleRe.test($link?.textContent)
+        }
+        if (!isCustom && customSiteRe) {
+          if (debug) {
+            let match = $site?.textContent.match(customSiteRe)
+            if (match) {
+              customMatches.push(`[site] ${$site.textContent} → ${$link.textContent}`)
+            }
+          }
+          isCustom = customSiteRe.test($site?.textContent)
+        }
+        if (isCustom) {
+          customCount++
+        }
       }
+
       totalCount++
-      $submission.classList.toggle('ai', isAi)
+      $submission.classList.toggle('hidden', isAi || isCustom)
     }
 
     if (config.hideAiItems) {
-      log(`${aiCount} AI item${s(aiCount)}${
+      log(`${aiCount} "AI" item${s(aiCount)} hidden${
         aiCount > 0 ? ` (${Math.round(aiCount / totalCount * 100)}%)` : ''
       }${
-        matches.length > 0 ? `\n${matches.join('\n')}` : ''
+        aiMatches.length > 0 ? `\n${aiMatches.join('\n')}` : ''
+      }`)
+    }
+    if (config.hideCustomItems && (customTitleRe || customSiteRe)) {
+      log(`${customCount} custom item${s(customCount)} hidden${
+        customCount > 0 ? ` (${Math.round(customCount / totalCount * 100)}%)` : ''
+      }${
+        customMatches.length > 0 ? `\n${customMatches.join('\n')}` : ''
       }`)
     }
 
@@ -1352,7 +1410,7 @@ function itemListPage() {
       if (rank == null) {
         rank = parseInt($rank.textContent)
       }
-      if (!$submission.classList.contains('ai')) {
+      if (!$submission.classList.contains('hidden')) {
         $rank.textContent = `${rank++}.`
       }
     }
@@ -1421,8 +1479,8 @@ function itemListPage() {
     log(`${noLastVisitCount} item${s(noLastVisitCount, " doesn't,s don't")} have a last visit stored`)
   }
 
-  if (config.hideAiItems) {
-    toggleAiItems()
+  if (config.hideAiItems || config.hideCustomItems) {
+    toggleItemVisibility()
   }
 
   chrome.storage.local.onChanged.addListener((changes) => {
@@ -1437,8 +1495,15 @@ function itemListPage() {
         hasHideAiChanges = true
       }
     }
-    if (hasHideAiChanges) {
-      toggleAiItems()
+    let hasHideCustomChanges = false
+    for (let [configProp, change] of Object.entries(changes)) {
+      if (['hideCustomItems', 'hideCustomTitleRegex', 'hideCustomTitleRegexError', 'hideCustomSiteRegex', 'hideCustomSiteRegexError'].includes(configProp)) {
+        config[configProp] = change.newValue
+        hasHideCustomChanges = true
+      }
+    }
+    if (hasHideAiChanges || hasHideCustomChanges) {
+      toggleItemVisibility()
     }
   })
   //#endregion

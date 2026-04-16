@@ -39,14 +39,11 @@
   "hideAiItems": {
     "message": "Hide \"AI\" items"
   },
+  "hideCustomItems": {
+    "message": "Hide items matching custom patterns"
+  },
   "hideAiItemsMenuItem": {
     "message": "Hide \"AI\" Items"
-  },
-  "hideAiSiteRegex": {
-    "message": "Site regex"
-  },
-  "hideAiTitleRegex": {
-    "message": "Title regex"
   },
   "hideCommentsNav": {
     "message": "Hide \"comments\""
@@ -93,6 +90,9 @@
   "showReplyLinksMenuItem": {
     "message": "Show Reply Links"
   },
+  "siteRegex": {
+    "message": "Site regex"
+  },
   "submitTextAreaWithKeyboard": {
     "message": "Submit comments and forms with $SHORTCUT$",
     "placeholders": {
@@ -100,5 +100,8 @@
         "content": "$1"
       }
     }
+  },
+  "titleRegex": {
+    "message": "Title regex"
   }
 }

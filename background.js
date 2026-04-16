@@ -3,6 +3,17 @@ import {get, set} from './storage.js'
 const TOGGLE_AI_ITEMS = 'toggle-ai-items'
 const TOGGLE_REPLY_LINKS = 'toggle-reply-links'
 
+const ITEM_PAGE_URL_PATTERNS = [
+  'https://news.ycombinator.com/',
+  'https://news.ycombinator.com/?*',
+  'https://news.ycombinator.com/ask*',
+  'https://news.ycombinator.com/front*',
+  'https://news.ycombinator.com/newest*',
+  'https://news.ycombinator.com/news*',
+  'https://news.ycombinator.com/show*',
+  'https://news.ycombinator.com/shownew*',
+]
+
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason == 'update') {
     await chrome.contextMenus.removeAll()
@@ -12,16 +23,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     id: TOGGLE_AI_ITEMS,
     contexts: ['page'],
     title: chrome.i18n.getMessage(hideAiItems ? 'showAiItemsMenuItem' : 'hideAiItemsMenuItem'),
-    documentUrlPatterns: [
-      'https://news.ycombinator.com/',
-      'https://news.ycombinator.com/?*',
-      'https://news.ycombinator.com/ask*',
-      'https://news.ycombinator.com/front*',
-      'https://news.ycombinator.com/newest*',
-      'https://news.ycombinator.com/news*',
-      'https://news.ycombinator.com/show*',
-      'https://news.ycombinator.com/shownew*',
-    ],
+    documentUrlPatterns: ITEM_PAGE_URL_PATTERNS,
   })
   chrome.contextMenus.create({
     id: TOGGLE_REPLY_LINKS,

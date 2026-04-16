@@ -13,6 +13,11 @@ export type Config = {
   hideAiTitleRegex: string
   hideAiTitleRegexError?: string | null
   hideCommentsNav: boolean
+  hideCustomItems: boolean
+  hideCustomSiteRegex: string
+  hideCustomSiteRegexError?: string | null
+  hideCustomTitleRegex: string
+  hideCustomTitleRegexError?: string | null
   hideJobsNav: boolean
   hidePastNav: boolean
   hideReplyLinks: boolean

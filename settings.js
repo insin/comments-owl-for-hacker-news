@@ -19,7 +19,7 @@ export const DEFAULT_CONFIG = {
     'openai\\.com',
     '.+\\.ai',
   ].join('|')})$`,
-  hideAiTitleRegex: `\\b(?:${[
+  hideAiTitleRegex: `# Words which usually mean "AI"\n\\b(?:${[
     'AGI',
     'A\\.?I\\.?s?',
     'agent(?:ic|s)?',
@@ -64,6 +64,9 @@ export const DEFAULT_CONFIG = {
     'xAI',
   ].join('|')})\\b`,
   hideCommentsNav: false,
+  hideCustomItems: false,
+  hideCustomSiteRegex: '',
+  hideCustomTitleRegex: '',
   hideJobsNav: false,
   hidePastNav: false,
   hideReplyLinks: false,

@@ -32,8 +32,7 @@ for (let translationId of [
   'debugInfo',
   'developerOptions',
   'hideAiItems',
-  'hideAiSiteRegex',
-  'hideAiTitleRegex',
+  'hideCustomItems',
   'hideCommentsNav',
   'hideJobsNav',
   'hidePastNav',
@@ -56,6 +55,8 @@ for (let translationId of [
 for (let translationClass of [
   'resetLink',
   'saveAndApply',
+  'siteRegex',
+  'titleRegex',
 ]) {
   let translation = chrome.i18n.getMessage(translationClass)
   let $elements = document.querySelectorAll(`.${translationClass}`)
@@ -87,6 +88,10 @@ let $hideAiSiteRegexResetLink = document.querySelector('a#hideAiSiteRegexResetLi
 let $hideAiTitleRegex = /** @type {HTMLTextAreaElement} */ (document.querySelector('textarea#hideAiTitleRegex'))
 let $hideAiTitleRegexError = document.querySelector('#hideAiTitleRegexError')
 let $hideAiTitleRegexResetLink = document.querySelector('a#hideAiTitleRegexResetLink')
+let $hideCustomSiteRegex = /** @type {HTMLTextAreaElement} */ (document.querySelector('textarea#hideCustomSiteRegex'))
+let $hideCustomSiteRegexError = document.querySelector('#hideCustomSiteRegexError')
+let $hideCustomTitleRegex = /** @type {HTMLTextAreaElement} */ (document.querySelector('textarea#hideCustomTitleRegex'))
+let $hideCustomTitleRegexError = document.querySelector('#hideCustomTitleRegexError')
 let $saveCustomCssButton = document.querySelector('button#saveCustomCss')
 //#endregion
 
@@ -155,14 +160,15 @@ function updateFormControl($control, value) {
   }
 }
 
-function validateRegex(regex) {
+/** @param {string} source */
+function validateRegex(source) {
   try {
-    new RegExp(regex)
+    new RegExp(source)
   } catch(e) {
     let message = e.message
     // Chrome errors include the full source
-    if (message.includes(regex)) {
-      message = message.replace(regex, '…')
+    if (message.includes(source)) {
+      message = message.replace(source, '…')
       // Chrome errors have the actual reason at the end
       let reasonIndex = message.lastIndexOf(': ')
       if (reasonIndex != -1) {
@@ -173,6 +179,18 @@ function validateRegex(regex) {
   }
   return null
 }
+
+/** @param {string} value */
+function validateRegexInput(value) {
+  let lines = value.split('\n')
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i].trim()
+    if (!line || line.startsWith('#')) continue
+    let error = validateRegex(line)
+    if (error) return `${error} on line ${i + 1}`
+  }
+  return null
+}
 //#endregion
 
 //#region Options page functions
@@ -180,16 +198,16 @@ function validateRegex(regex) {
  * @param {{
  *   key: string
  *   $error: Element
- *   $resetLink: Element
+ *   $resetLink?: Element
  *   $textarea: HTMLTextAreaElement
  * }} options
  */
 function initRegexSetting({key, $error, $resetLink, $textarea}) {
   $textarea.addEventListener('input', () => {
     autoResize($textarea)
-    let regex = $textarea.value
+    let source = $textarea.value
     // If empty, clear immediately if it was previously set
-    if (!regex.trim()) {
+    if (!source.trim()) {
       setStateDebounced.cancel(key)
       if (config[key]) {
         setState({
@@ -199,9 +217,9 @@ function initRegexSetting({key, $error, $resetLink, $textarea}) {
       }
       return
     }
-    let error = validateRegex(regex)
+    let error = validateRegexInput(source)
     if (error) {
-      setStateDebounced(key, {[key]: regex, [`${key}Error`]: error})
+      setStateDebounced(key, {[key]: source, [`${key}Error`]: error})
       return
     }
     // Immediately clear any error if an invalid regex becomes valid
@@ -209,10 +227,10 @@ function initRegexSetting({key, $error, $resetLink, $textarea}) {
       clearError($textarea, $error)
       setStateDebounced.cancel(key)
     }
-    setStateDebounced(key, {[key]: regex, [`${key}Error`]: null})
+    setStateDebounced(key, {[key]: source, [`${key}Error`]: null})
   })
 
-  $resetLink.addEventListener('click', async (e) => {
+  $resetLink?.addEventListener('click', async (e) => {
     e.preventDefault()
     config[key] = DEFAULT_CONFIG[key]
     config[`${key}Error`] = null
@@ -273,11 +291,20 @@ function saveCustomCss() {
  */
 function updateDisplay() {
   $body.classList.toggle('hidingAiItems', config.hideAiItems)
-  if (!config.collapsedGroups.includes('list') && config.hideAiItems) {
-    requestAnimationFrame(() => {
-      autoResize($hideAiSiteRegex)
-      autoResize($hideAiTitleRegex)
-    })
+  $body.classList.toggle('hidingCustomItems', config.hideCustomItems)
+  if (!config.collapsedGroups.includes('list')) {
+    if (config.hideAiItems) {
+      requestAnimationFrame(() => {
+        autoResize($hideAiSiteRegex)
+        autoResize($hideAiTitleRegex)
+      })
+    }
+    if (config.hideCustomItems) {
+      requestAnimationFrame(() => {
+        autoResize($hideCustomSiteRegex)
+        autoResize($hideCustomTitleRegex)
+      })
+    }
   }
   if (!config.collapsedGroups.includes('developer')) {
     requestAnimationFrame(() => {
@@ -296,6 +323,16 @@ function updateDisplay() {
     $resetLink: $hideAiTitleRegexResetLink,
     $textarea: $hideAiTitleRegex,
     key: 'hideAiTitleRegex',
+  })
+  updateRegexSettingDisplay({
+    $error: $hideCustomSiteRegexError,
+    $textarea: $hideCustomSiteRegex,
+    key: 'hideCustomSiteRegex',
+  })
+  updateRegexSettingDisplay({
+    $error: $hideCustomTitleRegexError,
+    $textarea: $hideCustomTitleRegex,
+    key: 'hideCustomTitleRegex',
   })
 }
 
@@ -340,7 +377,7 @@ async function storeChanges(changes) {
  * @param {{
  *   key: string
  *   $error: Element
- *   $resetLink: Element
+ *   $resetLink?: Element
  *   $textarea: HTMLTextAreaElement
  * }} options
  */
@@ -350,10 +387,12 @@ function updateRegexSettingDisplay({key, $error, $resetLink, $textarea}) {
   } else {
     clearError($textarea, $error)
   }
-  if (config[key] != DEFAULT_CONFIG[key]) {
-    $resetLink.removeAttribute('hidden')
-  } else {
-    $resetLink.setAttribute('hidden', '')
+  if ($resetLink) {
+    if (config[key] != DEFAULT_CONFIG[key]) {
+      $resetLink.removeAttribute('hidden')
+    } else {
+      $resetLink.setAttribute('hidden', '')
+    }
   }
 }
 //#endregion
@@ -386,6 +425,16 @@ async function main() {
     $error: $hideAiTitleRegexError,
     $resetLink: $hideAiTitleRegexResetLink,
     $textarea: $hideAiTitleRegex,
+  })
+  initRegexSetting({
+    key: 'hideCustomSiteRegex',
+    $error: $hideCustomSiteRegexError,
+    $textarea: $hideCustomSiteRegex,
+  })
+  initRegexSetting({
+    key: 'hideCustomTitleRegex',
+    $error: $hideCustomTitleRegexError,
+    $textarea: $hideCustomTitleRegex,
   })
   $saveCustomCssButton.addEventListener('click', saveCustomCss)
 

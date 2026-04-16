@@ -32,16 +32,35 @@
           </label>
           <div class="sub-options hidingAiItems">
             <section class="textarea">
-              <label id="hideAiTitleRegex" for="hideAiTitleRegex">Title regex</label>
+              <label class="titleRegex" for="hideAiTitleRegex">Title regex</label>
               <a href="#" id="hideAiTitleRegexResetLink" class="resetLink">reset</a>
               <textarea id="hideAiTitleRegex" rows="1"></textarea>
               <div id="hideAiTitleRegexError" class="error text-error" hidden></div>
             </section>
             <section class="textarea">
-              <label id="hideAiSiteRegex" for="hideAiSiteRegex">Site regex</label>
+              <label class="siteRegex" for="hideAiSiteRegex">Site regex</label>
               <a href="#" id="hideAiSiteRegexResetLink" class="resetLink">reset</a>
               <textarea id="hideAiSiteRegex" rows="1"></textarea>
               <div id="hideAiSiteRegexError" class="error text-error" hidden></div>
+            </section>
+          </div>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="hideCustomItems">Hide items matching custom patterns</span>
+            <input type="checkbox" name="hideCustomItems">
+            <span class="toggle"></span>
+          </label>
+          <div class="sub-options hidingCustomItems">
+            <section class="textarea">
+              <label class="titleRegex" for="hideCustomTitleRegex">Title regex</label>
+              <textarea id="hideCustomTitleRegex" rows="1"></textarea>
+              <div id="hideCustomTitleRegexError" class="error text-error" hidden></div>
+            </section>
+            <section class="textarea">
+              <label class="siteRegex" for="hideCustomSiteRegex">Site regex</label>
+              <textarea id="hideCustomSiteRegex" rows="1"></textarea>
+              <div id="hideCustomSiteRegexError" class="error text-error" hidden></div>
             </section>
           </div>
         </section>

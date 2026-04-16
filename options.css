@@ -55,6 +55,7 @@ body.browser-mac.browserAction {
 }
 
 body:not(.hidingAiItems) .hidingAiItems,
+body:not(.hidingCustomItems) .hidingCustomItems,
 body:not(.ios) .toggle {
   display: none;
 }
