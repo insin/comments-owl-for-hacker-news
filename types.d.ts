@@ -7,6 +7,7 @@ export type Config = {
   collapsedGroups: string[]
   customCss: string
   debug: boolean
+  enableViewTransitions: boolean
   hideAiItems: boolean
   hideAiSiteRegex: string
   hideAiSiteRegexError?: string | null

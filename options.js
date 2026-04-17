@@ -24,6 +24,7 @@ document.title = chrome.i18n.getMessage('extensionName')
 for (let translationId of [
   'addActiveToHeader',
   'addUpvotedToHeader',
+  'appearanceOptions',
   'autoCollapseNotNew',
   'autoHighlightNew',
   'clickHeaderToCollapse',
@@ -32,6 +33,7 @@ for (let translationId of [
   'debug',
   'debugInfo',
   'developerOptions',
+  'enableViewTransitions',
   'hideAiItems',
   'hideCommentsNav',
   'hideCustomItems',

@@ -63,7 +63,7 @@ const LOGGED_OUT_USER_PAGE = `<head op="muted">
 </body>`
 
 //#region Config
-let debug = false
+let debug = localStorage.debug == 'true'
 /** @type {import("./types").Config} */
 let config
 /** @type {import("./types").Config} */
@@ -140,7 +140,7 @@ function addStyle(role, ...css) {
   if (css.length > 0) {
     $style.textContent = css.filter(Boolean).map(dedent).join('\n')
   }
-  document.querySelector('head').appendChild($style)
+  document.documentElement.appendChild($style)
   return $style
 }
 
@@ -549,34 +549,34 @@ function itemPage() {
   //#endregion
 
   //#region State
-  /** @type {boolean} */
   let autoCollapseNotNew = config.autoCollapseNotNew || location.search.includes('?shownew')
-  /** @type {boolean} */
   let autoHighlightNew = config.autoHighlightNew || location.search.includes('?shownew')
   /** @type {HNComment[]} */
   let comments = []
   /** @type {Record<string, HNComment>} */
   let commentsById = {}
+  let commentCount = 0
   /** @type {FocusedComment} */
   let focusedComment
-  /** @type {boolean} */
   let hasNewComments = false
-  /** @type {string} */
   let itemId = /id=(\d+)/.exec(location.search)[1]
   /** @type {Visit} */
   let lastVisit
   /** @type {number} */
   let maxCommentId
+  let mutedCommentCount = 0
   /** @type {Set<string>} */
   let mutedUsers = getMutedUsers()
+  let newCommentCount = 0
+  let replyToMutedCommentCount = 0
   /** @type {Record<string, string>} */
   let userNotes = getUserNotes()
 
-  // Comment counts
-  let commentCount = 0
-  let mutedCommentCount = 0
-  let newCommentCount = 0
-  let replyToMutedCommentCount = 0
+  /**
+   * Submission element containing either the comment count or "discuss"
+   * @type {Element}
+   */
+  let $submissionCommentCount
   //#endregion
 
   //#region Classes
@@ -1042,6 +1042,98 @@ function itemPage() {
     updateMutedUsersDisplay()
   }
 
+  function processCommentThread() {
+    let commentWrappers = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.comment-tree tr.athing'))
+    log(commentWrappers.length, `comment element${s(commentWrappers.length)}`)
+
+    let commentIndex = 0
+    for (let $wrapper of commentWrappers) {
+      let comment = new HNComment($wrapper, commentIndex++)
+      comments.push(comment)
+      if (!comment.isMuted && !comment.isDeleted) {
+        commentsById[comment.id] = comment
+      }
+    }
+
+    let lastVisitMaxCommentId = lastVisit?.maxCommentId ?? Infinity
+    for (let i = 0; i < comments.length; i++) {
+      let comment = comments[i]
+
+      if (comment.isMuted) {
+        mutedCommentCount++
+        for (let j = i + 1; j <= i + comment.childComments.length; j++) {
+          if (comments[j].isMuted) {
+            mutedCommentCount++
+          } else {
+            replyToMutedCommentCount++
+          }
+        }
+        // Skip child comments as we've already accounted for them
+        i += comment.childComments.length
+        // Don't consider muted comments or their replies when counting new
+        // comments, or add controls to them, as they'll all be hidden.
+        continue
+      }
+
+      if (!comment.isDeleted && comment.isNewerThan(lastVisitMaxCommentId)) {
+        newCommentCount++
+      }
+
+      comment.addControls()
+    }
+
+    // Update display of any comments which were already collapsed by HN's own
+    // functionality, e.g. deleted comments
+    for (let comment of comments) {
+      if (comment.isCollapsed) {
+        comment.updateDisplay({excludeChildren: true})
+      }
+    }
+
+    hideMutedUsers()
+
+    maxCommentId = comments.map(comment => comment.id).sort().pop()
+    hasNewComments = lastVisit != null && newCommentCount > 0
+
+    // New comment highlighting for submission pages with a comment count
+    if ($submissionCommentCount) {
+      if (/^\d+/.test($submissionCommentCount.textContent)) {
+        commentCount = Number($submissionCommentCount.textContent.split(/\s/).shift())
+      } else {
+        commentCount = 0
+      }
+      if (hasNewComments && (autoHighlightNew || autoCollapseNotNew)) {
+        if (autoHighlightNew) {
+          highlightNewComments(true, lastVisit.maxCommentId)
+        }
+        if (autoCollapseNotNew) {
+          collapseThreadsWithoutNewComments(true, lastVisit.maxCommentId)
+        }
+      }
+      if (commentCount > 0) {
+        // TODO Clear If the item is no longer accepting comments (and every comment is older than 45 days?)
+        storeVisit(itemId, new Visit({
+          commentCount,
+          maxCommentId,
+          time: new Date(),
+        }))
+      }
+      log('submission page info', {
+        itemId,
+        commentCount,
+        lastVisit,
+        maxCommentId,
+        newCommentCount,
+        hasNewComments,
+        mutedCommentCount,
+        replyToMutedCommentCount,
+      })
+    }
+
+    // Always try to add submission controls
+    addSubmissionPageControls()
+  }
+
   function updateMutedUsersDisplay() {
     // Invalidate non-muted child caches and update child counts on any
     // comments which have been collapsed.
@@ -1088,11 +1180,10 @@ function itemPage() {
 
   // Figure out which type of item page we're on
   let $submission = document.querySelector('.fatitem tr.submission')
-  let $commentsLink
   if ($submission) {
     log('submission page')
-    $commentsLink = document.querySelector('td.subtext .subline > a[href^=item]')
-    if ($commentsLink) {
+    $submissionCommentCount = document.querySelector('td.subtext .subline > a[href^=item]')
+    if ($submissionCommentCount) {
       lastVisit = getLastVisit(itemId)
     } else {
       log('submission not commentable')
@@ -1105,97 +1196,7 @@ function itemPage() {
     }
   }
 
-  //#region Process comment thread
-  let commentWrappers = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.comment-tree tr.athing'))
-  log(commentWrappers.length, `comment element${s(commentWrappers.length)}`)
-
-  let commentIndex = 0
-  for (let $wrapper of commentWrappers) {
-    let comment = new HNComment($wrapper, commentIndex++)
-    comments.push(comment)
-    if (!comment.isMuted && !comment.isDeleted) {
-      commentsById[comment.id] = comment
-    }
-  }
-
-  let lastVisitMaxCommentId = lastVisit?.maxCommentId ?? Infinity
-  for (let i = 0; i < comments.length; i++) {
-    let comment = comments[i]
-
-    if (comment.isMuted) {
-      mutedCommentCount++
-      for (let j = i + 1; j <= i + comment.childComments.length; j++) {
-        if (comments[j].isMuted) {
-          mutedCommentCount++
-        } else {
-          replyToMutedCommentCount++
-        }
-      }
-      // Skip child comments as we've already accounted for them
-      i += comment.childComments.length
-      // Don't consider muted comments or their replies when counting new
-      // comments, or add controls to them, as they'll all be hidden.
-      continue
-    }
-
-    if (!comment.isDeleted && comment.isNewerThan(lastVisitMaxCommentId)) {
-      newCommentCount++
-    }
-
-    comment.addControls()
-  }
-
-  // Update display of any comments which were already collapsed by HN's own
-  // functionality, e.g. deleted comments
-  for (let comment of comments) {
-    if (comment.isCollapsed) {
-      comment.updateDisplay({excludeChildren: true})
-    }
-  }
-
-  hideMutedUsers()
-
-  maxCommentId = comments.map(comment => comment.id).sort().pop()
-  hasNewComments = lastVisit != null && newCommentCount > 0
-  //#endregion
-
-  // New comment highlighting for submission pages with a comment count
-  if ($commentsLink) {
-    if (/^\d+/.test($commentsLink.textContent)) {
-      commentCount = Number($commentsLink.textContent.split(/\s/).shift())
-    } else {
-      commentCount = 0
-    }
-    if (hasNewComments && (autoHighlightNew || autoCollapseNotNew)) {
-      if (autoHighlightNew) {
-        highlightNewComments(true, lastVisit.maxCommentId)
-      }
-      if (autoCollapseNotNew) {
-        collapseThreadsWithoutNewComments(true, lastVisit.maxCommentId)
-      }
-    }
-    if (commentCount > 0) {
-      // TODO Clear If the item is no longer accepting comments (and every comment is older than 45 days?)
-      storeVisit(itemId, new Visit({
-        commentCount,
-        maxCommentId,
-        time: new Date(),
-      }))
-    }
-    log('submission page info', {
-      itemId,
-      commentCount,
-      lastVisit,
-      maxCommentId,
-      newCommentCount,
-      hasNewComments,
-      mutedCommentCount,
-      replyToMutedCommentCount,
-    })
-  }
-
-  // Always try to add submission controls
-  addSubmissionPageControls()
+  processCommentThread()
 
   chrome.storage.local.onChanged.addListener((changes) => {
     if (changes.clickHeaderToCollapse) {
@@ -1417,9 +1418,19 @@ function itemListPage() {
       }
     }
   }
+
+  function setViewTransitionSubmissionIds() {
+    let submissionIds = [...document.querySelectorAll('tr.submission')].map($submission => $submission.id)
+    sessionStorage.submissionIds = JSON.stringify(submissionIds)
+    configureViewTransitionCss()
+  }
   //#endregion
 
   //#region Main
+  if (config.enableViewTransitions) {
+    setViewTransitionSubmissionIds()
+  }
+
   if (location.pathname != '/flagged') {
     for (let $flagLink of document.querySelectorAll('span.subline > a[href^="flag"]')) {
       $flagLink.addEventListener('click', confirmFlag, true)
@@ -1486,6 +1497,11 @@ function itemListPage() {
   }
 
   chrome.storage.local.onChanged.addListener((changes) => {
+    if (changes.enableViewTransitions) {
+      if (changes.enableViewTransitions.newValue) {
+        setViewTransitionSubmissionIds()
+      }
+    }
     if (changes.preventAccidentally) {
       config.preventAccidentally = changes.preventAccidentally.newValue
     }
@@ -2074,20 +2090,62 @@ function customCss() {
 //#region Main
 /** @type {string} */
 let currentUser
+let path = location.pathname.slice(1)
+/** @type {HTMLStyleElement} */
+let $viewTransitionStyle
+
+function configureViewTransitionCss() {
+  /** @type {string[]} */
+  let submissionIds = JSON.parse(sessionStorage.submissionIds || '[]')
+  let css = dedent(localStorage.enableViewTransitions == 'true' ? `
+    @view-transition {
+      navigation: auto;
+    }
+    ${submissionIds.map(id => `.submission[id="${id}"] {
+      .votelinks {
+        view-transition-name: item-${id}-votelinks;
+      }
+      .votelinks + .title {
+        view-transition-name: item-${id}-title;
+      }
+      & + tr .subline {
+        view-transition-name: item-${id}-subline;
+      }
+    }`).join('\n')}
+  ` : '')
+  if (!$viewTransitionStyle) {
+    $viewTransitionStyle = addStyle('view-transitions', css)
+  } else {
+    $viewTransitionStyle.textContent = css
+  }
+}
+
+function isItemListPage() {
+  return (
+    /^($|active|ask|best($|\?)|flagged|front|hidden|invited|launches|news|newest|noobstories|pool|show|shownew|submitted|upvoted)/.test(path) ||
+    /^favorites/.test(path) && !location.search.includes('&comments=t')
+  )
+}
+
+function isItemPage() {
+  return /^item/.test(path)
+}
+
+function isUserProfilePage() {
+  return /^(user|muted)/.test(path)
+}
+
 function main() {
   debug = config.debug
+  if (localStorage.debug != String(debug)) {
+    localStorage.debug = debug
+  }
   log('config', config)
-
-  chrome.storage.local.onChanged.addListener((changes) => {
-    if (changes.debug) {
-      debug = changes.debug.newValue
-    }
-  })
 
   let $currentUserLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a#me'))
   currentUser = $currentUserLink?.innerText ?? ''
 
-  if (location.pathname.startsWith('/login')) {
+  if (path == 'login') {
     log('login screen')
     if (IS_SAFARI) {
       log('trying to prevent Safari zooming in on the autofocused input')
@@ -2096,7 +2154,7 @@ function main() {
     return
   }
 
-  if (location.pathname.startsWith('/muted')) {
+  if (path == 'muted') {
     document.documentElement.innerHTML = LOGGED_OUT_USER_PAGE
     // Safari on macOS has a default dark background in dark mode
     if (IS_SAFARI) {
@@ -2107,27 +2165,60 @@ function main() {
   tweakNav()
   submitTextAreaWithKeyboard()
 
-  let path = location.pathname.slice(1)
-
-  if (/^($|active|ask|best($|\?)|flagged|front|hidden|invited|launches|news|newest|noobstories|pool|show|shownew|submitted|upvoted)/.test(path) ||
-      /^favorites/.test(path) && !location.search.includes('&comments=t')) {
+  if (isItemListPage()) {
     itemListPage()
   }
-  else if (/^item/.test(path)) {
+  else if (isItemPage()) {
     itemPage()
   }
-  else if (/^(user|muted)/.test(path)) {
+  else if (isUserProfilePage()) {
     log('user profile page')
     userProfilePage()
   }
-
-  customCss()
 }
 
+// @view-transition CSS needs to be applied immediately for pages to be eligible
+configureViewTransitionCss()
+
+// Reflect config which is needed at document_start in localStorage
+chrome.storage.local.onChanged.addListener((changes) => {
+  if (changes.debug) {
+    debug = changes.debug.newValue
+    localStorage.debug = debug
+  }
+  if (changes.enableViewTransitions) {
+    if (config) {
+      config.enableViewTransitions = changes.enableViewTransitions.newValue
+    }
+    if (localStorage.enableViewTransitions != String(changes.enableViewTransitions.newValue)) {
+      localStorage.enableViewTransitions = changes.enableViewTransitions.newValue
+      configureViewTransitionCss()
+    }
+  }
+})
+
 chrome.storage.local.get(async (storedConfig) => {
+  // Apply custom CSS ASAP
+  config = storedConfig
+  customCss()
+
   let settings = await import(chrome.runtime.getURL('settings.js'))
   defaultConfig = settings.DEFAULT_CONFIG
-  config = {...settings.DEFAULT_CONFIG, ...storedConfig}
-  main()
+  config = {...defaultConfig, ...storedConfig}
+
+  if (localStorage.enableViewTransitions != String(config.enableViewTransitions)) {
+    localStorage.enableViewTransitions = config.enableViewTransitions
+    configureViewTransitionCss()
+  }
+
+  if (document.readyState == 'loading') {
+    let start = Date.now()
+    document.addEventListener('DOMContentLoaded', () => {
+      log(`document.readyState = ${document.readyState} after ${Date.now() - start}ms`)
+      main()
+    })
+  } else {
+    main()
+  }
 })
 //#endregion

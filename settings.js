@@ -5,9 +5,10 @@ export const DEFAULT_CONFIG = {
   autoCollapseNotNew: true,
   autoHighlightNew: true,
   clickHeaderToCollapse: true,
-  collapsedGroups: [],
+  collapsedGroups: ['developer'],
   customCss: '',
   debug: false,
+  enableViewTransitions: false,
   hideAiItems: false,
   hideAiSiteRegex: `^(?:${[
     'ai\\.google\\.dev',
