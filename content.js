@@ -908,6 +908,8 @@ function itemPage() {
    * Adds a range control and button to show the last X new comments.
    */
   function addTimeTravelCommentControls($container) {
+    if (document.querySelector('#timeTravel')) return
+
     let sortedCommentIds = []
     for (let i = 0; i < comments.length; i++) {
       let comment = comments[i]
