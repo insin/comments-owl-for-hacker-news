@@ -10,11 +10,28 @@
 <body>
   <div class="app">
     <img src="../Icon.png" width="128" height="128" alt="Comments Owl for Hacker News">
-    <div class="platform-ios">You can turn on Comments Owl for Hacker News’ Safari extension in Settings.</div>
-    <div class="platform-mac state-unknown">You can turn on Comments Owl for Hacker News’ extension in Safari Extensions preferences.</div>
-    <div class="platform-mac state-on">Comments Owl for Hacker News’ extension is currently on. You can turn it off in Safari Extensions preferences.</div>
-    <div class="platform-mac state-off">Comments Owl for Hacker News’ extension is currently off. You can turn it on in Safari Extensions preferences.</div>
-    <button class="open-preferences">Quit and Open Safari Extensions Preferences…</button>
+    <p class="platform-mac state-unknown">Checking if Comments Owl for Hacker News is enabled in Safari…</p>
+    <p class="platform-mac state-on">Comments Owl for Hacker News is enabled in Safari</p>
+    <div class="platform-ios">
+      <p>To enable Comments Owl for Hacker News in Safari:</p>
+      <ol>
+        <li>Open the <strong>Settings</strong> app</li>
+        <li>Tap <strong>Apps → Safari → Extensions</strong></li>
+        <li>Tap <strong>Comments Owl for Hacker News</strong></li>
+        <li>Tap <strong>Allow Extension</strong></li>
+        <li>Scroll down to <strong>Permissions</strong></li>
+        <li>Tap <strong>news.ycombinator.com</strong> then <strong>Allow</strong></li>
+      </ol>
+    </div>
+    <div class="platform-mac state-off">
+      <p>To Enable Comments Owl for Hacker News in Safari:</p>
+      <button class="open-preferences">Open Safari Extensions Settings…</button>
+      <ol>
+        <li>Enable <strong>Comments Owl for Hacker News</strong></li>
+        <li>Click <strong>Edit Websites…</strong></li>
+        <li>Change <strong>news.ycombinator.com</strong> to <strong>Allow</strong></li>
+      </ol>
+    </div>
   </div>
   <div class="platform-ios ad">
     <div class="flex flex-col justify-between">
