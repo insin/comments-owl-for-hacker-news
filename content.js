@@ -1850,10 +1850,13 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
     }
 
     let promise = (async () => {
-      let profile = await fetchUserProfile(username, $user.href)
-      profileData.set(username, profile)
-      profileRequests.delete(username)
-      return profile
+      try {
+        let profile = await fetchUserProfile(username, $user.href)
+        profileData.set(username, profile)
+        return profile
+      } finally {
+        profileRequests.delete(username)
+      }
     })()
 
     profileRequests.set(username, promise)
