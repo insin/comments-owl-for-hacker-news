@@ -1987,8 +1987,7 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
           renderHovercardContents(profile)
           userProfilePage(userProfilePageOptions)
         } catch (error) {
-          $hovercard.textContent = 'Could not load profile'
-          warn(error)
+          warn('Error getting user profile:', error)
         }
       }
     }, OPEN_DELAY_MS)
