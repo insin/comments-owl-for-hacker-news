@@ -54,6 +54,7 @@ body.browser-mac.browserAction {
   min-width: 400px;
 }
 
+body.browser-firefox .viewTransitionsOption,
 body:is(.browser-ios, .tab) #customCssInfo,
 body:not(.darkMode) .darkMode,
 body:not(.hidingAiItems) .hidingAiItems,
