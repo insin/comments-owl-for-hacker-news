@@ -318,7 +318,7 @@ function updateDisplay() {
       })
     }
   }
-  if (!config.collapsedGroups.includes('developer')) {
+  if (!config.collapsedGroups.includes('appearance')) {
     requestAnimationFrame(() => {
       autoResize($customCss)
     })
