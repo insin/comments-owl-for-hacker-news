@@ -80,7 +80,7 @@ body:has(form[action="login"]) {
     color: var(--text-link);
   }
 }
-textarea, input:is([type="password"], [type="text"]) {
+textarea, input:is([type="number"], [type="password"], [type="text"]) {
   background-color: var(--bg-input); color: var(--text-primary);
 }
 .hovercard a:link {
@@ -294,8 +294,8 @@ function storeUserNotes(userNotes) {
  */
 function addStyle(role, ...css) {
   let $style = document.createElement('style')
-  $style.dataset.insertedBy = 'comments-owl'
-  $style.dataset.role = role
+  $style.setAttribute('inserted-by', 'comments-owl')
+  $style.setAttribute('role', role)
   if (css.length > 0) {
     $style.textContent = css.filter(Boolean).map(dedent).join('\n')
   }
