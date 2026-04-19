@@ -303,6 +303,7 @@ function updateDisplay() {
   $body.classList.toggle('darkMode', config.darkMode)
   $body.classList.toggle('hidingAiItems', config.hideAiItems)
   $body.classList.toggle('hidingCustomItems', config.hideCustomItems)
+  $body.classList.toggle('viewTransitions', config.enableViewTransitions)
   if (!config.collapsedGroups.includes('list')) {
     if (config.hideAiItems) {
       requestAnimationFrame(() => {
