@@ -30,6 +30,9 @@
   "customCss": {
     "message": "Custom CSS"
   },
+  "darkMode": {
+    "message": "Dark mode"
+  },
   "debug": {
     "message": "Debug"
   },
@@ -89,6 +92,9 @@
   },
   "preventAccidentallyInfo": {
     "message": "Makes flagging & hiding require confirmation"
+  },
+  "pureBlack": {
+    "message": "Pure black (OLED)"
   },
   "regexInfo": {
     "message": "One pattern per line, ignores case, # = comment"

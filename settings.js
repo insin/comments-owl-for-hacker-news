@@ -7,6 +7,7 @@ export const DEFAULT_CONFIG = {
   clickHeaderToCollapse: true,
   collapsedGroups: ['developer'],
   customCss: '',
+  darkMode: false,
   debug: false,
   enableViewTransitions: false,
   hideAiItems: false,
@@ -72,7 +73,8 @@ export const DEFAULT_CONFIG = {
   hidePastNav: false,
   hideReplyLinks: false,
   hideSubmitNav: false,
-  submitTextAreaWithKeyboard: true,
   makeSubmissionTextReadable: true,
   preventAccidentally: false,
+  pureBlack: false,
+  submitTextAreaWithKeyboard: true,
 }

@@ -6,6 +6,7 @@ export type Config = {
   clickHeaderToCollapse: boolean
   collapsedGroups: string[]
   customCss: string
+  darkMode: boolean
   debug: boolean
   enableViewTransitions: boolean
   hideAiItems: boolean
@@ -25,6 +26,7 @@ export type Config = {
   hideSubmitNav: boolean
   makeSubmissionTextReadable: boolean
   preventAccidentally: boolean
+  pureBlack: boolean
   submitTextAreaWithKeyboard: boolean
 }
 

@@ -1,11 +1,151 @@
-const HIGHLIGHT_COLOR = '#ffffde'
 const IS_SAFARI = navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test(navigator.userAgent)
 const MUTED_USERS_KEY = 'mutedUsers'
 const TOGGLE_HIDE = '[–]'
 const TOGGLE_SHOW = '[+]'
 const USER_NOTES_KEY = 'userNotes'
 
-const LOGGED_OUT_USER_PAGE = `<head op="muted">
+const DARK_MODE_VARIABLES = `:root {
+  --bg-page: #111111;
+  --bg-content: #222222;
+  --bg-header: #d96a1a;
+  --bg-highlight: #333333;
+  --bg-hovercard: #222222;
+  --bg-input: #2a2a2a;
+
+  --text-primary: #e7eae9;
+  --text-secondary: #8b98a5;
+  --text-muted: #777777;
+  --text-header: #cccccc;
+  --text-topsel: #ffffff;
+  --text-green: #4caf50;
+
+  --link: #e0e0e0;
+  --link-visited: #9a9a9a;
+
+  --comment-dead: #181818;
+  --fade-1: color-mix(in srgb, var(--text-primary) 80%, var(--comment-dead));
+  --fade-2: color-mix(in srgb, var(--text-primary) 65%, var(--comment-dead));
+  --fade-3: color-mix(in srgb, var(--text-primary) 55%, var(--comment-dead));
+  --fade-4: color-mix(in srgb, var(--text-primary) 45%, var(--comment-dead));
+  --fade-5: color-mix(in srgb, var(--text-primary) 35%, var(--comment-dead));
+  --fade-6: color-mix(in srgb, var(--text-primary) 25%, var(--comment-dead));
+  --fade-7: color-mix(in srgb, var(--text-primary) 15%, var(--comment-dead));
+  --fade-8: color-mix(in srgb, var(--text-primary) 10%, var(--comment-dead));
+  --fade-9: color-mix(in srgb, var(--text-primary) 5%,  var(--comment-dead));
+
+  --hover-shadow: rgba(136, 153, 166, .2) 0px 8px 15px, rgba(136, 153, 166, .15) 0px 0px 3px 1px;
+}`
+
+const LIGHT_MODE_VARIABLES = `:root {
+  --bg-page: #ffffff;
+  --bg-content: #f6f6ef;
+  --bg-header: #ff6600;
+  --bg-highlight: #ffffde;
+  --bg-hovercard: #f6f6ef;
+  --bg-input: #ffffff;
+
+  --text-primary: #000000;
+  --text-secondary: #828282;
+  --text-muted: #828282;
+  --text-header: #222222;
+  --text-topsel: #ffffff;
+  --text-green: #3c963c;
+
+  --link: #000000;
+  --link-visited: #828282;
+
+  --fade-1: #5a5a5a;
+  --fade-2: #737373;
+  --fade-3: #828282;
+  --fade-4: #888888;
+  --fade-5: #9c9c9c;
+  --fade-6: #aeaeae;
+  --fade-7: #bebebe;
+  --fade-8: #cecece;
+  --fade-9: #cecece;
+
+  --hover-shadow: 0 8px 24px rgba(0,0,0,.15);
+}`
+
+const CUSTOM_THEME_CSS = `
+body:has(form[action="login"]) {
+  color: var(--text-primary);
+  a {
+    color: var(--text-link);
+  }
+}
+textarea, input:is([type="password"], [type="text"]) {
+  background-color: var(--bg-input); color: var(--text-primary);
+}
+.hovercard a:link { color: var(--link); }
+.new { background-color: var(--bg-highlight); }
+
+`.trim()
+
+const HN_THEME_CSS = `
+body { background-color: var(--bg-page); }
+
+table[bgcolor="#f6f6ef"] { background-color: var(--bg-content) !important; }
+td[bgcolor="#ff6600"]    { background-color: var(--bg-header) !important }
+#logo path[fill="#f60"]  { fill: var(--bg-header) !important; }
+font[color="#3c963c"]    { color: var(--text-green) !important; }
+
+#bigbox {
+  td { color: var(--text-secondary); }
+
+  .admin td   { color: var(--text-primary); }
+  .subtext td { color: var(--text-muted); }
+
+  a:link    { color: var(--link); }
+  a:visited { color: var(--link-visited); }
+
+  .default { color: var(--text-secondary); }
+  .admin   { color: var(--text-primary); }
+  .title   { color: var(--text-secondary); }
+  .subtext { color: var(--text-muted); }
+  .yclinks { color: var(--text-muted); }
+  .pagetop { color: var(--text-header); }
+  .comhead { color: var(--text-muted); }
+
+  .c00, .c00 a:link { color: var(--text-primary); }
+  .c5a, .c5a a:link, .c5a a:visited { color: var(--fade-1); }
+  .c73, .c73 a:link, .c73 a:visited { color: var(--fade-2); }
+  .c82, .c82 a:link, .c82 a:visited { color: var(--fade-3); }
+  .c88, .c88 a:link, .c88 a:visited { color: var(--fade-4); }
+  .c9c, .c9c a:link, .c9c a:visited { color: var(--fade-5); }
+  .cae, .cae a:link, .cae a:visited { color: var(--fade-6); }
+  .cbe, .cbe a:link, .cbe a:visited { color: var(--fade-7); }
+  .cce, .cce a:link, .cce a:visited { color: var(--fade-8); }
+  .cdd, .cdd a:link, .cdd a:visited { color: var(--fade-9); }
+
+  .pagetop a:visited { color: var(--text-primary); }
+  .topsel a:link, .topsel a:visited { color: var(--text-topsel); }
+
+  .subtext a:link, .subtext a:visited { color: var(--text-muted); }
+
+  .comhead a:link, .subtext a:visited { color: var(--text-muted); }
+
+  /*
+    Bug in the HN stylesheet which we're keeping - if you fix it, visited links
+    become more prominent!
+  */
+  .hnmore a:link, a:visited { color: var(--text-muted); }
+}
+
+.yclinks {
+  a:link { color: var(--link); }
+}
+`.trim()
+
+const HN_LOGO_SVG = `
+<svg id="logo" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="4 4 188 188" width="18" style="border:1px solid white;">
+  <path d="m4 4h188v188h-188z" fill="#f60"/>
+  <path d="m73.2521756 45.01 22.7478244 47.39130083 22.7478244-47.39130083h19.56569631l-34.32352071 64.48661468v41.49338532h-15.98v-41.49338532l-34.32352071-64.48661468z" fill="#fff"/>
+</svg>
+`.trim()
+
+const LOGGED_OUT_USER_PAGE = `
+<head op="muted">
   <meta name="referrer" content="origin">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" type="text/css" href="news.css">
@@ -60,7 +200,8 @@ const LOGGED_OUT_USER_PAGE = `<head op="muted">
       </tbody>
     </table>
   </center>
-</body>`
+</body>
+`.trim()
 
 //#region Config
 let debug = localStorage.debug == 'true'
@@ -519,14 +660,14 @@ function itemPage() {
           }
           /* Indicate when clicking will activate the toggle */
           &:hover .toggle {
-            color: #000;
+            color: var(--link);
           }
         }
         .comhead:hover .toggle {
           color: inherit;
         }
         .comhead .toggle:hover {
-          color: #000;
+          color: var(--link);
         }
       `,
       config.hideReplyLinks && `
@@ -539,7 +680,7 @@ function itemPage() {
       `,
       config.makeSubmissionTextReadable && `
         div.toptext {
-          color: #000;
+          color: var(--text-primary);
         }
       `,
     ].filter(Boolean).map(dedent).join('\n')
@@ -815,7 +956,7 @@ function itemPage() {
      * @param {boolean} highlight
      */
     toggleHighlighted(highlight) {
-      this.$wrapper.style.backgroundColor = highlight ? HIGHLIGHT_COLOR : 'transparent'
+      this.$wrapper.classList.toggle('new', highlight)
       this.isHighlighted = highlight
     }
   }
@@ -1622,7 +1763,7 @@ function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMut
     if (!$profileStyle) {
       $profileStyle = addStyle('profile-static', `
         .saved {
-          color: #000;
+          color: var(--text-primary);
           opacity: 0;
         }
         .saved.show {
@@ -1780,9 +1921,9 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
   //#region CSS
   addStyle('hovercard-static', `
     .hovercard {
-      background: #f6f6ef;
-      border: 1px solid #828282;
-      box-shadow: 0 8px 24px rgba(0,0,0,.15);
+      background: var(--bg-hovercard);
+      border: 1px solid var(--text-muted);
+      box-shadow: var(--hover-shadow);
       inset: auto;
       margin: 8px 0;
       max-height: min(70vh, 500px);
@@ -2076,28 +2217,106 @@ function submitTextAreaWithKeyboard() {
 //#endregion
 
 //#region Custom CSS
-function customCss() {
-  let $style = addStyle('custom-css', config.customCss)
-  chrome.storage.local.onChanged.addListener((changes) => {
-    if (changes.customCss) {
-      config.customCss = changes.customCss.newValue
-      $style.textContent = config.customCss
+/** @type {HTMLStyleElement} */
+let $customCssStyle
+
+function configureCustomCss() {
+  if (!config.customCss) {
+    if ($customCssStyle) {
+      $customCssStyle.remove()
+      $customCssStyle = null
     }
-  })
+    return
+  }
+  if (!$customCssStyle) {
+    $customCssStyle = addStyle('custom-css', config.customCss)
+  } else {
+    $customCssStyle.textContent = config.customCss
+  }
 }
 //#endregion
 
-//#region Main
-/** @type {string} */
-let currentUser
-let path = location.pathname.slice(1)
+//#region Theme
+let logoReplaced = false
+/** @type {HTMLStyleElement} */
+let $themeStyle
+/** @type {HTMLStyleElement} */
+let $themeOverrideStyle
 /** @type {HTMLStyleElement} */
 let $viewTransitionStyle
 
+async function configureThemeCss() {
+  let dark = localStorage.darkMode == 'true'
+  let css = [
+    dark ? DARK_MODE_VARIABLES : LIGHT_MODE_VARIABLES,
+    dark && HN_THEME_CSS,
+    CUSTOM_THEME_CSS,
+  ].filter(Boolean).join('\n\n')
+  log(`adding ${dark ? 'dark' : 'light'} theme CSS`)
+  if (!$themeStyle) {
+    $themeStyle = addStyle('theme', css)
+  } else {
+    $themeStyle.textContent = css
+  }
+  // Replace HN's <img src="y18.svg"> with an inline version which can be styled
+  if (dark && !logoReplaced) {
+    let $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
+    if (!$homeLink) {
+      await new Promise((resolve) => {
+        new MutationObserver((_, observer) => {
+          $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
+          if ($homeLink) {
+            observer.disconnect()
+            resolve()
+          }
+        }).observe(document.documentElement, {childList: true, subtree: true})
+      })
+    }
+    log('replacing HN logo with inline version')
+    $homeLink.innerHTML = HN_LOGO_SVG
+    logoReplaced = true
+  }
+}
+
+async function configureThemeOverrideCss() {
+  let dark = localStorage.darkMode == 'true'
+  let pureBlack = localStorage.pureBlack == 'true'
+  let css = [
+    dark && pureBlack && `
+    :root {
+      --bg-page: #000;
+      --bg-content: #000;
+      --bg-hovercard: #1a1a1a;
+      --bg-input: #1a1a1a;
+    }
+    `
+  ].filter(Boolean).join('\n\n')
+  log(`adding ${dark ? 'dark' : 'light'} theme CSS`)
+  if (!css) {
+    if ($themeOverrideStyle) {
+      $themeOverrideStyle.remove()
+      $themeOverrideStyle = null
+    }
+    return
+  }
+  if (!$themeOverrideStyle) {
+    $themeOverrideStyle = addStyle('theme-override', css)
+  } else {
+    $themeOverrideStyle.textContent = css
+  }
+}
+
 function configureViewTransitionCss() {
+  if (localStorage.enableViewTransitions != 'true') {
+    if ($viewTransitionStyle) {
+      $viewTransitionStyle.remove()
+      $viewTransitionStyle = null
+    }
+    return
+  }
   /** @type {string[]} */
   let submissionIds = JSON.parse(sessionStorage.submissionIds || '[]')
-  let css = dedent(localStorage.enableViewTransitions == 'true' ? `
+  let css = dedent(`
     @view-transition {
       navigation: auto;
     }
@@ -2112,13 +2331,19 @@ function configureViewTransitionCss() {
         view-transition-name: item-${id}-subline;
       }
     }`).join('\n')}
-  ` : '')
+  `)
   if (!$viewTransitionStyle) {
     $viewTransitionStyle = addStyle('view-transitions', css)
   } else {
     $viewTransitionStyle.textContent = css
   }
 }
+//#endregion
+
+//#region Main
+/** @type {string} */
+let currentUser
+let path = location.pathname.slice(1)
 
 function isItemListPage() {
   return (
@@ -2158,8 +2383,15 @@ function main() {
     document.documentElement.innerHTML = LOGGED_OUT_USER_PAGE
     // Safari on macOS has a default dark background in dark mode
     if (IS_SAFARI) {
-      addStyle('muted-safari', 'html { background-color: #fff; }')
+      addStyle('muted-safari', 'html { background-color: var(--bg-color); }')
     }
+    // Re-apply initial custom CSS
+    $viewTransitionStyle = null
+    $themeStyle = null
+    $themeOverrideStyle = null
+    configureViewTransitionCss()
+    configureThemeCss()
+    configureThemeOverrideCss()
   }
 
   tweakNav()
@@ -2179,12 +2411,30 @@ function main() {
 
 // @view-transition CSS needs to be applied immediately for pages to be eligible
 configureViewTransitionCss()
+configureThemeCss()
+configureThemeOverrideCss()
 
 // Reflect config which is needed at document_start in localStorage
 chrome.storage.local.onChanged.addListener((changes) => {
+  let needsThemeUpdate = false
   if (changes.debug) {
     debug = changes.debug.newValue
     localStorage.debug = debug
+  }
+  if (changes.customCss) {
+    if (config) {
+      config.customCss = changes.customCss.newValue
+    }
+    configureCustomCss()
+  }
+  if (changes.darkMode) {
+    if (config) {
+      config.darkMode = changes.darkMode.newValue
+    }
+    if (localStorage.darkMode != String(changes.darkMode.newValue)) {
+      localStorage.darkMode = changes.darkMode.newValue
+      needsThemeUpdate = true
+    }
   }
   if (changes.enableViewTransitions) {
     if (config) {
@@ -2195,12 +2445,26 @@ chrome.storage.local.onChanged.addListener((changes) => {
       configureViewTransitionCss()
     }
   }
+  if (changes.pureBlack) {
+    if (config) {
+      config.pureBlack = changes.pureBlack.newValue
+    }
+    if (localStorage.pureBlack != String(changes.pureBlack.newValue)) {
+      localStorage.pureBlack = changes.pureBlack.newValue
+      needsThemeUpdate = true
+    }
+  }
+
+  if (needsThemeUpdate) {
+    configureThemeCss()
+    configureThemeOverrideCss()
+  }
 })
 
 chrome.storage.local.get(async (storedConfig) => {
   // Apply custom CSS ASAP
-  config = storedConfig
-  customCss()
+  config = /** @type {import("./types").Config} */ (storedConfig)
+  configureCustomCss()
 
   let settings = await import(chrome.runtime.getURL('settings.js'))
   defaultConfig = settings.DEFAULT_CONFIG
@@ -2209,6 +2473,12 @@ chrome.storage.local.get(async (storedConfig) => {
   if (localStorage.enableViewTransitions != String(config.enableViewTransitions)) {
     localStorage.enableViewTransitions = config.enableViewTransitions
     configureViewTransitionCss()
+  }
+  if (localStorage.darkMode != String(config.darkMode) || localStorage.pureBlack != String(config.pureBlack)) {
+    localStorage.darkMode = config.darkMode
+    localStorage.pureBlack = config.pureBlack
+    configureThemeCss()
+    configureThemeOverrideCss()
   }
 
   if (document.readyState == 'loading') {

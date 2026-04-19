@@ -30,6 +30,7 @@ for (let translationId of [
   'clickHeaderToCollapse',
   'commentPagesOptions',
   'customCss',
+  'darkMode',
   'debug',
   'debugInfo',
   'developerOptions',
@@ -46,6 +47,7 @@ for (let translationId of [
   'navigationOptions',
   'preventAccidentally',
   'preventAccidentallyInfo',
+  'pureBlack',
 ]) {
   let $el = document.getElementById(translationId)
   if ($el) {
@@ -295,6 +297,7 @@ function saveCustomCss() {
  * Update display based on config.
  */
 function updateDisplay() {
+  $body.classList.toggle('darkMode', config.darkMode)
   $body.classList.toggle('hidingAiItems', config.hideAiItems)
   $body.classList.toggle('hidingCustomItems', config.hideCustomItems)
   if (!config.collapsedGroups.includes('list')) {
