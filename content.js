@@ -4,7 +4,7 @@ const TOGGLE_HIDE = '[–]'
 const TOGGLE_SHOW = '[+]'
 const USER_NOTES_KEY = 'userNotes'
 
-const DARK_MODE_VARIABLES = `:root {
+const DARK_MODE_VARIABLES = `[dark] {
   --bg-page: #111111;
   --bg-content: #222222;
   --bg-header: #d96a1a;
@@ -14,13 +14,16 @@ const DARK_MODE_VARIABLES = `:root {
 
   --text-primary: #e7eae9;
   --text-secondary: #8b98a5;
-  --text-muted: #777777;
-  --text-header: #cccccc;
+  --text-muted: #8b98a5;
+  --text-header: #222222;
   --text-topsel: #ffffff;
   --text-green: #4caf50;
 
   --link: #e0e0e0;
   --link-visited: #9a9a9a;
+  --link-header: #000000;
+  --logo-bg: transparent;
+  --logo-fg: var(--text-topsel);
 
   --comment-dead: #181818;
   --fade-1: color-mix(in srgb, var(--text-primary) 80%, var(--comment-dead));
@@ -36,7 +39,7 @@ const DARK_MODE_VARIABLES = `:root {
   --hover-shadow: rgba(136, 153, 166, .2) 0px 8px 15px, rgba(136, 153, 166, .15) 0px 0px 3px 1px;
 }`
 
-const LIGHT_MODE_VARIABLES = `:root {
+const LIGHT_MODE_VARIABLES = `html {
   --bg-page: #ffffff;
   --bg-content: #f6f6ef;
   --bg-header: #ff6600;
@@ -53,6 +56,9 @@ const LIGHT_MODE_VARIABLES = `:root {
 
   --link: #000000;
   --link-visited: #828282;
+  --link-header: #000000;
+  --logo-bg: transparent;
+  --logo-fg: var(--text-topsel);
 
   --fade-1: #5a5a5a;
   --fade-2: #737373;
@@ -77,20 +83,36 @@ body:has(form[action="login"]) {
 textarea, input:is([type="password"], [type="text"]) {
   background-color: var(--bg-input); color: var(--text-primary);
 }
-.hovercard a:link { color: var(--link); }
-.new { background-color: var(--bg-highlight); }
-
+.hovercard a:link {
+  color: var(--link);
+}
+.new {
+  background-color: var(--bg-highlight);
+}
 `.trim()
 
 const HN_THEME_CSS = `
 body { background-color: var(--bg-page); }
 
 table[bgcolor="#f6f6ef"] { background-color: var(--bg-content) !important; }
-td[bgcolor="#ff6600"]    { background-color: var(--bg-header) !important }
-#logo path[fill="#f60"]  { fill: var(--bg-header) !important; }
 font[color="#3c963c"]    { color: var(--text-green) !important; }
 
-#bigbox {
+#header {
+  background-color: var(--bg-header) !important;
+  .pagetop { color: var(--text-header); }
+  .pagetop a:link, .pagetop a:visited { color: var(--link-header); }
+  .topsel a:link, .topsel a:visited { color: var(--text-topsel); }
+}
+
+#hnlogo {
+  border: 1px solid var(--logo-fg);
+  path[fill="#f60"] { fill: var(--logo-bg) !important; }
+  path[fill="#fff"] { fill: var(--logo-fg) !important; }
+}
+
+#bigbox,
+/* HN markup bug on /threads - content appears after #bigbox */
+html[op="threads"] .comtr {
   td { color: var(--text-secondary); }
 
   .admin td   { color: var(--text-primary); }
@@ -103,8 +125,6 @@ font[color="#3c963c"]    { color: var(--text-green) !important; }
   .admin   { color: var(--text-primary); }
   .title   { color: var(--text-secondary); }
   .subtext { color: var(--text-muted); }
-  .yclinks { color: var(--text-muted); }
-  .pagetop { color: var(--text-header); }
   .comhead { color: var(--text-muted); }
 
   .c00, .c00 a:link { color: var(--text-primary); }
@@ -118,9 +138,6 @@ font[color="#3c963c"]    { color: var(--text-green) !important; }
   .cce, .cce a:link, .cce a:visited { color: var(--fade-8); }
   .cdd, .cdd a:link, .cdd a:visited { color: var(--fade-9); }
 
-  .pagetop a:visited { color: var(--text-primary); }
-  .topsel a:link, .topsel a:visited { color: var(--text-topsel); }
-
   .subtext a:link, .subtext a:visited { color: var(--text-muted); }
 
   .comhead a:link, .subtext a:visited { color: var(--text-muted); }
@@ -133,12 +150,13 @@ font[color="#3c963c"]    { color: var(--text-green) !important; }
 }
 
 .yclinks {
+  color: var(--text-muted);
   a:link { color: var(--link); }
 }
 `.trim()
 
 const HN_LOGO_SVG = `
-<svg id="logo" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="4 4 188 188" width="18" style="border:1px solid white;">
+<svg id="hnlogo" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="4 4 188 188" width="18">
   <path d="m4 4h188v188h-188z" fill="#f60"/>
   <path d="m73.2521756 45.01 22.7478244 47.39130083 22.7478244-47.39130083h19.56569631l-34.32352071 64.48661468v41.49338532h-15.98v-41.49338532l-34.32352071-64.48661468z" fill="#fff"/>
 </svg>
@@ -427,6 +445,12 @@ function tweakNav() {
   if (!$pageTop) {
     warn('pagetop not found')
     return
+  }
+
+  // Add id for theming
+  let $header = $pageTop.closest('td[bgcolor]')
+  if ($header) {
+    $header.id = 'header'
   }
 
   //#region CSS
@@ -2258,6 +2282,11 @@ async function configureThemeCss() {
   } else {
     $themeStyle.textContent = css
   }
+  if (dark) {
+    document.documentElement.setAttribute('dark', '')
+  } else {
+    document.documentElement.removeAttribute('dark')
+  }
   // Replace HN's <img src="y18.svg"> with an inline version which can be styled
   if (dark && !logoReplaced) {
     let $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
@@ -2283,7 +2312,7 @@ async function configureThemeOverrideCss() {
   let pureBlack = localStorage.pureBlack == 'true'
   let css = [
     dark && pureBlack && `
-    :root {
+    html[dark] {
       --bg-page: #000;
       --bg-content: #000;
       --bg-hovercard: #1a1a1a;
