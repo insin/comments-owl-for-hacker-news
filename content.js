@@ -105,7 +105,7 @@ font[color="#3c963c"]    { color: var(--text-green) !important; }
 }
 
 #hnlogo {
-  border: 1px solid var(--logo-fg);
+  border-color: var(--logo-fg) !important;
   path[fill="#f60"] { fill: var(--logo-bg) !important; }
   path[fill="#fff"] { fill: var(--logo-fg) !important; }
 }
@@ -156,7 +156,7 @@ html[op="threads"] .comtr {
 `.trim()
 
 const HN_LOGO_SVG = `
-<svg id="hnlogo" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="4 4 188 188" width="18">
+<svg id="hnlogo" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="4 4 188 188" width="18" style="border: 1px solid #fff;">
   <path d="m4 4h188v188h-188z" fill="#f60"/>
   <path d="m73.2521756 45.01 22.7478244 47.39130083 22.7478244-47.39130083h19.56569631l-34.32352071 64.48661468v41.49338532h-15.98v-41.49338532l-34.32352071-64.48661468z" fill="#fff"/>
 </svg>
@@ -2271,12 +2271,13 @@ let $viewTransitionStyle
 
 async function configureThemeCss() {
   let dark = localStorage.darkMode == 'true'
+  let enableLightTheme = localStorage.enableLightTheme == 'true'
   let css = [
-    dark ? DARK_MODE_VARIABLES : LIGHT_MODE_VARIABLES,
-    dark && HN_THEME_CSS,
+    LIGHT_MODE_VARIABLES,
+    dark && DARK_MODE_VARIABLES,
+    (dark || enableLightTheme) && HN_THEME_CSS,
     CUSTOM_THEME_CSS,
   ].filter(Boolean).join('\n\n')
-  log(`adding ${dark ? 'dark' : 'light'} theme CSS`)
   if (!$themeStyle) {
     $themeStyle = addStyle('theme', css)
   } else {
@@ -2288,7 +2289,7 @@ async function configureThemeCss() {
     document.documentElement.removeAttribute('dark')
   }
   // Replace HN's <img src="y18.svg"> with an inline version which can be styled
-  if (dark && !logoReplaced) {
+  if ((dark || enableLightTheme) && !logoReplaced) {
     let $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
     if (!$homeLink) {
       await new Promise((resolve) => {
@@ -2483,6 +2484,15 @@ chrome.storage.local.onChanged.addListener((changes) => {
       needsThemeUpdate = true
     }
   }
+  if (changes.enableLightTheme) {
+    if (config) {
+      config.enableLightTheme = changes.enableLightTheme.newValue
+    }
+    if (localStorage.enableLightTheme != String(changes.enableLightTheme.newValue)) {
+      localStorage.enableLightTheme = changes.enableLightTheme.newValue
+      needsThemeUpdate = true
+    }
+  }
   if (changes.enableViewTransitions) {
     if (config) {
       config.enableViewTransitions = changes.enableViewTransitions.newValue
@@ -2527,9 +2537,11 @@ chrome.storage.local.get(async (storedConfig) => {
     configureViewTransitionCss()
   }
   if (localStorage.darkMode != String(config.darkMode) ||
-      localStorage.pureBlack != String(config.pureBlack)) {
+      localStorage.pureBlack != String(config.pureBlack) ||
+      localStorage.enableLightTheme != String(config.enableLightTheme)) {
     localStorage.darkMode = config.darkMode
     localStorage.pureBlack = config.pureBlack
+    localStorage.enableLightTheme = config.enableLightTheme
     configureThemeCss()
     configureThemeOverrideCss()
   }

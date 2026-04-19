@@ -42,6 +42,12 @@
   "developerOptions": {
     "message": "Developer"
   },
+  "enableLightTheme": {
+    "message": "Enable light mode theming"
+  },
+  "enableLightThemeInfo": {
+    "message": "Tweak HN's default theme using CSS variables"
+  },
   "enableViewTransitions": {
     "message": "Enable view transitions"
   },

@@ -34,6 +34,8 @@ for (let translationId of [
   'debug',
   'debugInfo',
   'developerOptions',
+  'enableLightTheme',
+  'enableLightThemeInfo',
   'enableViewTransitions',
   'hideAiItems',
   'hideCommentsNav',
