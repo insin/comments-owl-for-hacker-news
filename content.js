@@ -2323,6 +2323,10 @@ function configureViewTransitionCss() {
     @view-transition {
       navigation: auto;
     }
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 150ms;
+    }
     ${submissionIds.map(id => `.submission[id="${id}"] {
       .votelinks {
         view-transition-name: item-${id}-votelinks;
