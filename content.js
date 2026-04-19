@@ -63,7 +63,7 @@ const LOGGED_OUT_USER_PAGE = `<head op="muted">
 </body>`
 
 //#region Config
-let debug = false
+let debug = localStorage.debug == 'true'
 /** @type {import("./types").Config} */
 let config
 /** @type {import("./types").Config} */
@@ -1432,6 +1432,12 @@ function itemListPage() {
   //#endregion
 
   //#region Main
+  if (config.enableViewTransitions) {
+    let submissionIds = [...document.querySelectorAll('tr.submission')].map($submission => $submission.id)
+    sessionStorage.submissionIds = JSON.stringify(submissionIds)
+    configureViewTransitionCss()
+  }
+
   if (location.pathname != '/flagged') {
     for (let $flagLink of document.querySelectorAll('span.subline > a[href^="flag"]')) {
       $flagLink.addEventListener('click', confirmFlag, true)
@@ -2086,32 +2092,63 @@ function customCss() {
 //#region Main
 /** @type {string} */
 let currentUser
+let path = location.pathname.slice(1)
 /** @type {HTMLStyleElement} */
-let $viewTransitionsStyle
+let $viewTransitionStyle
 
-function configureViewTransitions() {
-  let css = [
-    localStorage.useViewTransitions == 'true' && `
-      @view-transition {
-        navigation: auto;
+function configureViewTransitionCss() {
+  /** @type {string[]} */
+  let submissionIds = JSON.parse(sessionStorage.submissionIds || '[]')
+  log({submissionIds})
+  let css = dedent(localStorage.enableViewTransitions == 'true' ? `
+    @view-transition {
+      navigation: auto;
+    }
+    ${submissionIds.map(id => `.submission[id="${id}"] {
+      .votelinks {
+        view-transition-name: item-${id}-votelinks;
       }
-    `
-  ].filter(Boolean).map(dedent).join('\n')
-  if (!$viewTransitionsStyle) {
-    $viewTransitionsStyle = addStyle('view-transitions', css)
+      .votelinks + .title {
+        view-transition-name: item-${id}-title;
+      }
+      & + tr .subline {
+        view-transition-name: item-${id}-subline;
+      }
+    }`).join('\n')}
+  ` : '')
+  if (!$viewTransitionStyle) {
+    $viewTransitionStyle = addStyle('view-transitions', css)
   } else {
-    $viewTransitionsStyle.textContent = css
+    $viewTransitionStyle.textContent = css
   }
+}
+
+function isItemListPage() {
+  return (
+    /^($|active|ask|best($|\?)|flagged|front|hidden|invited|launches|news|newest|noobstories|pool|show|shownew|submitted|upvoted)/.test(path) ||
+    /^favorites/.test(path) && !location.search.includes('&comments=t')
+  )
+}
+
+function isItemPage() {
+  return /^item/.test(path)
+}
+
+function isUserProfilePage() {
+  return /^(user|muted)/.test(path)
 }
 
 function main() {
   debug = config.debug
+  if (localStorage.debug != String(debug)) {
+    localStorage.debug = debug
+  }
   log('config', config)
 
   let $currentUserLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a#me'))
   currentUser = $currentUserLink?.innerText ?? ''
 
-  if (location.pathname.startsWith('/login')) {
+  if (path == 'login') {
     log('login screen')
     if (IS_SAFARI) {
       log('trying to prevent Safari zooming in on the autofocused input')
@@ -2120,7 +2157,7 @@ function main() {
     return
   }
 
-  if (location.pathname.startsWith('/muted')) {
+  if (path == 'muted') {
     document.documentElement.innerHTML = LOGGED_OUT_USER_PAGE
     // Safari on macOS has a default dark background in dark mode
     if (IS_SAFARI) {
@@ -2131,44 +2168,49 @@ function main() {
   tweakNav()
   submitTextAreaWithKeyboard()
 
-  let path = location.pathname.slice(1)
-
-  if (/^($|active|ask|best($|\?)|flagged|front|hidden|invited|launches|news|newest|noobstories|pool|show|shownew|submitted|upvoted)/.test(path) ||
-      /^favorites/.test(path) && !location.search.includes('&comments=t')) {
+  if (isItemListPage()) {
     itemListPage()
   }
-  else if (/^item/.test(path)) {
+  else if (isItemPage()) {
     itemPage()
   }
-  else if (/^(user|muted)/.test(path)) {
+  else if (isUserProfilePage()) {
     log('user profile page')
     userProfilePage()
   }
-
-  customCss()
 }
 
-// Needs to be applied immediately to take effect
-configureViewTransitions()
+// @view-transition CSS needs to be applied immediately for pages to be eligible
+configureViewTransitionCss()
 
 chrome.storage.local.onChanged.addListener((changes) => {
   if (changes.debug) {
     debug = changes.debug.newValue
+    localStorage.debug = debug
   }
-  if (changes.useViewTransitions) {
-    // TODO Add to config and the options page
-    // config.useViewTransitions = changes.useViewTransitions.newValue
-    if (localStorage.useViewTransitions != String(changes.useViewTransitions.newValue)) {
-      localStorage.useViewTransitions = changes.useViewTransitions.newValue
-      configureViewTransitions()
+  if (changes.enableViewTransitions) {
+    if (config) {
+      config.enableViewTransitions = changes.enableViewTransitions.newValue
+    }
+    if (localStorage.enableViewTransitions != String(changes.enableViewTransitions.newValue)) {
+      localStorage.enableViewTransitions = changes.enableViewTransitions.newValue
+      configureViewTransitionCss()
     }
   }
 })
 
 chrome.storage.local.get(async (storedConfig) => {
+  // Apply custom CSS ASAP
+  config = storedConfig
+  customCss()
+
   let settings = await import(chrome.runtime.getURL('settings.js'))
   defaultConfig = settings.DEFAULT_CONFIG
   config = {...defaultConfig, ...storedConfig}
+  if (localStorage.enableViewTransitions != String(config.enableViewTransitions)) {
+    localStorage.enableViewTransitions = config.enableViewTransitions
+    configureViewTransitionCss()
+  }
   main()
 })
 //#endregion

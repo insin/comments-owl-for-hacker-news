@@ -12,6 +12,9 @@
   "addUpvotedToHeader": {
     "message": "Add \"upvoted\""
   },
+  "appearanceOptions": {
+    "message": "Appearance"
+  },
   "autoCollapseNotNew": {
     "message": "Auto collapse threads without new comments"
   },
@@ -35,6 +38,9 @@
   },
   "developerOptions": {
     "message": "Developer"
+  },
+  "enableViewTransitions": {
+    "message": "Enable view transitions"
   },
   "hideAiItems": {
     "message": "Hide \"AI\" items"
