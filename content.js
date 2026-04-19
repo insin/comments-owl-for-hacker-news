@@ -549,34 +549,34 @@ function itemPage() {
   //#endregion
 
   //#region State
-  /** @type {boolean} */
   let autoCollapseNotNew = config.autoCollapseNotNew || location.search.includes('?shownew')
-  /** @type {boolean} */
   let autoHighlightNew = config.autoHighlightNew || location.search.includes('?shownew')
   /** @type {HNComment[]} */
   let comments = []
   /** @type {Record<string, HNComment>} */
   let commentsById = {}
+  let commentCount = 0
   /** @type {FocusedComment} */
   let focusedComment
-  /** @type {boolean} */
   let hasNewComments = false
-  /** @type {string} */
   let itemId = /id=(\d+)/.exec(location.search)[1]
   /** @type {Visit} */
   let lastVisit
   /** @type {number} */
   let maxCommentId
+  let mutedCommentCount = 0
   /** @type {Set<string>} */
   let mutedUsers = getMutedUsers()
+  let newCommentCount = 0
+  let replyToMutedCommentCount = 0
   /** @type {Record<string, string>} */
   let userNotes = getUserNotes()
 
-  // Comment counts
-  let commentCount = 0
-  let mutedCommentCount = 0
-  let newCommentCount = 0
-  let replyToMutedCommentCount = 0
+  /**
+   * Submission element containing either the comment count or "discuss"
+   * @type {Element}
+   */
+  let $submissionCommentCount
   //#endregion
 
   //#region Classes
@@ -1042,60 +1042,7 @@ function itemPage() {
     updateMutedUsersDisplay()
   }
 
-  function updateMutedUsersDisplay() {
-    // Invalidate non-muted child caches and update child counts on any
-    // comments which have been collapsed.
-    for (let i = 0; i < comments.length; i++) {
-      let comment = comments[i]
-
-      if (comment.isMuted) {
-        i += comment.childComments.length
-        continue
-      }
-
-      comment._nonMutedChildComments = null
-      if (comment.$childCount) {
-        comment.$childCount.textContent = comment.collapsedChildrenText
-      }
-    }
-
-    hideMutedUsers()
-  }
-
-  function updateUserNotes(username) {
-    if (focusedComment && focusedComment.user == username) {
-      focusedComment.updateNote()
-    }
-    for (let comment of comments) {
-      if (comment.user == username) {
-        comment.updateNote()
-      }
-    }
-  }
-  //#endregion
-
-  //#region Main
-  function main() {
-    // Figure out which type of item page we're on
-    let $submission = document.querySelector('.fatitem tr.submission')
-    let $commentsLink
-    if ($submission) {
-      log('submission page')
-      $commentsLink = document.querySelector('td.subtext .subline > a[href^=item]')
-      if ($commentsLink) {
-        lastVisit = getLastVisit(itemId)
-      } else {
-        log('submission not commentable')
-      }
-    } else {
-      log('comment thread')
-      let $focusedComment = /** @type {HTMLElement} */ (document.querySelector('.fatitem tr.athing'))
-      if ($focusedComment) {
-        focusedComment = new FocusedComment($focusedComment)
-      }
-    }
-
-    //#region Process comment thread
+  function processCommentThread() {
     let commentWrappers = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.comment-tree tr.athing'))
     log(commentWrappers.length, `comment element${s(commentWrappers.length)}`)
 
@@ -1147,12 +1094,11 @@ function itemPage() {
 
     maxCommentId = comments.map(comment => comment.id).sort().pop()
     hasNewComments = lastVisit != null && newCommentCount > 0
-    //#endregion
 
     // New comment highlighting for submission pages with a comment count
-    if ($commentsLink) {
-      if (/^\d+/.test($commentsLink.textContent)) {
-        commentCount = Number($commentsLink.textContent.split(/\s/).shift())
+    if ($submissionCommentCount) {
+      if (/^\d+/.test($submissionCommentCount.textContent)) {
+        commentCount = Number($submissionCommentCount.textContent.split(/\s/).shift())
       } else {
         commentCount = 0
       }
@@ -1188,6 +1134,39 @@ function itemPage() {
     addSubmissionPageControls()
   }
 
+  function updateMutedUsersDisplay() {
+    // Invalidate non-muted child caches and update child counts on any
+    // comments which have been collapsed.
+    for (let i = 0; i < comments.length; i++) {
+      let comment = comments[i]
+
+      if (comment.isMuted) {
+        i += comment.childComments.length
+        continue
+      }
+
+      comment._nonMutedChildComments = null
+      if (comment.$childCount) {
+        comment.$childCount.textContent = comment.collapsedChildrenText
+      }
+    }
+
+    hideMutedUsers()
+  }
+
+  function updateUserNotes(username) {
+    if (focusedComment && focusedComment.user == username) {
+      focusedComment.updateNote()
+    }
+    for (let comment of comments) {
+      if (comment.user == username) {
+        comment.updateNote()
+      }
+    }
+  }
+  //#endregion
+
+  //#region Main
   userHovercards({
     onNotesChanged: (username) => {
       userNotes = getUserNotes()
@@ -1198,6 +1177,26 @@ function itemPage() {
       updateMutedUsersDisplay()
     },
   })
+
+  // Figure out which type of item page we're on
+  let $submission = document.querySelector('.fatitem tr.submission')
+  if ($submission) {
+    log('submission page')
+    $submissionCommentCount = document.querySelector('td.subtext .subline > a[href^=item]')
+    if ($submissionCommentCount) {
+      lastVisit = getLastVisit(itemId)
+    } else {
+      log('submission not commentable')
+    }
+  } else {
+    log('comment thread')
+    let $focusedComment = /** @type {HTMLElement} */ (document.querySelector('.fatitem tr.athing'))
+    if ($focusedComment) {
+      focusedComment = new FocusedComment($focusedComment)
+    }
+  }
+
+  processCommentThread()
 
   chrome.storage.local.onChanged.addListener((changes) => {
     if (changes.clickHeaderToCollapse) {
@@ -1213,16 +1212,6 @@ function itemPage() {
       configureCss()
     }
   })
-
-  if (document.readyState == 'loading') {
-    let start = Date.now()
-    document.addEventListener('DOMContentLoaded', () => {
-      log(`document.readyState = ${document.readyState} after ${Date.now() - start}ms`)
-      main()
-    })
-  } else {
-    main()
-  }
   //#endregion
 }
 //#endregion
@@ -1429,13 +1418,17 @@ function itemListPage() {
       }
     }
   }
+
+  function setViewTransitionSubmissionIds() {
+    let submissionIds = [...document.querySelectorAll('tr.submission')].map($submission => $submission.id)
+    sessionStorage.submissionIds = JSON.stringify(submissionIds)
+    configureViewTransitionCss()
+  }
   //#endregion
 
   //#region Main
   if (config.enableViewTransitions) {
-    let submissionIds = [...document.querySelectorAll('tr.submission')].map($submission => $submission.id)
-    sessionStorage.submissionIds = JSON.stringify(submissionIds)
-    configureViewTransitionCss()
+    setViewTransitionSubmissionIds()
   }
 
   if (location.pathname != '/flagged') {
@@ -1504,6 +1497,11 @@ function itemListPage() {
   }
 
   chrome.storage.local.onChanged.addListener((changes) => {
+    if (changes.enableViewTransitions) {
+      if (changes.enableViewTransitions.newValue) {
+        setViewTransitionSubmissionIds()
+      }
+    }
     if (changes.preventAccidentally) {
       config.preventAccidentally = changes.preventAccidentally.newValue
     }
@@ -2099,7 +2097,6 @@ let $viewTransitionStyle
 function configureViewTransitionCss() {
   /** @type {string[]} */
   let submissionIds = JSON.parse(sessionStorage.submissionIds || '[]')
-  log({submissionIds})
   let css = dedent(localStorage.enableViewTransitions == 'true' ? `
     @view-transition {
       navigation: auto;
@@ -2183,6 +2180,7 @@ function main() {
 // @view-transition CSS needs to be applied immediately for pages to be eligible
 configureViewTransitionCss()
 
+// Reflect config which is needed at document_start in localStorage
 chrome.storage.local.onChanged.addListener((changes) => {
   if (changes.debug) {
     debug = changes.debug.newValue
@@ -2207,10 +2205,20 @@ chrome.storage.local.get(async (storedConfig) => {
   let settings = await import(chrome.runtime.getURL('settings.js'))
   defaultConfig = settings.DEFAULT_CONFIG
   config = {...defaultConfig, ...storedConfig}
+
   if (localStorage.enableViewTransitions != String(config.enableViewTransitions)) {
     localStorage.enableViewTransitions = config.enableViewTransitions
     configureViewTransitionCss()
   }
-  main()
+
+  if (document.readyState == 'loading') {
+    let start = Date.now()
+    document.addEventListener('DOMContentLoaded', () => {
+      log(`document.readyState = ${document.readyState} after ${Date.now() - start}ms`)
+      main()
+    })
+  } else {
+    main()
+  }
 })
 //#endregion
