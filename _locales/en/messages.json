@@ -48,14 +48,14 @@
   "hideAiItems": {
     "message": "Hide \"AI\" items"
   },
-  "hideCustomItems": {
-    "message": "Hide items matching custom patterns"
-  },
   "hideAiItemsMenuItem": {
     "message": "Hide \"AI\" Items"
   },
   "hideCommentsNav": {
     "message": "Hide \"comments\""
+  },
+  "hideCustomItems": {
+    "message": "Hide items matching custom patterns"
   },
   "hideJobsNav": {
     "message": "Hide \"jobs\""
@@ -71,6 +71,9 @@
   },
   "hideSubmitNav": {
     "message": "Hide \"submit\""
+  },
+  "listItemTransitions": {
+    "message": "List → item transitions"
   },
   "listPagesOptions": {
     "message": "List pages"

@@ -24,6 +24,7 @@ export type Config = {
   hidePastNav: boolean
   hideReplyLinks: boolean
   hideSubmitNav: boolean
+  listItemTransitions: boolean
   makeSubmissionTextReadable: boolean
   preventAccidentally: boolean
   pureBlack: boolean

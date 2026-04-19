@@ -1560,7 +1560,7 @@ function itemListPage() {
     }
   }
 
-  function setViewTransitionSubmissionIds() {
+  function storeSubmissionIds() {
     let submissionIds = [...document.querySelectorAll('tr.submission')].map($submission => $submission.id)
     sessionStorage.submissionIds = JSON.stringify(submissionIds)
     configureViewTransitionCss()
@@ -1568,8 +1568,8 @@ function itemListPage() {
   //#endregion
 
   //#region Main
-  if (config.enableViewTransitions) {
-    setViewTransitionSubmissionIds()
+  if (config.enableViewTransitions && config.listItemTransitions) {
+    storeSubmissionIds()
   }
 
   if (location.pathname != '/flagged') {
@@ -1638,10 +1638,10 @@ function itemListPage() {
   }
 
   chrome.storage.local.onChanged.addListener((changes) => {
-    if (changes.enableViewTransitions) {
-      if (changes.enableViewTransitions.newValue) {
-        setViewTransitionSubmissionIds()
-      }
+    // Store submissions if transitioning them is turned on
+    if (changes.enableViewTransitions && changes.enableViewTransitions.newValue && config.listItemTransitions ||
+        changes.listItemTransitions && changes.listItemTransitions.newValue && config.enableViewTransitions) {
+      storeSubmissionIds()
     }
     if (changes.preventAccidentally) {
       config.preventAccidentally = changes.preventAccidentally.newValue
@@ -2315,7 +2315,10 @@ function configureViewTransitionCss() {
     return
   }
   /** @type {string[]} */
-  let submissionIds = JSON.parse(sessionStorage.submissionIds || '[]')
+  let submissionIds = []
+  if (localStorage.listItemTransitions == 'true') {
+    submissionIds = JSON.parse(sessionStorage.submissionIds || '[]')
+  }
   let css = dedent(`
     @view-transition {
       navigation: auto;
@@ -2417,6 +2420,8 @@ configureThemeOverrideCss()
 // Reflect config which is needed at document_start in localStorage
 chrome.storage.local.onChanged.addListener((changes) => {
   let needsThemeUpdate = false
+  let needsViewTransmissionsUpdate = false
+
   if (changes.debug) {
     debug = changes.debug.newValue
     localStorage.debug = debug
@@ -2436,15 +2441,6 @@ chrome.storage.local.onChanged.addListener((changes) => {
       needsThemeUpdate = true
     }
   }
-  if (changes.enableViewTransitions) {
-    if (config) {
-      config.enableViewTransitions = changes.enableViewTransitions.newValue
-    }
-    if (localStorage.enableViewTransitions != String(changes.enableViewTransitions.newValue)) {
-      localStorage.enableViewTransitions = changes.enableViewTransitions.newValue
-      configureViewTransitionCss()
-    }
-  }
   if (changes.pureBlack) {
     if (config) {
       config.pureBlack = changes.pureBlack.newValue
@@ -2454,10 +2450,31 @@ chrome.storage.local.onChanged.addListener((changes) => {
       needsThemeUpdate = true
     }
   }
+  if (changes.enableViewTransitions) {
+    if (config) {
+      config.enableViewTransitions = changes.enableViewTransitions.newValue
+    }
+    if (localStorage.enableViewTransitions != String(changes.enableViewTransitions.newValue)) {
+      localStorage.enableViewTransitions = changes.enableViewTransitions.newValue
+      needsViewTransmissionsUpdate = true
+    }
+  }
+  if (changes.listItemTransitions) {
+    if (config) {
+      config.listItemTransitions = changes.listItemTransitions.newValue
+    }
+    if (localStorage.listItemTransitions != String(changes.listItemTransitions.newValue)) {
+      localStorage.listItemTransitions = changes.listItemTransitions.newValue
+      needsViewTransmissionsUpdate = true
+    }
+  }
 
   if (needsThemeUpdate) {
     configureThemeCss()
     configureThemeOverrideCss()
+  }
+  if (needsViewTransmissionsUpdate) {
+    configureViewTransitionCss()
   }
 })
 
@@ -2470,11 +2487,14 @@ chrome.storage.local.get(async (storedConfig) => {
   defaultConfig = settings.DEFAULT_CONFIG
   config = {...defaultConfig, ...storedConfig}
 
-  if (localStorage.enableViewTransitions != String(config.enableViewTransitions)) {
+  if (localStorage.enableViewTransitions != String(config.enableViewTransitions) ||
+      localStorage.listItemTransitions != String(config.listItemTransitions)) {
     localStorage.enableViewTransitions = config.enableViewTransitions
+    localStorage.listItemTransitions = config.listItemTransitions
     configureViewTransitionCss()
   }
-  if (localStorage.darkMode != String(config.darkMode) || localStorage.pureBlack != String(config.pureBlack)) {
+  if (localStorage.darkMode != String(config.darkMode) ||
+      localStorage.pureBlack != String(config.pureBlack)) {
     localStorage.darkMode = config.darkMode
     localStorage.pureBlack = config.pureBlack
     configureThemeCss()
