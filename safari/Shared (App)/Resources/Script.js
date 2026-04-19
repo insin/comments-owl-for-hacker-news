@@ -1,8 +1,9 @@
-function show(platform, enabled) {
+function show(platform, state) {
   document.body.classList.add(`platform-${platform}`)
-  if (typeof enabled == 'boolean') {
-    document.body.classList.toggle('state-on', enabled)
-    document.body.classList.toggle('state-off', !enabled)
+  if (typeof state == 'string') {
+    document.body.classList.toggle('state-on', state == 'on')
+    document.body.classList.toggle('state-off', state == 'off')
+    document.body.classList.toggle('state-error', state == 'error')
   }
   else if (platform == 'mac') {
     document.body.classList.add('state-unknown')
