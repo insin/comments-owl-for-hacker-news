@@ -9,12 +9,10 @@ const DARK_MODE_VARIABLES = `[dark] {
   --bg-content: #222222;
   --bg-header: #d96a1a;
   --bg-highlight: #333333;
-  --bg-hovercard: #222222;
   --bg-input: #2a2a2a;
 
-  --text-primary: #e7eae9;
-  --text-secondary: #8b98a5;
-  --text-muted: #8b98a5;
+  --text-primary: #e9e9e9;
+  --text-secondary: #828282;
   --text-header: #222222;
   --text-topsel: #ffffff;
   --text-green: #4caf50;
@@ -22,8 +20,6 @@ const DARK_MODE_VARIABLES = `[dark] {
   --link: #e0e0e0;
   --link-visited: #9a9a9a;
   --link-header: #000000;
-  --logo-bg: transparent;
-  --logo-fg: var(--text-topsel);
 
   --comment-dead: #181818;
   --fade-1: color-mix(in srgb, var(--text-primary) 80%, var(--comment-dead));
@@ -36,7 +32,13 @@ const DARK_MODE_VARIABLES = `[dark] {
   --fade-8: color-mix(in srgb, var(--text-primary) 10%, var(--comment-dead));
   --fade-9: color-mix(in srgb, var(--text-primary) 5%,  var(--comment-dead));
 
-  --hover-shadow: rgba(136, 153, 166, .2) 0px 8px 15px, rgba(136, 153, 166, .15) 0px 0px 3px 1px;
+  --logo-bg: transparent;
+  --logo-mark: var(--text-topsel);
+  --logo-border: var(--logo-mark);
+
+  --hovercard-bg: #222222;
+  --hovercard-border: rgba(255, 255, 255, .08);
+  --hovercard-shadow: rgba(0, 0, 0, .45) 0px 8px 20px, rgba(0, 0, 0, .25) 0px 0px 4px 1px;
 }`
 
 const LIGHT_MODE_VARIABLES = `html {
@@ -44,12 +46,10 @@ const LIGHT_MODE_VARIABLES = `html {
   --bg-content: #f6f6ef;
   --bg-header: #ff6600;
   --bg-highlight: #ffffde;
-  --bg-hovercard: #f6f6ef;
   --bg-input: #ffffff;
 
   --text-primary: #000000;
   --text-secondary: #828282;
-  --text-muted: #828282;
   --text-header: #222222;
   --text-topsel: #ffffff;
   --text-green: #3c963c;
@@ -57,8 +57,6 @@ const LIGHT_MODE_VARIABLES = `html {
   --link: #000000;
   --link-visited: #828282;
   --link-header: #000000;
-  --logo-bg: transparent;
-  --logo-fg: var(--text-topsel);
 
   --fade-1: #5a5a5a;
   --fade-2: #737373;
@@ -70,15 +68,28 @@ const LIGHT_MODE_VARIABLES = `html {
   --fade-8: #cecece;
   --fade-9: #cecece;
 
-  --hover-shadow: 0 8px 24px rgba(0,0,0,.15);
+  --logo-bg: transparent;
+  --logo-mark: var(--text-topsel);
+  --logo-border: var(--logo-mark);
+
+  --hovercard-bg: #f6f6ef;
+  --hovercard-border: #444444;
+  --hovercard-shadow: rgba(0, 0, 0, .12) 0 1px 2px, rgba(0, 0, 0, .15) 0 8px 24px;
 }`
 
+// Anything not styled by HN's stylesheet, e.g. custom elements & classes
 const CUSTOM_THEME_CSS = `
 body:has(form[action="login"]) {
   color: var(--text-primary);
   a {
     color: var(--text-link);
   }
+}
+#hnlogo {
+  border-color: var(--logo-border) !important;
+  display: block;
+  path[fill="#f60"] { fill: var(--logo-bg) !important; }
+  path[fill="#fff"] { fill: var(--logo-mark) !important; }
 }
 textarea, input:is([type="number"], [type="password"], [type="text"]) {
   background-color: var(--bg-input); color: var(--text-primary);
@@ -91,6 +102,8 @@ textarea, input:is([type="number"], [type="password"], [type="text"]) {
 }
 `.trim()
 
+// Contains rules from HN's stylesheet which apply color, plus overrides for
+// theming inline colors.
 const HN_THEME_CSS = `
 body { background-color: var(--bg-page); }
 
@@ -104,19 +117,13 @@ font[color="#3c963c"]    { color: var(--text-green) !important; }
   .topsel a:link, .topsel a:visited { color: var(--text-topsel); }
 }
 
-#hnlogo {
-  border-color: var(--logo-fg) !important;
-  path[fill="#f60"] { fill: var(--logo-bg) !important; }
-  path[fill="#fff"] { fill: var(--logo-fg) !important; }
-}
-
 #bigbox,
 /* HN markup bug on /threads - content appears after #bigbox */
 html[op="threads"] .comtr {
   td { color: var(--text-secondary); }
 
   .admin td   { color: var(--text-primary); }
-  .subtext td { color: var(--text-muted); }
+  .subtext td { color: var(--text-secondary); }
 
   a:link    { color: var(--link); }
   a:visited { color: var(--link-visited); }
@@ -124,8 +131,8 @@ html[op="threads"] .comtr {
   .default { color: var(--text-secondary); }
   .admin   { color: var(--text-primary); }
   .title   { color: var(--text-secondary); }
-  .subtext { color: var(--text-muted); }
-  .comhead { color: var(--text-muted); }
+  .subtext { color: var(--text-secondary); }
+  .comhead { color: var(--text-secondary); }
 
   .c00, .c00 a:link { color: var(--text-primary); }
   .c5a, .c5a a:link, .c5a a:visited { color: var(--fade-1); }
@@ -138,19 +145,19 @@ html[op="threads"] .comtr {
   .cce, .cce a:link, .cce a:visited { color: var(--fade-8); }
   .cdd, .cdd a:link, .cdd a:visited { color: var(--fade-9); }
 
-  .subtext a:link, .subtext a:visited { color: var(--text-muted); }
+  .subtext a:link, .subtext a:visited { color: var(--text-secondary); }
 
-  .comhead a:link, .subtext a:visited { color: var(--text-muted); }
+  .comhead a:link, .subtext a:visited { color: var(--text-secondary); }
 
   /*
     Bug in the HN stylesheet which we're keeping - if you fix it, visited links
     become more prominent!
   */
-  .hnmore a:link, a:visited { color: var(--text-muted); }
+  .hnmore a:link, a:visited { color: var(--text-secondary); }
 }
 
 .yclinks {
-  color: var(--text-muted);
+  color: var(--text-secondary);
   a:link { color: var(--link); }
 }
 `.trim()
@@ -1945,9 +1952,9 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
   //#region CSS
   addStyle('hovercard-static', `
     .hovercard {
-      background: var(--bg-hovercard);
-      border: 1px solid var(--text-muted);
-      box-shadow: var(--hover-shadow);
+      background: var(--hovercard-bg);
+      border: 1px solid var(--hovercard-border);
+      box-shadow: var(--hovercard-shadow);
       inset: auto;
       margin: 8px 0;
       max-height: min(70vh, 500px);
@@ -2285,8 +2292,10 @@ async function configureThemeCss() {
   }
   if (dark) {
     document.documentElement.setAttribute('dark', '')
+    document.documentElement.removeAttribute('light')
   } else {
     document.documentElement.removeAttribute('dark')
+    document.documentElement.setAttribute('light', '')
   }
   // Replace HN's <img src="y18.svg"> with an inline version which can be styled
   if ((dark || enableLightTheme) && !logoReplaced) {
@@ -2302,6 +2311,8 @@ async function configureThemeCss() {
         }).observe(document.documentElement, {childList: true, subtree: true})
       })
     }
+    // The custom /muted page will re-apply CSS
+    if (logoReplaced) return
     log('replacing HN logo with inline version')
     $homeLink.innerHTML = HN_LOGO_SVG
     logoReplaced = true
@@ -2316,12 +2327,13 @@ async function configureThemeOverrideCss() {
     html[dark] {
       --bg-page: #000;
       --bg-content: #000;
-      --bg-hovercard: #1a1a1a;
       --bg-input: #1a1a1a;
+      --comment-dead: #101010;
+      --hovercard-bg: #1a1a1a;
+      --hovercard-shadow: rgba(0, 0, 0, .7) 0px 10px 25px, rgba(0, 0, 0, .5) 0px 0px 4px 1px;
     }
     `
   ].filter(Boolean).join('\n\n')
-  log(`adding ${dark ? 'dark' : 'light'} theme CSS`)
   if (!css) {
     if ($themeOverrideStyle) {
       $themeOverrideStyle.remove()
@@ -2422,13 +2434,15 @@ function main() {
     if (IS_SAFARI) {
       addStyle('muted-safari', 'html { background-color: var(--bg-color); }')
     }
-    // Re-apply initial custom CSS
+    log('re-applying CSS for /muted page')
     $viewTransitionStyle = null
     $themeStyle = null
     $themeOverrideStyle = null
+    $customCssStyle = null
     configureViewTransitionCss()
     configureThemeCss()
     configureThemeOverrideCss()
+    configureCustomCss()
   }
 
   tweakNav()
