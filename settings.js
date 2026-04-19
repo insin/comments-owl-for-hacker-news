@@ -74,7 +74,7 @@ export const DEFAULT_CONFIG = {
   hidePastNav: false,
   hideReplyLinks: false,
   hideSubmitNav: false,
-  listItemTransitions: true,
+  listItemTransition: true,
   makeSubmissionTextReadable: true,
   preventAccidentally: false,
   pureBlack: false,

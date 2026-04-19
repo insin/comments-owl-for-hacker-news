@@ -78,8 +78,8 @@
   "hideSubmitNav": {
     "message": "Hide \"submit\""
   },
-  "listItemTransitions": {
-    "message": "List → item transitions"
+  "listItemTransition": {
+    "message": "List → item transition"
   },
   "listPagesOptions": {
     "message": "List pages"

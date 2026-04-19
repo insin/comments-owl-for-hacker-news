@@ -1592,7 +1592,7 @@ function itemListPage() {
   //#endregion
 
   //#region Main
-  if (config.enableViewTransitions && config.listItemTransitions) {
+  if (config.enableViewTransitions && config.listItemTransition) {
     storeSubmissionIds()
   }
 
@@ -1663,8 +1663,8 @@ function itemListPage() {
 
   chrome.storage.local.onChanged.addListener((changes) => {
     // Store submissions if transitioning them is turned on
-    if (changes.enableViewTransitions && changes.enableViewTransitions.newValue && config.listItemTransitions ||
-        changes.listItemTransitions && changes.listItemTransitions.newValue && config.enableViewTransitions) {
+    if (changes.enableViewTransitions && changes.enableViewTransitions.newValue && config.listItemTransition ||
+        changes.listItemTransition && changes.listItemTransition.newValue && config.enableViewTransitions) {
       storeSubmissionIds()
     }
     if (changes.preventAccidentally) {
@@ -2346,7 +2346,7 @@ function configureViewTransitionCss() {
   }
   /** @type {string[]} */
   let submissionIds = []
-  if (localStorage.listItemTransitions == 'true') {
+  if (localStorage.listItemTransition == 'true') {
     submissionIds = JSON.parse(sessionStorage.submissionIds || '[]')
   }
   let css = dedent(`
@@ -2502,12 +2502,12 @@ chrome.storage.local.onChanged.addListener((changes) => {
       needsViewTransmissionsUpdate = true
     }
   }
-  if (changes.listItemTransitions) {
+  if (changes.listItemTransition) {
     if (config) {
-      config.listItemTransitions = changes.listItemTransitions.newValue
+      config.listItemTransition = changes.listItemTransition.newValue
     }
-    if (localStorage.listItemTransitions != String(changes.listItemTransitions.newValue)) {
-      localStorage.listItemTransitions = changes.listItemTransitions.newValue
+    if (localStorage.listItemTransition != String(changes.listItemTransition.newValue)) {
+      localStorage.listItemTransition = changes.listItemTransition.newValue
       needsViewTransmissionsUpdate = true
     }
   }
@@ -2530,10 +2530,11 @@ chrome.storage.local.get(async (storedConfig) => {
   defaultConfig = settings.DEFAULT_CONFIG
   config = {...defaultConfig, ...storedConfig}
 
+  // Sync localStorage with stored config
   if (localStorage.enableViewTransitions != String(config.enableViewTransitions) ||
-      localStorage.listItemTransitions != String(config.listItemTransitions)) {
+      localStorage.listItemTransition != String(config.listItemTransition)) {
     localStorage.enableViewTransitions = config.enableViewTransitions
-    localStorage.listItemTransitions = config.listItemTransitions
+    localStorage.listItemTransition = config.listItemTransition
     configureViewTransitionCss()
   }
   if (localStorage.darkMode != String(config.darkMode) ||
