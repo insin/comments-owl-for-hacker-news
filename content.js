@@ -4,164 +4,6 @@ const TOGGLE_HIDE = '[–]'
 const TOGGLE_SHOW = '[+]'
 const USER_NOTES_KEY = 'userNotes'
 
-const DARK_MODE_VARIABLES = `[dark] {
-  --bg-page: #111111;
-  --bg-content: #222222;
-  --bg-header: #d96a1a;
-  --bg-highlight: #333333;
-  --bg-input: #2a2a2a;
-
-  --text-primary: #e9e9e9;
-  --text-secondary: #828282;
-  --text-header: #222222;
-  --text-topsel: #ffffff;
-  --text-green: #4caf50;
-
-  --link: #e0e0e0;
-  --link-visited: #9a9a9a;
-  --link-header: #000000;
-
-  --comment-dead: #181818;
-  --fade-1: color-mix(in srgb, var(--text-primary) 80%, var(--comment-dead));
-  --fade-2: color-mix(in srgb, var(--text-primary) 65%, var(--comment-dead));
-  --fade-3: color-mix(in srgb, var(--text-primary) 55%, var(--comment-dead));
-  --fade-4: color-mix(in srgb, var(--text-primary) 45%, var(--comment-dead));
-  --fade-5: color-mix(in srgb, var(--text-primary) 35%, var(--comment-dead));
-  --fade-6: color-mix(in srgb, var(--text-primary) 25%, var(--comment-dead));
-  --fade-7: color-mix(in srgb, var(--text-primary) 15%, var(--comment-dead));
-  --fade-8: color-mix(in srgb, var(--text-primary) 10%, var(--comment-dead));
-  --fade-9: color-mix(in srgb, var(--text-primary) 5%,  var(--comment-dead));
-
-  --logo-bg: transparent;
-  --logo-mark: var(--text-topsel);
-  --logo-border: var(--logo-mark);
-
-  --hovercard-bg: #222222;
-  --hovercard-border: rgba(255, 255, 255, .08);
-  --hovercard-shadow: rgba(0, 0, 0, .45) 0px 8px 20px, rgba(0, 0, 0, .25) 0px 0px 4px 1px;
-}`
-
-const LIGHT_MODE_VARIABLES = `html {
-  --bg-page: #ffffff;
-  --bg-content: #f6f6ef;
-  --bg-header: #ff6600;
-  --bg-highlight: #ffffde;
-  --bg-input: #ffffff;
-
-  --text-primary: #000000;
-  --text-secondary: #828282;
-  --text-header: #222222;
-  --text-topsel: #ffffff;
-  --text-green: #3c963c;
-
-  --link: #000000;
-  --link-visited: #828282;
-  --link-header: #000000;
-
-  --fade-1: #5a5a5a;
-  --fade-2: #737373;
-  --fade-3: #828282;
-  --fade-4: #888888;
-  --fade-5: #9c9c9c;
-  --fade-6: #aeaeae;
-  --fade-7: #bebebe;
-  --fade-8: #cecece;
-  --fade-9: #cecece;
-
-  --logo-bg: transparent;
-  --logo-mark: var(--text-topsel);
-  --logo-border: var(--logo-mark);
-
-  --hovercard-bg: #f6f6ef;
-  --hovercard-border: #444444;
-  --hovercard-shadow: rgba(0, 0, 0, .12) 0 1px 2px, rgba(0, 0, 0, .15) 0 8px 24px;
-}`
-
-// Anything not styled by HN's stylesheet, e.g. custom elements & classes
-const CUSTOM_THEME_CSS = `
-body:has(form[action="login"]) {
-  color: var(--text-primary);
-  a {
-    color: var(--text-link);
-  }
-}
-#hnlogo {
-  border-color: var(--logo-border) !important;
-  display: block;
-  path[fill="#f60"] { fill: var(--logo-bg) !important; }
-  path[fill="#fff"] { fill: var(--logo-mark) !important; }
-}
-textarea, input:is([type="number"], [type="password"], [type="text"]) {
-  background-color: var(--bg-input); color: var(--text-primary);
-}
-.hovercard a:link {
-  color: var(--link);
-}
-.new > td {
-  background-color: var(--bg-highlight);
-}
-`.trim()
-
-// Contains rules from HN's stylesheet which apply color, plus overrides for
-// theming inline colors.
-const HN_THEME_CSS = `
-body { background-color: var(--bg-page); }
-
-table[bgcolor="#f6f6ef"] { background-color: var(--bg-content) !important; }
-font[color="#3c963c"]    { color: var(--text-green) !important; }
-
-#header {
-  background-color: var(--bg-header) !important;
-  .pagetop { color: var(--text-header); }
-  .pagetop a:link, .pagetop a:visited { color: var(--link-header); }
-  .topsel a:link, .topsel a:visited { color: var(--text-topsel); }
-}
-
-#bigbox,
-/* HN markup bug on /threads - content appears after #bigbox */
-html[op="threads"] .comtr {
-  td { color: var(--text-secondary); }
-
-  .admin td   { color: var(--text-primary); }
-  .subtext td { color: var(--text-secondary); }
-
-  a:link    { color: var(--link); }
-  a:visited { color: var(--link-visited); }
-
-  .default { color: var(--text-secondary); }
-  .admin   { color: var(--text-primary); }
-  .title   { color: var(--text-secondary); }
-  .subtext { color: var(--text-secondary); }
-  .comhead { color: var(--text-secondary); }
-
-  .c00, .c00 a:link { color: var(--text-primary); }
-  .c5a, .c5a a:link, .c5a a:visited { color: var(--fade-1); }
-  .c73, .c73 a:link, .c73 a:visited { color: var(--fade-2); }
-  .c82, .c82 a:link, .c82 a:visited { color: var(--fade-3); }
-  .c88, .c88 a:link, .c88 a:visited { color: var(--fade-4); }
-  .c9c, .c9c a:link, .c9c a:visited { color: var(--fade-5); }
-  .cae, .cae a:link, .cae a:visited { color: var(--fade-6); }
-  .cbe, .cbe a:link, .cbe a:visited { color: var(--fade-7); }
-  .cce, .cce a:link, .cce a:visited { color: var(--fade-8); }
-  .cdd, .cdd a:link, .cdd a:visited { color: var(--fade-9); }
-
-  .subtext a:link, .subtext a:visited { color: var(--text-secondary); }
-
-  .comhead a:link, .subtext a:visited { color: var(--text-secondary); }
-
-  /*
-    Bug in the HN stylesheet which we're keeping - if you fix it, visited links
-    become more prominent!
-  */
-  .hnmore a:link, a:visited { color: var(--text-secondary); }
-}
-
-.yclinks {
-  color: var(--text-secondary);
-  a:link { color: var(--link); }
-}
-`.trim()
-
 const HN_LOGO_SVG = `
 <svg id="hnlogo" xmlns="http://www.w3.org/2000/svg" height="18" viewBox="4 4 188 188" width="18" style="border: 1px solid #fff;">
   <path d="m4 4h188v188h-188z" fill="#f60"/>
@@ -1966,6 +1808,9 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
       position: fixed;
       transition: opacity ${FADE_MS}ms ease;
       width: 300px;
+      a:link {
+        color: var(--link);
+      }
     }
     .hovercard-anchor {
       anchor-name: --username-anchor;
@@ -2270,30 +2115,20 @@ function configureCustomCss() {
 //#region Theme
 let logoReplaced = false
 /** @type {HTMLStyleElement} */
-let $themeStyle
-/** @type {HTMLStyleElement} */
-let $themeOverrideStyle
-/** @type {HTMLStyleElement} */
 let $viewTransitionStyle
 
-async function configureThemeCss() {
+function setActiveTheme() {
   let dark = localStorage.darkMode == 'true'
-  let enableLightTheme = localStorage.enableLightTheme == 'true'
-  let css = [
-    LIGHT_MODE_VARIABLES,
-    dark && DARK_MODE_VARIABLES,
-    (dark || enableLightTheme) && HN_THEME_CSS,
-    CUSTOM_THEME_CSS,
-  ].filter(Boolean).join('\n\n')
-  if (!$themeStyle) {
-    $themeStyle = addStyle('theme', css)
-  } else {
-    $themeStyle.textContent = css
-  }
+  let pureBlack = localStorage.pureBlack == 'true'
   document.documentElement.toggleAttribute('dark', dark)
-  document.documentElement.toggleAttribute('light', !dark && enableLightTheme)
+  document.documentElement.toggleAttribute('light', !dark)
+  document.documentElement.toggleAttribute('pure-black', dark && pureBlack)
+}
+
+async function initTheme() {
+  setActiveTheme()
   // Replace HN's <img src="y18.svg"> with an inline version which can be styled
-  if ((dark || enableLightTheme) && !logoReplaced) {
+  if (!logoReplaced) {
     let $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
     if (!$homeLink) {
       await new Promise((resolve) => {
@@ -2311,30 +2146,6 @@ async function configureThemeCss() {
     log('replacing HN logo with inline version')
     $homeLink.innerHTML = HN_LOGO_SVG
     logoReplaced = true
-  }
-}
-
-async function configureThemeOverrideCss() {
-  let dark = localStorage.darkMode == 'true'
-  let pureBlack = localStorage.pureBlack == 'true'
-  let css = [
-    dark && pureBlack && `
-    html[pure-black] {
-      --bg-page: #000;
-      --bg-content: #000;
-      --bg-highlight: #222;
-      --bg-input: #1a1a1a;
-      --comment-dead: #101010;
-      --hovercard-bg: #1a1a1a;
-      --hovercard-shadow: rgba(0, 0, 0, .7) 0px 10px 25px, rgba(0, 0, 0, .5) 0px 0px 4px 1px;
-    }
-    `
-  ].filter(Boolean).join('\n\n')
-  document.documentElement.toggleAttribute('pure-black', dark && pureBlack)
-  if (!$themeOverrideStyle) {
-    $themeOverrideStyle = addStyle('theme-override', css)
-  } else {
-    $themeOverrideStyle.textContent = css
   }
 }
 
@@ -2425,14 +2236,8 @@ function main() {
       addStyle('muted-safari', 'html { background-color: var(--bg-color); }')
     }
     log('re-applying CSS for /muted page')
-    $viewTransitionStyle = null
-    $themeStyle = null
-    $themeOverrideStyle = null
-    $customCssStyle = null
+    initTheme()
     configureViewTransitionCss()
-    configureThemeCss()
-    configureThemeOverrideCss()
-    configureCustomCss()
   }
 
   tweakNav()
@@ -2452,12 +2257,10 @@ function main() {
 
 // @view-transition CSS needs to be applied immediately for pages to be eligible
 configureViewTransitionCss()
-configureThemeCss()
-configureThemeOverrideCss()
+initTheme()
 
 // Reflect config which is needed at document_start in localStorage
 chrome.storage.local.onChanged.addListener((changes) => {
-  let needsThemeUpdate = false
   let needsViewTransitionUpdate = false
 
   if (changes.debug) {
@@ -2476,7 +2279,7 @@ chrome.storage.local.onChanged.addListener((changes) => {
     }
     if (localStorage.darkMode != String(changes.darkMode.newValue)) {
       localStorage.darkMode = changes.darkMode.newValue
-      needsThemeUpdate = true
+      setActiveTheme()
     }
   }
   if (changes.pureBlack) {
@@ -2485,16 +2288,7 @@ chrome.storage.local.onChanged.addListener((changes) => {
     }
     if (localStorage.pureBlack != String(changes.pureBlack.newValue)) {
       localStorage.pureBlack = changes.pureBlack.newValue
-      needsThemeUpdate = true
-    }
-  }
-  if (changes.enableLightTheme) {
-    if (config) {
-      config.enableLightTheme = changes.enableLightTheme.newValue
-    }
-    if (localStorage.enableLightTheme != String(changes.enableLightTheme.newValue)) {
-      localStorage.enableLightTheme = changes.enableLightTheme.newValue
-      needsThemeUpdate = true
+      setActiveTheme()
     }
   }
   if (changes.enableViewTransitions) {
@@ -2516,13 +2310,7 @@ chrome.storage.local.onChanged.addListener((changes) => {
     }
   }
 
-  if (needsThemeUpdate) {
-    configureThemeCss()
-    configureThemeOverrideCss()
-  }
-  if (needsViewTransitionUpdate) {
-    configureViewTransitionCss()
-  }
+  if (needsViewTransitionUpdate) configureViewTransitionCss()
 })
 
 chrome.storage.local.get(async (storedConfig) => {
@@ -2542,13 +2330,10 @@ chrome.storage.local.get(async (storedConfig) => {
     configureViewTransitionCss()
   }
   if (localStorage.darkMode != String(config.darkMode) ||
-      localStorage.pureBlack != String(config.pureBlack) ||
-      localStorage.enableLightTheme != String(config.enableLightTheme)) {
+      localStorage.pureBlack != String(config.pureBlack)) {
     localStorage.darkMode = config.darkMode
     localStorage.pureBlack = config.pureBlack
-    localStorage.enableLightTheme = config.enableLightTheme
-    configureThemeCss()
-    configureThemeOverrideCss()
+    setActiveTheme()
   }
 
   if (document.readyState == 'loading') {

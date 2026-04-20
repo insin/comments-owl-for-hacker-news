@@ -8,7 +8,6 @@ export type Config = {
   customCss: string
   darkMode: boolean
   debug: boolean
-  enableLightTheme: boolean
   enableViewTransitions: boolean
   hideAiItems: boolean
   hideAiSiteRegex: string

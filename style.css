@@ -1,0 +1,224 @@
+html {
+  --bg-page: #ffffff;
+  --bg-content: #f6f6ef;
+  --bg-header: #ff6600;
+  --bg-highlight: #ffffde;
+  --bg-input: #ffffff;
+
+  --text-primary: #000000;
+  --text-secondary: #828282;
+  --text-header: #222222;
+  --text-topsel: #ffffff;
+  --text-green: #3c963c;
+
+  --link: #000000;
+  --link-visited: #828282;
+  --link-header: #000000;
+
+  --fade-1: #5a5a5a;
+  --fade-2: #737373;
+  --fade-3: #828282;
+  --fade-4: #888888;
+  --fade-5: #9c9c9c;
+  --fade-6: #aeaeae;
+  --fade-7: #bebebe;
+  --fade-8: #cecece;
+  --fade-9: #cecece;
+
+  --logo-bg: transparent;
+  --logo-mark: var(--text-topsel);
+  --logo-border: var(--logo-mark);
+
+  --hovercard-bg: #f6f6ef;
+  --hovercard-border: #444444;
+  --hovercard-shadow: rgba(0, 0, 0, .12) 0 1px 2px, rgba(0, 0, 0, .15) 0 8px 24px;
+}
+
+html[dark] {
+  --bg-page: #111111;
+  --bg-content: #222222;
+  --bg-header: #d96a1a;
+  --bg-highlight: #333333;
+  --bg-input: #2a2a2a;
+
+  --text-primary: #e9e9e9;
+  --text-secondary: #828282;
+  --text-header: #222222;
+  --text-topsel: #ffffff;
+  --text-green: #4caf50;
+
+  --link: #e0e0e0;
+  --link-visited: #9a9a9a;
+  --link-header: #000000;
+
+  --comment-dead: #181818;
+  --fade-1: color-mix(in srgb, var(--text-primary) 80%, var(--comment-dead));
+  --fade-2: color-mix(in srgb, var(--text-primary) 65%, var(--comment-dead));
+  --fade-3: color-mix(in srgb, var(--text-primary) 55%, var(--comment-dead));
+  --fade-4: color-mix(in srgb, var(--text-primary) 45%, var(--comment-dead));
+  --fade-5: color-mix(in srgb, var(--text-primary) 35%, var(--comment-dead));
+  --fade-6: color-mix(in srgb, var(--text-primary) 25%, var(--comment-dead));
+  --fade-7: color-mix(in srgb, var(--text-primary) 15%, var(--comment-dead));
+  --fade-8: color-mix(in srgb, var(--text-primary) 10%, var(--comment-dead));
+  --fade-9: color-mix(in srgb, var(--text-primary) 5%, var(--comment-dead));
+
+  --logo-bg: transparent;
+  --logo-mark: var(--text-topsel);
+  --logo-border: var(--logo-mark);
+
+  --hovercard-bg: #222222;
+  --hovercard-border: rgba(255, 255, 255, .08);
+  --hovercard-shadow: rgba(0, 0, 0, .45) 0px 8px 20px, rgba(0, 0, 0, .25) 0px 0px 4px 1px;
+}
+
+html[pure-black] {
+  --bg-page: #000;
+  --bg-content: #000;
+  --bg-highlight: #222;
+  --bg-input: #1a1a1a;
+  --comment-dead: #101010;
+  --hovercard-bg: #1a1a1a;
+  --hovercard-shadow: rgba(0, 0, 0, .7) 0px 10px 25px, rgba(0, 0, 0, .5) 0px 0px 4px 1px;
+}
+
+/* Rules from HN's stylesheet which apply color, plus overrides for theming inline colors. */
+body {
+  background-color: var(--bg-page);
+}
+
+table[bgcolor="#f6f6ef"] {
+  background-color: var(--bg-content) !important;
+}
+font[color="#3c963c"] {
+  color: var(--text-green) !important;
+}
+
+#header {
+  background-color: var(--bg-header) !important;
+  .pagetop {
+    color: var(--text-header);
+  }
+  .pagetop a:link, .pagetop a:visited {
+    color: var(--link-header);
+  }
+  .topsel a:link, .topsel a:visited {
+    color: var(--text-topsel);
+  }
+}
+
+#bigbox,
+/* HN markup bug on /threads - content appears after #bigbox */
+html[op="threads"] .comtr {
+  td {
+    color: var(--text-secondary);
+  }
+
+  .admin td {
+    color: var(--text-primary);
+  }
+  .subtext td {
+    color: var(--text-secondary);
+  }
+
+  a:link {
+    color: var(--link);
+  }
+  a:visited {
+    color: var(--link-visited);
+  }
+
+  .default {
+    color: var(--text-secondary);
+  }
+  .admin {
+    color: var(--text-primary);
+  }
+  .title {
+    color: var(--text-secondary);
+  }
+  .subtext {
+    color: var(--text-secondary);
+  }
+  .comhead {
+    color: var(--text-secondary);
+  }
+
+  .c00, .c00 a:link {
+    color: var(--text-primary);
+  }
+  .c5a, .c5a a:link, .c5a a:visited {
+    color: var(--fade-1);
+  }
+  .c73, .c73 a:link, .c73 a:visited {
+    color: var(--fade-2);
+  }
+  .c82, .c82 a:link, .c82 a:visited {
+    color: var(--fade-3);
+  }
+  .c88, .c88 a:link, .c88 a:visited {
+    color: var(--fade-4);
+  }
+  .c9c, .c9c a:link, .c9c a:visited {
+    color: var(--fade-5);
+  }
+  .cae, .cae a:link, .cae a:visited {
+    color: var(--fade-6);
+  }
+  .cbe, .cbe a:link, .cbe a:visited {
+    color: var(--fade-7);
+  }
+  .cce, .cce a:link, .cce a:visited {
+    color: var(--fade-8);
+  }
+  .cdd, .cdd a:link, .cdd a:visited {
+    color: var(--fade-9);
+  }
+
+  .subtext a:link, .subtext a:visited {
+    color: var(--text-secondary);
+  }
+
+  .comhead a:link, .subtext a:visited {
+    color: var(--text-secondary);
+  }
+
+  /*
+    Bug in the HN stylesheet which we're keeping - if you fix it, visited links
+    become more prominent!
+  */
+  .hnmore a:link, a:visited {
+    color: var(--text-secondary);
+  }
+}
+
+.yclinks {
+  color: var(--text-secondary);
+  a:link {
+    color: var(--link);
+  }
+}
+
+/* Custom styling */
+body:has(form[action="login"]) {
+  color: var(--text-primary);
+  a {
+    color: var(--text-link);
+  }
+}
+#hnlogo {
+  border-color: var(--logo-border) !important;
+  display: block;
+  path[fill="#f60"] {
+    fill: var(--logo-bg) !important;
+  }
+  path[fill="#fff"] {
+    fill: var(--logo-mark) !important;
+  }
+}
+textarea, input:is([type="number"], [type="password"], [type="text"]) {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
+}
+.new > td {
+  background-color: var(--bg-highlight);
+}

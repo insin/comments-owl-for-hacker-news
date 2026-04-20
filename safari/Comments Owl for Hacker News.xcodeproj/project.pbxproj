@@ -75,6 +75,8 @@
 		FB7EC3242F77D3F30021A73A /* settings.js in Resources */ = {isa = PBXBuildFile; fileRef = FB7EC31F2F77D3F30021A73A /* settings.js */; };
 		FB7EC3292F77D44E0021A73A /* icon32.png in Resources */ = {isa = PBXBuildFile; fileRef = FB7EC3282F77D44E0021A73A /* icon32.png */; };
 		FB7EC32A2F77D44E0021A73A /* icon32.png in Resources */ = {isa = PBXBuildFile; fileRef = FB7EC3282F77D44E0021A73A /* icon32.png */; };
+		FBD6E6BC2F9621040003A700 /* style.css in Resources */ = {isa = PBXBuildFile; fileRef = FBD6E6BB2F9621040003A700 /* style.css */; };
+		FBD6E6BD2F9621040003A700 /* style.css in Resources */ = {isa = PBXBuildFile; fileRef = FBD6E6BB2F9621040003A700 /* style.css */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -165,6 +167,7 @@
 		FB7EC31F2F77D3F30021A73A /* settings.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = settings.js; path = ../../../settings.js; sourceTree = "<group>"; };
 		FB7EC3202F77D3F30021A73A /* storage.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = storage.js; path = ../../../storage.js; sourceTree = "<group>"; };
 		FB7EC3282F77D44E0021A73A /* icon32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = icon32.png; path = ../../../icons/icon32.png; sourceTree = "<group>"; };
+		FBD6E6BB2F9621040003A700 /* style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; name = style.css; path = ../../../style.css; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -262,6 +265,7 @@
 				FB6A6D502A599C9800636A10 /* options.js */,
 				FB7EC31F2F77D3F30021A73A /* settings.js */,
 				FB7EC3202F77D3F30021A73A /* storage.js */,
+				FBD6E6BB2F9621040003A700 /* style.css */,
 				FB6A6D862A59ABA800636A10 /* toolbar-icon16.png */,
 				FB6A6D832A59ABA800636A10 /* toolbar-icon19.png */,
 				FB6A6D872A59ABA800636A10 /* toolbar-icon32.png */,
@@ -482,6 +486,7 @@
 				FB6A6D5E2A599C9800636A10 /* options.js in Resources */,
 				FB6A6D6C2A599D2F00636A10 /* icon48.png in Resources */,
 				FB6A6D6A2A599D2F00636A10 /* icon128.png in Resources */,
+				FBD6E6BD2F9621040003A700 /* style.css in Resources */,
 				FB6A6D582A599C9800636A10 /* browser_action.html in Resources */,
 				FB6A6D812A599E9B00636A10 /* icon512.png in Resources */,
 				FB6A6D522A599C9800636A10 /* options.css in Resources */,
@@ -511,6 +516,7 @@
 				FB6A6D5F2A599C9800636A10 /* options.js in Resources */,
 				FB6A6D6D2A599D2F00636A10 /* icon48.png in Resources */,
 				FB6A6D6B2A599D2F00636A10 /* icon128.png in Resources */,
+				FBD6E6BC2F9621040003A700 /* style.css in Resources */,
 				FB6A6D592A599C9800636A10 /* browser_action.html in Resources */,
 				FB6A6D822A599E9B00636A10 /* icon512.png in Resources */,
 				FB6A6D532A599C9800636A10 /* options.css in Resources */,

@@ -9,7 +9,6 @@ export const DEFAULT_CONFIG = {
   customCss: '',
   darkMode: false,
   debug: false,
-  enableLightTheme: false,
   enableViewTransitions: false,
   hideAiItems: false,
   hideAiSiteRegex: `^(?:${[

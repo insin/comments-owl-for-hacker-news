@@ -22,6 +22,9 @@
       "matches": [
         "https://news.ycombinator.com/*"
       ],
+      "css": [
+        "style.css"
+      ],
       "js": [
         "content.js"
       ],
