@@ -126,10 +126,6 @@ html[op="threads"] .comtr {
 
   .comhead a:link, .subtext a:visited { color: var(--text-secondary); }
 
-  /*
-    Bug in the HN stylesheet which we're keeping - if you fix it, visited links
-    become more prominent!
-  */
   .hnmore a:link, a:visited { color: var(--text-secondary); }
 }
 
