@@ -1287,7 +1287,6 @@ function itemListPage() {
       & + tr + tr.spacer {
         display: none;
       }
-      /* outline: 1px solid red; */
     }
   `)
   //#endregion
