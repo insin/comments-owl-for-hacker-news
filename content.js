@@ -97,7 +97,7 @@ textarea, input:is([type="number"], [type="password"], [type="text"]) {
 .hovercard a:link {
   color: var(--link);
 }
-.new {
+.new > td {
   background-color: var(--bg-highlight);
 }
 `.trim()
@@ -2291,7 +2291,7 @@ async function configureThemeCss() {
     $themeStyle.textContent = css
   }
   document.documentElement.toggleAttribute('dark', dark)
-  document.documentElement.toggleAttribute('light', !dark)
+  document.documentElement.toggleAttribute('light', !dark && enableLightTheme)
   // Replace HN's <img src="y18.svg"> with an inline version which can be styled
   if ((dark || enableLightTheme) && !logoReplaced) {
     let $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
@@ -2458,7 +2458,7 @@ configureThemeOverrideCss()
 // Reflect config which is needed at document_start in localStorage
 chrome.storage.local.onChanged.addListener((changes) => {
   let needsThemeUpdate = false
-  let needsViewTransmissionsUpdate = false
+  let needsViewTransitionUpdate = false
 
   if (changes.debug) {
     debug = changes.debug.newValue
@@ -2503,7 +2503,7 @@ chrome.storage.local.onChanged.addListener((changes) => {
     }
     if (localStorage.enableViewTransitions != String(changes.enableViewTransitions.newValue)) {
       localStorage.enableViewTransitions = changes.enableViewTransitions.newValue
-      needsViewTransmissionsUpdate = true
+      needsViewTransitionUpdate = true
     }
   }
   if (changes.listItemTransition) {
@@ -2512,7 +2512,7 @@ chrome.storage.local.onChanged.addListener((changes) => {
     }
     if (localStorage.listItemTransition != String(changes.listItemTransition.newValue)) {
       localStorage.listItemTransition = changes.listItemTransition.newValue
-      needsViewTransmissionsUpdate = true
+      needsViewTransitionUpdate = true
     }
   }
 
@@ -2520,7 +2520,7 @@ chrome.storage.local.onChanged.addListener((changes) => {
     configureThemeCss()
     configureThemeOverrideCss()
   }
-  if (needsViewTransmissionsUpdate) {
+  if (needsViewTransitionUpdate) {
     configureViewTransitionCss()
   }
 })
