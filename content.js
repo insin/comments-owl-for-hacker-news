@@ -2290,13 +2290,8 @@ async function configureThemeCss() {
   } else {
     $themeStyle.textContent = css
   }
-  if (dark) {
-    document.documentElement.setAttribute('dark', '')
-    document.documentElement.removeAttribute('light')
-  } else {
-    document.documentElement.removeAttribute('dark')
-    document.documentElement.setAttribute('light', '')
-  }
+  document.documentElement.toggleAttribute('dark', dark)
+  document.documentElement.toggleAttribute('light', !dark)
   // Replace HN's <img src="y18.svg"> with an inline version which can be styled
   if ((dark || enableLightTheme) && !logoReplaced) {
     let $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
@@ -2324,9 +2319,10 @@ async function configureThemeOverrideCss() {
   let pureBlack = localStorage.pureBlack == 'true'
   let css = [
     dark && pureBlack && `
-    html[dark] {
+    html[pure-black] {
       --bg-page: #000;
       --bg-content: #000;
+      --bg-highlight: #222;
       --bg-input: #1a1a1a;
       --comment-dead: #101010;
       --hovercard-bg: #1a1a1a;
@@ -2334,6 +2330,7 @@ async function configureThemeOverrideCss() {
     }
     `
   ].filter(Boolean).join('\n\n')
+  document.documentElement.toggleAttribute('pure-black', dark && pureBlack)
   if (!$themeOverrideStyle) {
     $themeOverrideStyle = addStyle('theme-override', css)
   } else {
