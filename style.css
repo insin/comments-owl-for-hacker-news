@@ -12,7 +12,6 @@ html {
   --text-green: #3c963c;
 
   --link: #000000;
-  --link-visited: #828282;
   --link-header: #000000;
 
   --fade-1: #5a5a5a;
@@ -48,7 +47,6 @@ html[dark] {
   --text-green: #4caf50;
 
   --link: #e0e0e0;
-  --link-visited: #9a9a9a;
   --link-header: #000000;
 
   --comment-dead: #181818;
@@ -95,7 +93,7 @@ font[color="#3c963c"]    { color: var(--text-green) !important; }
 }
 
 #bigbox,
-/* HN markup bug on /threads - content appears after #bigbox */
+/* HN bug: /threads content appears after #bigbox, not inside it */
 html[op="threads"] .comtr {
   td { color: var(--text-secondary); }
 
@@ -103,7 +101,7 @@ html[op="threads"] .comtr {
   .subtext td { color: var(--text-secondary); }
 
   a:link    { color: var(--link); }
-  a:visited { color: var(--link-visited); }
+  a:visited { color: var(--text-secondary); }
 
   .default { color: var(--text-secondary); }
   .admin   { color: var(--text-primary); }
@@ -124,8 +122,10 @@ html[op="threads"] .comtr {
 
   .subtext a:link, .subtext a:visited { color: var(--text-secondary); }
 
+  /* HN typo: redefines .subtext a:visited */
   .comhead a:link, .subtext a:visited { color: var(--text-secondary); }
 
+  /* HN typo: redefines a:visited */
   .hnmore a:link, a:visited { color: var(--text-secondary); }
 }
 
