@@ -2334,13 +2334,6 @@ async function configureThemeOverrideCss() {
     }
     `
   ].filter(Boolean).join('\n\n')
-  if (!css) {
-    if ($themeOverrideStyle) {
-      $themeOverrideStyle.remove()
-      $themeOverrideStyle = null
-    }
-    return
-  }
   if (!$themeOverrideStyle) {
     $themeOverrideStyle = addStyle('theme-override', css)
   } else {
