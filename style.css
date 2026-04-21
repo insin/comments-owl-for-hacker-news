@@ -1,3 +1,4 @@
+/* #region Light mode */
 html {
   --bg-page: #ffffff;
   --bg-content: #f6f6ef;
@@ -32,7 +33,9 @@ html {
   --hovercard-border: #444444;
   --hovercard-shadow: rgba(0, 0, 0, .12) 0 1px 2px, rgba(0, 0, 0, .15) 0 8px 24px;
 }
+/* #endregion */
 
+/* #region Dark mode */
 html[dark] {
   --bg-page: #111111;
   --bg-content: #222222;
@@ -69,6 +72,7 @@ html[dark] {
   --hovercard-shadow: rgba(0, 0, 0, .45) 0px 8px 20px, rgba(0, 0, 0, .25) 0px 0px 4px 1px;
 }
 
+/* #region Pure black (OLED) */
 html[pure-black] {
   --bg-page: #000;
   --bg-content: #000;
@@ -78,13 +82,13 @@ html[pure-black] {
   --hovercard-bg: #1a1a1a;
   --hovercard-shadow: rgba(0, 0, 0, .7) 0px 10px 25px, rgba(0, 0, 0, .5) 0px 0px 4px 1px;
 }
+/* #endregion */
+/* #endregion */
 
-/* Rules from HN's stylesheet which apply color, plus overrides for theming inline colors. */
+/* #region news.css equivalent theming */
 body { background-color: var(--bg-page); }
 
-table[bgcolor="#f6f6ef"] { background-color: var(--bg-content) !important; }
-font[color="#3c963c"]    { color: var(--text-green) !important; }
-
+/* The header doesn't use content colors as it's effectively perma light mode */
 #header[default] {
   background-color: var(--bg-header) !important;
   .pagetop { color: var(--text-header); }
@@ -93,8 +97,8 @@ font[color="#3c963c"]    { color: var(--text-green) !important; }
 }
 
 #bigbox,
-/* HN bug: /threads content appears after #bigbox, not inside it */
-html[op="threads"] .comtr {
+/* Content in /threads and the footer are siblings of #bigbox */
+#bigbox ~ tr {
   td { color: var(--text-secondary); }
 
   .admin td   { color: var(--text-primary); }
@@ -107,6 +111,7 @@ html[op="threads"] .comtr {
   .admin   { color: var(--text-primary); }
   .title   { color: var(--text-secondary); }
   .subtext { color: var(--text-secondary); }
+  .yclinks { color: var(--text-secondary); }
   .comhead { color: var(--text-secondary); }
 
   .c00, .c00 a:link { color: var(--text-primary); }
@@ -122,24 +127,18 @@ html[op="threads"] .comtr {
 
   .subtext a:link, .subtext a:visited { color: var(--text-secondary); }
 
-  /* HN typo: redefines .subtext a:visited */
+  /* news.css typo: redefines .subtext a:visited */
   .comhead a:link, .subtext a:visited { color: var(--text-secondary); }
 
-  /* HN typo: redefines a:visited */
+  /* news.css typo: redefines a:visited */
   .hnmore a:link, a:visited { color: var(--text-secondary); }
 }
+/* #endregion */
 
-.yclinks {
-  color: var(--text-secondary);
-  a:link { color: var(--link); }
-}
-
-/* Custom styling */
+/* #region Additional theming */
 body:has(form[action="login"]) {
   color: var(--text-primary);
-  a {
-    color: var(--text-link);
-  }
+  a { color: var(--text-link); }
 }
 #header[default] #hnlogo {
   border-color: var(--logo-border) !important;
@@ -147,9 +146,21 @@ body:has(form[action="login"]) {
   path[fill="#f60"] { fill: var(--logo-bg) !important; }
   path[fill="#fff"] { fill: var(--logo-mark) !important; }
 }
-textarea, input:is([type="number"], [type="password"], [type="text"]) {
-  background-color: var(--bg-input); color: var(--text-primary);
+#footer[default] {
+  background-color: var(--bg-header) !important;
+}
+table[bgcolor="#f6f6ef"] {
+  background-color: var(--bg-content) !important;
+}
+font[color="#3c963c"] {
+  color: var(--text-green) !important;
+}
+textarea,
+input:not([type="button"], [type="checkbox"], [type="file"], [type="radio"], [type="reset"], [type="submit"]) {
+  background-color: var(--bg-input);
+  color: var(--text-primary);
 }
 .new > td {
   background-color: var(--bg-highlight);
 }
+/* #endregion */

@@ -296,28 +296,28 @@ function tweakNav() {
     return
   }
 
-  // Add id for theming
+  // Add id and default attributes for theming
   let $header = $pageTop.closest('td[bgcolor]')
   if ($header) {
     $header.id = 'header'
     $header.toggleAttribute('default', $header.getAttribute('bgcolor') == '#ff6600')
   }
+  let $footer = document.querySelector('#bigbox ~ tr td[bgcolor]:empty')
+  if ($footer) {
+    $footer.id = 'footer'
+    $footer.toggleAttribute('default', $footer.getAttribute('bgcolor') == '#ff6600')
+  }
+
+  if ($pageTop.querySelector(':scope > b:only-child')) {
+    log(`${path} has no nav items`)
+    return
+  }
 
   //#region CSS
   addStyle('nav-static', `
-    .desktopnav {
-      display: inline;
-    }
-    .mobilenav {
+    html[desktop] .mobilenav,
+    html[mobile] .desktopnav {
       display: none;
-    }
-    @media only screen and (min-width : 300px) and (max-width : 750px) {
-      .desktopnav {
-        display: none;
-      }
-      .mobilenav {
-        display: revert;
-      }
     }
   `)
 
@@ -2117,6 +2117,12 @@ let logoReplaced = false
 /** @type {HTMLStyleElement} */
 let $viewTransitionStyle
 
+function setActiveSize() {
+  let desktop = window.innerWidth > 750
+  document.documentElement.toggleAttribute('desktop', desktop)
+  document.documentElement.toggleAttribute('mobile', !desktop)
+}
+
 function setActiveTheme() {
   let dark = localStorage.darkMode == 'true'
   let pureBlack = localStorage.pureBlack == 'true'
@@ -2126,6 +2132,7 @@ function setActiveTheme() {
 }
 
 async function initTheme() {
+  setActiveSize()
   setActiveTheme()
   // Replace HN's <img src="y18.svg"> with an inline version which can be styled
   if (!logoReplaced) {
@@ -2210,7 +2217,7 @@ function isUserProfilePage() {
   return /^(user|muted)/.test(path)
 }
 
-function main() {
+function processCurrentPage() {
   debug = config.debug
   if (localStorage.debug != String(debug)) {
     localStorage.debug = debug
@@ -2255,95 +2262,103 @@ function main() {
   }
 }
 
-// @view-transition CSS needs to be applied immediately for pages to be eligible
-configureViewTransitionCss()
-initTheme()
+function main() {
+  // @view-transition CSS needs to be applied immediately for pages to be eligible
+  configureViewTransitionCss()
+  initTheme()
 
-// Reflect config which is needed at document_start in localStorage
-chrome.storage.local.onChanged.addListener((changes) => {
-  let needsViewTransitionUpdate = false
+  window.addEventListener('resize', setActiveSize)
 
-  if (changes.debug) {
-    debug = changes.debug.newValue
-    localStorage.debug = debug
-  }
-  if (changes.customCss) {
-    if (config) {
-      config.customCss = changes.customCss.newValue
+  // Reflect config which is needed at document_start in localStorage
+  chrome.storage.local.onChanged.addListener((changes) => {
+    let needsViewTransitionUpdate = false
+
+    if (changes.debug) {
+      debug = changes.debug.newValue
+      localStorage.debug = debug
     }
+    if (changes.customCss) {
+      if (config) {
+        config.customCss = changes.customCss.newValue
+      }
+      configureCustomCss()
+    }
+    if (changes.darkMode) {
+      if (config) {
+        config.darkMode = changes.darkMode.newValue
+      }
+      if (localStorage.darkMode != String(changes.darkMode.newValue)) {
+        localStorage.darkMode = changes.darkMode.newValue
+        setActiveTheme()
+      }
+    }
+    if (changes.pureBlack) {
+      if (config) {
+        config.pureBlack = changes.pureBlack.newValue
+      }
+      if (localStorage.pureBlack != String(changes.pureBlack.newValue)) {
+        localStorage.pureBlack = changes.pureBlack.newValue
+        setActiveTheme()
+      }
+    }
+    if (changes.enableViewTransitions) {
+      if (config) {
+        config.enableViewTransitions = changes.enableViewTransitions.newValue
+      }
+      if (localStorage.enableViewTransitions != String(changes.enableViewTransitions.newValue)) {
+        localStorage.enableViewTransitions = changes.enableViewTransitions.newValue
+        needsViewTransitionUpdate = true
+      }
+    }
+    if (changes.listItemTransition) {
+      if (config) {
+        config.listItemTransition = changes.listItemTransition.newValue
+      }
+      if (localStorage.listItemTransition != String(changes.listItemTransition.newValue)) {
+        localStorage.listItemTransition = changes.listItemTransition.newValue
+        needsViewTransitionUpdate = true
+      }
+    }
+
+    if (needsViewTransitionUpdate) configureViewTransitionCss()
+  })
+
+  chrome.storage.local.get(async (storedConfig) => {
+    // Apply custom CSS ASAP
+    config = /** @type {import("./types").Config} */ (storedConfig)
     configureCustomCss()
-  }
-  if (changes.darkMode) {
-    if (config) {
-      config.darkMode = changes.darkMode.newValue
+
+    let settings = await import(chrome.runtime.getURL('settings.js'))
+    defaultConfig = settings.DEFAULT_CONFIG
+    config = {...defaultConfig, ...storedConfig}
+
+    // Sync localStorage with stored config
+    if (localStorage.enableViewTransitions != String(config.enableViewTransitions) ||
+        localStorage.listItemTransition != String(config.listItemTransition)) {
+      localStorage.enableViewTransitions = config.enableViewTransitions
+      localStorage.listItemTransition = config.listItemTransition
+      configureViewTransitionCss()
     }
-    if (localStorage.darkMode != String(changes.darkMode.newValue)) {
-      localStorage.darkMode = changes.darkMode.newValue
+    if (localStorage.darkMode != String(config.darkMode) ||
+        localStorage.pureBlack != String(config.pureBlack)) {
+      localStorage.darkMode = config.darkMode
+      localStorage.pureBlack = config.pureBlack
       setActiveTheme()
     }
-  }
-  if (changes.pureBlack) {
-    if (config) {
-      config.pureBlack = changes.pureBlack.newValue
-    }
-    if (localStorage.pureBlack != String(changes.pureBlack.newValue)) {
-      localStorage.pureBlack = changes.pureBlack.newValue
-      setActiveTheme()
-    }
-  }
-  if (changes.enableViewTransitions) {
-    if (config) {
-      config.enableViewTransitions = changes.enableViewTransitions.newValue
-    }
-    if (localStorage.enableViewTransitions != String(changes.enableViewTransitions.newValue)) {
-      localStorage.enableViewTransitions = changes.enableViewTransitions.newValue
-      needsViewTransitionUpdate = true
-    }
-  }
-  if (changes.listItemTransition) {
-    if (config) {
-      config.listItemTransition = changes.listItemTransition.newValue
-    }
-    if (localStorage.listItemTransition != String(changes.listItemTransition.newValue)) {
-      localStorage.listItemTransition = changes.listItemTransition.newValue
-      needsViewTransitionUpdate = true
-    }
-  }
 
-  if (needsViewTransitionUpdate) configureViewTransitionCss()
-})
+    if (document.readyState == 'loading') {
+      let start = Date.now()
+      document.addEventListener('DOMContentLoaded', () => {
+        log(`document.readyState = ${document.readyState} after ${Date.now() - start}ms`)
+        processCurrentPage()
+      })
+    } else {
+      processCurrentPage()
+    }
+  })
+}
 
-chrome.storage.local.get(async (storedConfig) => {
-  // Apply custom CSS ASAP
-  config = /** @type {import("./types").Config} */ (storedConfig)
-  configureCustomCss()
-
-  let settings = await import(chrome.runtime.getURL('settings.js'))
-  defaultConfig = settings.DEFAULT_CONFIG
-  config = {...defaultConfig, ...storedConfig}
-
-  // Sync localStorage with stored config
-  if (localStorage.enableViewTransitions != String(config.enableViewTransitions) ||
-      localStorage.listItemTransition != String(config.listItemTransition)) {
-    localStorage.enableViewTransitions = config.enableViewTransitions
-    localStorage.listItemTransition = config.listItemTransition
-    configureViewTransitionCss()
-  }
-  if (localStorage.darkMode != String(config.darkMode) ||
-      localStorage.pureBlack != String(config.pureBlack)) {
-    localStorage.darkMode = config.darkMode
-    localStorage.pureBlack = config.pureBlack
-    setActiveTheme()
-  }
-
-  if (document.readyState == 'loading') {
-    let start = Date.now()
-    document.addEventListener('DOMContentLoaded', () => {
-      log(`document.readyState = ${document.readyState} after ${Date.now() - start}ms`)
-      main()
-    })
-  } else {
-    main()
-  }
-})
+if (!path.endsWith('.html')) {
+  main()
+}
 //#endregion
