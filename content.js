@@ -555,6 +555,9 @@ function itemPage() {
       config.makeSubmissionTextReadable && `
         div.toptext {
           color: var(--text-primary);
+          a:link {
+            text-decoration: underline;
+          }
         }
       `,
     ].filter(Boolean).map(dedent).join('\n')
