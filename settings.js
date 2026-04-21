@@ -72,6 +72,7 @@ export const DEFAULT_CONFIG = {
   hideJobsNav: false,
   hidePastNav: false,
   hideReplyLinks: false,
+  hideSubmissionCommentForm: false,
   hideSubmitNav: false,
   listItemTransition: true,
   makeSubmissionTextReadable: true,

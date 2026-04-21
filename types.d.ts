@@ -23,6 +23,7 @@ export type Config = {
   hideJobsNav: boolean
   hidePastNav: boolean
   hideReplyLinks: boolean
+  hideSubmissionCommentForm: boolean
   hideSubmitNav: boolean
   listItemTransition: boolean
   makeSubmissionTextReadable: boolean

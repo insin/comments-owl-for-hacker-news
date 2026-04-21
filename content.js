@@ -548,7 +548,7 @@ function itemPage() {
         div.reply {
           margin-top: 8px;
         }
-        div.reply p {
+        div.reply p, #submission-reply {
           display: none;
         }
       `,
@@ -587,6 +587,8 @@ function itemPage() {
   /** @type {Record<string, string>} */
   let userNotes = getUserNotes()
 
+  /** @type {Element} */
+  let $submission
   /**
    * Submission element containing either the comment count or "discuss"
    * @type {Element}
@@ -1026,6 +1028,37 @@ function itemPage() {
     }
   }
 
+  function toggleHideSubmissionCommentForm() {
+    if (!$submission) return
+    let $form = document.querySelector('form[action="comment"]')
+    if (!$form) return
+    let $cell = $form.closest('td')
+    if (!$cell) return
+    let $reply = $cell.querySelector('#submission-reply')
+    if (config.hideSubmissionCommentForm) {
+      if (!$reply) {
+         $reply = h('font', {id: 'submission-reply', size: '1'},
+          h('u', null,
+            h('a', {href: '#', onclick(e) {
+              e.preventDefault()
+              $form.removeAttribute('hidden')
+              $reply.remove()
+            }},
+              'reply'
+            )
+          )
+        )
+        $cell.append($reply)
+      }
+      $form.setAttribute('hidden', '')
+    } else {
+      if ($reply) {
+        $reply.remove()
+      }
+      $form.removeAttribute('hidden')
+    }
+  }
+
   /**
    * Toggles highlighting comments newer than the given comment id.
    * @param {boolean} highlight
@@ -1194,9 +1227,10 @@ function itemPage() {
   })
 
   // Figure out which type of item page we're on
-  let $submission = document.querySelector('.fatitem tr.submission')
+  $submission = document.querySelector('.fatitem tr.submission')
   if ($submission) {
     log('submission page')
+    toggleHideSubmissionCommentForm()
     $submissionCommentCount = document.querySelector('td.subtext .subline > a[href^=item]')
     if ($submissionCommentCount) {
       lastVisit = getLastVisit(itemId)
@@ -1221,6 +1255,10 @@ function itemPage() {
     if (changes.hideReplyLinks) {
       config.hideReplyLinks = changes.hideReplyLinks.newValue
       configureCss()
+    }
+    if (changes.hideSubmissionCommentForm) {
+      config.hideSubmissionCommentForm = changes.hideSubmissionCommentForm.newValue
+      toggleHideSubmissionCommentForm()
     }
     if (changes.makeSubmissionTextReadable) {
       config.makeSubmissionTextReadable = changes.makeSubmissionTextReadable.newValue

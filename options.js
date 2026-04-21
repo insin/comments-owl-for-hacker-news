@@ -41,6 +41,7 @@ for (let translationId of [
   'hideJobsNav',
   'hidePastNav',
   'hideReplyLinks',
+  'hideSubmssionCommentForm',
   'hideSubmitNav',
   'listItemTransition',
   'listPagesOptions',

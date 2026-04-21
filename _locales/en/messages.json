@@ -64,10 +64,13 @@
     "message": "Hide \"past\""
   },
   "hideReplyLinks": {
-    "message": "Hide \"reply\" links under comments"
+    "message": "Hide \"reply\" links"
   },
   "hideReplyLinksMenuItem": {
     "message": "Hide Reply Links"
+  },
+  "hideSubmssionCommentForm": {
+    "message": "Hide submission comment form behind a \"reply\" link"
   },
   "hideSubmitNav": {
     "message": "Hide \"submit\""
