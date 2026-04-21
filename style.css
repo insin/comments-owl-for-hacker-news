@@ -85,7 +85,7 @@ body { background-color: var(--bg-page); }
 table[bgcolor="#f6f6ef"] { background-color: var(--bg-content) !important; }
 font[color="#3c963c"]    { color: var(--text-green) !important; }
 
-#header {
+#header[default] {
   background-color: var(--bg-header) !important;
   .pagetop { color: var(--text-header); }
   .pagetop a:link, .pagetop a:visited { color: var(--link-header); }
@@ -141,7 +141,7 @@ body:has(form[action="login"]) {
     color: var(--text-link);
   }
 }
-#hnlogo {
+#header[default] #hnlogo {
   border-color: var(--logo-border) !important;
   display: block;
   path[fill="#f60"] { fill: var(--logo-bg) !important; }

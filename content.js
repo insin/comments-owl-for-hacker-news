@@ -300,6 +300,7 @@ function tweakNav() {
   let $header = $pageTop.closest('td[bgcolor]')
   if ($header) {
     $header.id = 'header'
+    $header.toggleAttribute('default', $header.getAttribute('bgcolor') == '#ff6600')
   }
 
   //#region CSS
