@@ -29,9 +29,10 @@ html {
   --logo-mark: var(--text-topsel);
   --logo-border: var(--logo-mark);
 
-  --hovercard-bg: #f6f6ef;
+  --hovercard-bg: var(--bg-content);
   --hovercard-border: #444444;
   --hovercard-shadow: rgba(0, 0, 0, .12) 0 1px 2px, rgba(0, 0, 0, .15) 0 8px 24px;
+  --hovercard-text: var(--text-secondary);
 }
 /* #endregion */
 
@@ -67,19 +68,18 @@ html[dark] {
   --logo-mark: var(--text-topsel);
   --logo-border: var(--logo-mark);
 
-  --hovercard-bg: #222222;
   --hovercard-border: rgba(255, 255, 255, .08);
   --hovercard-shadow: rgba(0, 0, 0, .45) 0px 8px 20px, rgba(0, 0, 0, .25) 0px 0px 4px 1px;
 }
 
 /* #region Pure black (OLED) */
 html[pure-black] {
-  --bg-page: #000;
-  --bg-content: #000;
-  --bg-highlight: #222;
+  --bg-page: #000000;
+  --bg-content: #000000;
+  --bg-highlight: #121212;
   --bg-input: #1a1a1a;
   --comment-dead: #101010;
-  --hovercard-bg: #1a1a1a;
+  --hovercard-bg: #0e0e0e;
   --hovercard-shadow: rgba(0, 0, 0, .7) 0px 10px 25px, rgba(0, 0, 0, .5) 0px 0px 4px 1px;
 }
 /* #endregion */

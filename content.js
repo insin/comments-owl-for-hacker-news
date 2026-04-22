@@ -2064,6 +2064,9 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
       a:link {
         color: var(--link);
       }
+      td {
+        color: var(--text-secondary);
+      }
     }
     .hovercard-anchor {
       anchor-name: --username-anchor;
