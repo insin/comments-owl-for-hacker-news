@@ -368,7 +368,7 @@ function itemPage() {
   }
 
   //#region CSS
-  addStyle('comments-static', `
+  addStyle('item', `
     /* Remove 1px gap between comments */
     .comment-tree {
       border-collapse: collapse;
@@ -434,7 +434,7 @@ function itemPage() {
     }
   `)
 
-  let $style = addStyle('comments-dynamic')
+  let $style = addStyle('item-dynamic')
 
   function configureCss() {
     $style.textContent = [
@@ -1142,8 +1142,10 @@ function itemPage() {
 
   // Figure out which type of item page we're on
   $submission = document.querySelector('.fatitem tr.submission')
+  document.documentElement.setAttribute('item', '')
   if ($submission) {
-    log('processing submission page')
+    log('processing submission item page')
+    document.documentElement.setAttribute('submission-item', '')
     toggleHideSubmissionCommentForm()
     $submissionCommentCount = document.querySelector('td.subtext .subline > a[href^=item]')
     if ($submissionCommentCount) {
@@ -1152,7 +1154,8 @@ function itemPage() {
       log('submission not commentable')
     }
   } else {
-    log('processing comment thread')
+    log('processing comment item page')
+    document.documentElement.setAttribute('comment-item', '')
     let $focusedComment = /** @type {HTMLElement} */ (document.querySelector('.fatitem tr.athing'))
     if ($focusedComment) {
       focusedComment = new FocusedComment($focusedComment)
@@ -1231,7 +1234,7 @@ function itemListPage() {
   log('processing item list page')
 
   //#region CSS
-  addStyle('list-static', `
+  addStyle('item-list', `
     tr.submission.hidden {
       display: none;
       & + tr {
@@ -1393,6 +1396,7 @@ function itemListPage() {
   //#endregion
 
   //#region Main
+  document.documentElement.setAttribute('item-list', '')
   if (config.enableViewTransitions && config.listItemTransition) {
     storeSubmissionIds()
   }
@@ -1494,8 +1498,9 @@ function itemListPage() {
 }
 //#endregion
 
-//#region Profile page
-let $profileStyle
+//#region User page
+/** @type {HTMLStyleElement} */
+let $userStyle
 
 /**
  * This is reused for user hovercards by pointing it at their DOM instead.
@@ -1506,7 +1511,7 @@ let $profileStyle
  *   onNotesChanged?: () => void
  * }} options
  */
-function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMutesChanged, onNotesChanged} = {}) {
+function userPage({$context = document, textAreaProps = {cols: 60}, onMutesChanged, onNotesChanged} = {}) {
   let $userLink = /** @type {HTMLAnchorElement} */ ($context.querySelector('a.hnuser'))
   if ($userLink == null) {
     warn('invalid user')
@@ -1520,14 +1525,14 @@ function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMut
   let $table = $userLink.closest('table')
 
   let isCurrentUser = userId == currentUser || location.pathname.startsWith('/muted')
+  let isUserPage = $context === document
 
-  // Don't add anything if the current user looks at their own hovercard
-  if (isCurrentUser && $context !== document) return
+  // Don't add anything if the current user is looking at their own hovercard
+  if (isCurrentUser && !isUserPage) return
 
+  document.documentElement.toggleAttribute('user', isUserPage)
   if (isCurrentUser) {
-    //#region Logged-in user's profile
-    let $mutedUsers = createMutedUsers()
-
+    //#region Current user's profile
     function createMutedUsers() {
       if (mutedUsers.size == 0) {
         return h('tbody', null,
@@ -1568,6 +1573,10 @@ function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMut
       $mutedUsers = $newMutedUsers
     }
 
+    //#region Main
+    log('processing own user page')
+    document.documentElement.setAttribute('current-user', '')
+    let $mutedUsers = createMutedUsers()
     $table.append($mutedUsers)
 
     window.addEventListener('storage', (e) => {
@@ -1587,11 +1596,12 @@ function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMut
       replaceMutedUsers()
     })
     //#endregion
+    //#endregion
   }
   else {
     //#region Other user profile
-    if (!$profileStyle) {
-      $profileStyle = addStyle('profile-static', `
+    if (!$userStyle) {
+      $userStyle = addStyle('user', `
         .saved {
           color: var(--text-primary);
           opacity: 0;
@@ -1652,6 +1662,11 @@ function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMut
         $saved.offsetHeight
       }
       $saved.classList.add('show')
+    }
+
+    //#region Main
+    if (isUserPage) {
+      log('processing user page')
     }
 
     let {style: textAreaStyle, ...textAreaRest} = textAreaProps
@@ -1729,6 +1744,7 @@ function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMut
         }
       }
     })
+    //#endregion
     //#endregion
   }
 }
@@ -1850,7 +1866,7 @@ function configureNavCss({
     }
   `)
   if (!$navStyle) {
-    $navStyle = addStyle('nav-dynamic', css)
+    $navStyle = addStyle('nav', css)
   } else {
     $navStyle.textContent = css
   }
@@ -2045,7 +2061,7 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
   const PREFETCH_DELAY_MS = 100
 
   //#region CSS
-  addStyle('hovercard-static', `
+  addStyle('hovercard', `
     .hovercard {
       background: var(--hovercard-bg);
       border: 1px solid var(--hovercard-border);
@@ -2237,7 +2253,7 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
     }
 
     let username = $user.textContent
-    let userProfilePageOptions = {
+    let userPageOptions = {
       $context: $hovercard,
       onMutesChanged: () => {
         if (onMutesChanged) hideHovercard({immediate: true})
@@ -2264,7 +2280,7 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
       let profile = profileData.get(username)
       renderHovercardContents(profile ?? {username, green: false, created: '···', karma: '···'})
       $hovercard.showPopover()
-      userProfilePage(userProfilePageOptions)
+      userPage(userPageOptions)
       requestAnimationFrame(() => {
         $hovercard.style.opacity = '1'
       })
@@ -2274,7 +2290,7 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
           profile = await getUserProfile($user)
           if ($activeUser !== $user) return
           renderHovercardContents(profile)
-          userProfilePage(userProfilePageOptions)
+          userPage(userPageOptions)
         } catch (error) {
           warn('Error getting user profile:', error)
         }
@@ -2437,8 +2453,7 @@ function onDOMContentLoaded() {
     itemPage()
   }
   else if (isUserProfilePage()) {
-    log('user profile page')
-    userProfilePage()
+    userPage()
   }
 }
 //#endregion
