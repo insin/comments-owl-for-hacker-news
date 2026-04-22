@@ -143,6 +143,10 @@ html[auth] body {
   font-size: 10pt;
   a { color: var(--text-link); }
 }
+html[desktop] .mobilenav,
+html[mobile] .desktopnav {
+  display: none;
+}
 #header[default] #hnlogo {
   border-color: var(--logo-border) !important;
   display: block;

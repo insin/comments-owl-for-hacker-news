@@ -70,7 +70,7 @@ const LOGGED_OUT_USER_PAGE = `
 </body>
 `.trim()
 
-//#region Config
+//#region User settings
 let debug = localStorage.debug == 'true'
 /** @type {import("./types").Config} */
 let config
@@ -106,14 +106,10 @@ Visit.fromJSON = function(obj) {
   })
 }
 
+/** @param {string} itemId */
 function getLastVisit(itemId) {
   let parsed = parseStoredJSON(localStorage, itemId)
   return isObject(parsed) ? Visit.fromJSON(parsed) : null
-}
-
-function storeVisit(itemId, visit) {
-  log('storing visit', visit)
-  localStorage.setItem(itemId, JSON.stringify(visit))
 }
 
 /** @returns {Set<string>} */
@@ -128,12 +124,23 @@ function getUserNotes(json = localStorage.getItem(USER_NOTES_KEY)) {
   return isObject(parsed) ? parsed : {}
 }
 
+/** @param {Set<string>} mutedUsers */
 function storeMutedUsers(mutedUsers) {
   localStorage.setItem(MUTED_USERS_KEY, JSON.stringify(Array.from(mutedUsers)))
 }
 
+/** @param {Record<string, string>} userNotes */
 function storeUserNotes(userNotes) {
   localStorage.setItem(USER_NOTES_KEY, JSON.stringify(userNotes))
+}
+
+/**
+ * @param {string} itemId
+ * @param {Visit} visit
+ */
+function storeVisit(itemId, visit) {
+  log('storing visit', visit)
+  localStorage.setItem(itemId, JSON.stringify(visit))
 }
 //#endregion
 
@@ -190,10 +197,7 @@ function createRegExp(source) {
   return new RegExp(parts.join('|'), 'i')
 }
 
-/**
- * @param {string} str
- * @return {string}
- */
+/** @param {string} str */
 function dedent(str) {
   str = str.replace(/^[ \t]*\r?\n/, '')
   let indent = /^[ \t]+/m.exec(str)
@@ -248,7 +252,11 @@ function isObject(maybeObj) {
 
 function log(...args) {
   if (debug) {
-    console.log('🦉', ...args)
+    if (loading) {
+      console.log(Date.now() - startMs, '🦉', ...args)
+    } else {
+      console.log('🦉', ...args)
+    }
   }
 }
 
@@ -263,7 +271,6 @@ function parseStoredJSON(storage, key) {
 /**
  * @param {number} count
  * @param {string} suffixes
- * @returns {string}
  */
 function s(count, suffixes = ',s') {
   if (!suffixes.includes(',')) {
@@ -306,122 +313,17 @@ function toggleVisibility($el, hidden) {
 
 function warn(...args) {
   if (debug) {
-    console.log('❗', ...args)
+    if (loading) {
+      console.log(Date.now() - startMs, '❗', ...args)
+    } else {
+      console.log('❗', ...args)
+    }
   }
 }
 //#endregion
 
-//#region Navigation
-function tweakNav() {
-  let $pageTop = document.querySelector('span.pagetop')
-  if (!$pageTop) {
-    warn('.pagetop not found')
-    return
-  }
-
-  if ($pageTop.querySelector(':scope > b:only-child')) {
-    log(`/${path} has no nav items`)
-    return
-  }
-
-  //#region CSS
-  addStyle('nav-static', `
-    html[desktop] .mobilenav,
-    html[mobile] .desktopnav {
-      display: none;
-    }
-  `)
-
-  let $style = addStyle('nav-dynamic')
-
-  function configureCss() {
-    let hideNavSelectors = [
-      config.hidePastNav && 'span.past-sep, span.past-sep + a',
-      config.hideCommentsNav && 'span.comments-sep, span.comments-sep + a',
-      config.hideJobsNav && 'span.jobs-sep, span.jobs-sep + a',
-      config.hideSubmitNav && 'span.submit-sep, span.submit-sep + a',
-      !config.addActiveToHeader && 'span.active-sep, span.active-sep + a',
-      !config.addUpvotedToHeader && 'span.upvoted-sep, span.upvoted-sep + a',
-    ].filter(Boolean)
-    $style.textContent = hideNavSelectors.length == 0 ? '' : dedent(`
-      ${hideNavSelectors.join(',\n')} {
-        display: none;
-      }
-    `)
-  }
-  //#endregion
-
-  //#region Main
-  // Add a 'muted' link next to 'login' for logged-out users
-  let $loginLink = document.querySelector('span.pagetop a[href^="login"]')
-  if ($loginLink) {
-    $loginLink.parentElement.append(
-      h('a', {href: `muted`}, 'muted'),
-      ' | ',
-      $loginLink,
-    )
-  }
-
-  let $active
-  let $lastNavLink = $pageTop.querySelector(':scope > a:last-of-type')
-
-  // Add /active if we're not on it
-  if ($lastNavLink && !location.pathname.startsWith('/active')) {
-    $active = h('a', {href: 'active'}, 'active')
-    $lastNavLink.insertAdjacentElement('afterend', $active)
-    $lastNavLink.insertAdjacentElement('afterend', h('span', {className: 'active-sep'}, ' | '))
-  }
-
-  // Add /upvoted if we're not on it and the user is logged in
-  if ($lastNavLink && !location.pathname.startsWith('/upvoted')) {
-    let $userLink = document.querySelector('a#me')
-    if ($userLink) {
-      let $upvoted = h('a', {href: `upvoted?id=${$userLink.textContent}`}, 'upvoted')
-      let $separator = h('span', {className: 'upvoted-sep'}, ' | ')
-      if (location.pathname.startsWith('/active')) {
-        // Add after the "active" page title so positioning is consistent
-        $pageTop.append($separator, $upvoted)
-      } else {
-        let $target = $active || $lastNavLink
-        $target.insertAdjacentElement('afterend', $upvoted)
-        $target.insertAdjacentElement('afterend', $separator)
-      }
-    }
-  }
-
-  // Wrap separators in elements so they can be used to hide items
-  for (let $node of $pageTop.childNodes) {
-    if ($node.nodeType == Node.TEXT_NODE && $node.nodeValue == ' | ') {
-      $node.replaceWith(h('span', {
-        className: `${$node.nextSibling?.nodeName == 'FONT' ? 'page-title' : $node.nextSibling?.textContent}-sep`,
-      }, ' | '))
-    }
-  }
-
-  // Create a new row for mobile nav
-  let $mobileNav = /** @type {HTMLTableCellElement} */ ($pageTop.parentElement.cloneNode(true))
-  $mobileNav.querySelector('b.hnname')?.remove()
-  $mobileNav.colSpan = 3
-  $pageTop.closest('tbody').append(h('tr', {className: 'mobilenav'}, $mobileNav))
-
-  // Move everything after b.hnname into a desktop nav wrapper
-  $pageTop.appendChild(h('span', {className: 'desktopnav'}, ...Array.from($pageTop.childNodes).slice(1)))
-
-  configureCss()
-
-  chrome.storage.local.onChanged.addListener((changes) => {
-    for (let [configProp, change] of Object.entries(changes)) {
-      if (['hidePastNav', 'hideCommentsNav', 'hideJobsNav', 'hideSubmitNav', 'addActiveToHeader', 'addUpvotedToHeader'].includes(configProp)) {
-        config[configProp] = change.newValue
-        configureCss()
-      }
-    }
-  })
-  //#endregion
-}
-//#endregion
-
-//#region Comment page
+//#region Page handlers
+//#region Item page
 /**
  * Each comment on a comment page has the following structure:
  *
@@ -818,25 +720,17 @@ function itemPage() {
       this.childComments.forEach((child) => toggleDisplay(child.$wrapper, true))
     }
 
-    /**
-     * @param {number} commentId
-     * @returns {boolean}
-     */
+    /** @param {number} commentId */
     hasChildCommentsNewerThan(commentId) {
       return this.nonMutedChildComments.some((comment) => comment.isNewerThan(commentId))
     }
 
-    /**
-     * @param {number} commentId
-     * @returns {boolean}
-     */
+    /** @param {number} commentId */
     isNewerThan(commentId) {
       return this.id > commentId
     }
 
-    /**
-     * @param {boolean} isCollapsed
-     */
+    /** @param {boolean} isCollapsed */
     toggleCollapsed(isCollapsed = !this.isCollapsed) {
       this.isCollapsed = isCollapsed
       this.updateDisplay()
@@ -1243,7 +1137,7 @@ function itemPage() {
   // Figure out which type of item page we're on
   $submission = document.querySelector('.fatitem tr.submission')
   if ($submission) {
-    log('submission page')
+    log('processing submission page')
     toggleHideSubmissionCommentForm()
     $submissionCommentCount = document.querySelector('td.subtext .subline > a[href^=item]')
     if ($submissionCommentCount) {
@@ -1252,7 +1146,7 @@ function itemPage() {
       log('submission not commentable')
     }
   } else {
-    log('comment thread')
+    log('processing comment thread')
     let $focusedComment = /** @type {HTMLElement} */ (document.querySelector('.fatitem tr.athing'))
     if ($focusedComment) {
       focusedComment = new FocusedComment($focusedComment)
@@ -1328,7 +1222,7 @@ function itemPage() {
  * those.
  */
 function itemListPage() {
-  log('item list page')
+  log('processing item list page')
 
   //#region CSS
   addStyle('list-static', `
@@ -1596,7 +1490,9 @@ function itemListPage() {
 
 //#region Profile page
 let $profileStyle
+
 /**
+ * This is reused for user hovercards by pointing it at their DOM instead.
  * @param {{
  *   $context?: Document | HTMLElement
  *   textAreaProps?: any
@@ -1617,6 +1513,8 @@ function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMut
   let $table = $userLink.closest('table')
 
   let isCurrentUser = userId == currentUser || location.pathname.startsWith('/muted')
+
+  // Don't add anything if the current user looks at their own hovercard
   if (isCurrentUser && $context !== document) return
 
   if (isCurrentUser) {
@@ -1825,6 +1723,302 @@ function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMut
       }
     })
     //#endregion
+  }
+}
+//#endregion
+//#endregion
+
+//#region Global functionality
+//#region CSS view transitions
+const VIEW_TRANSITION_CONFIG_KEYS = [
+  'enableViewTransitions',
+  'listItemTransition',
+]
+
+/** @type {HTMLStyleElement} */
+let $viewTransitionStyle
+
+/** @param {{enableViewTransitions?: boolean, listItemTransition?: boolean}} [options] */
+function configureViewTransitionCss({
+  enableViewTransitions = localStorage.enableViewTransitions == 'true',
+  listItemTransition = localStorage.listItemTransition == 'true',
+} = {}) {
+  if (!enableViewTransitions) {
+    if ($viewTransitionStyle) {
+      $viewTransitionStyle.remove()
+      $viewTransitionStyle = null
+    }
+    return
+  }
+  /** @type {string[]} */
+  let submissionIds = []
+  if (listItemTransition) {
+    let parsed = parseStoredJSON(sessionStorage, 'submissionIds')
+    submissionIds = Array.isArray(parsed) ? parsed : []
+  }
+  let css = dedent(`
+    @view-transition {
+      navigation: auto;
+    }
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 150ms;
+    }
+    ${submissionIds.map(id => `.submission[id="${id}"] {
+      .votelinks {
+        view-transition-name: item-${id}-votelinks;
+      }
+      .votelinks + .title {
+        view-transition-name: item-${id}-title;
+      }
+      & + tr .subline {
+        view-transition-name: item-${id}-subline;
+      }
+    }`).join('\n')}
+  `)
+  if (!$viewTransitionStyle) {
+    $viewTransitionStyle = addStyle('view-transitions', css)
+  } else {
+    $viewTransitionStyle.textContent = css
+  }
+}
+//#endregion
+
+//#region Custom CSS
+/** @type {HTMLStyleElement} */
+let $customCssStyle
+
+/** @param {string} [customCss] */
+function configureCustomCss(customCss = localStorage.customCss ?? '') {
+  if (!customCss) {
+    if ($customCssStyle) {
+      $customCssStyle.remove()
+      $customCssStyle = null
+    }
+    return
+  }
+  if (!$customCssStyle) {
+    $customCssStyle = addStyle('custom-css', customCss)
+  }
+  else if ($customCssStyle.textContent != customCss) {
+    $customCssStyle.textContent = customCss
+  }
+}
+//#endregion
+
+//#region Navigation
+let NAV_CONFIG_KEYS = [
+  'addActiveToHeader',
+  'addUpvotedToHeader',
+  'hideCommentsNav',
+  'hideJobsNav',
+  'hidePastNav',
+  'hideSubmitNav',
+]
+
+let navEnhanced = false
+
+/** @type {HTMLStyleElement} */
+let $navStyle
+
+function configureNavCss({
+  hidePastNav = localStorage.hidePastNav == 'true',
+  hideCommentsNav = localStorage.hideCommentsNav == 'true',
+  hideJobsNav = localStorage.hideJobsNav == 'true',
+  hideSubmitNav = localStorage.hideSubmitNav == 'true',
+  addActiveToHeader = localStorage.addActiveToHeader == 'true',
+  addUpvotedToHeader = localStorage.addUpvotedToHeader == 'true',
+} = {}) {
+  let hideNavSelectors = [
+    hidePastNav && 'span.past-sep, span.past-sep + a',
+    hideCommentsNav && 'span.comments-sep, span.comments-sep + a',
+    hideJobsNav && 'span.jobs-sep, span.jobs-sep + a',
+    hideSubmitNav && 'span.submit-sep, span.submit-sep + a',
+    !addActiveToHeader && 'span.active-sep, span.active-sep + a',
+    !addUpvotedToHeader && 'span.upvoted-sep, span.upvoted-sep + a',
+  ].filter(Boolean)
+  let css = dedent(`
+    ${hideNavSelectors.join(',\n')} {
+      display: none;
+    }
+  `)
+  if (!$navStyle) {
+    $navStyle = addStyle('nav-dynamic', css)
+  } else {
+    $navStyle.textContent = css
+  }
+}
+
+function tweakNav() {
+  if (navEnhanced) return
+
+  let $pageTop = document.querySelector('span.pagetop')
+  if (!$pageTop) {
+    if (!loading) {
+      warn('.pagetop not found')
+    }
+    return
+  }
+
+  if (loading) {
+    log('navigation enhanced')
+  }
+  navEnhanced = true
+
+  if ($pageTop.querySelector(':scope > b:only-child')) {
+    log(`/${path} has no navigation items`)
+    return
+  }
+
+  // Add a 'muted' link next to 'login' for logged-out users
+  let $loginLink = document.querySelector('span.pagetop a[href^="login"]')
+  if ($loginLink) {
+    $loginLink.parentElement.append(
+      h('a', {href: `muted`}, 'muted'),
+      ' | ',
+      $loginLink,
+    )
+  }
+
+  let $active
+  let $lastNavLink = $pageTop.querySelector(':scope > a:last-of-type')
+
+  // Add /active if we're not on it
+  if ($lastNavLink && !location.pathname.startsWith('/active')) {
+    $active = h('a', {href: 'active'}, 'active')
+    $lastNavLink.insertAdjacentElement('afterend', $active)
+    $lastNavLink.insertAdjacentElement('afterend', h('span', {className: 'active-sep'}, ' | '))
+  }
+
+  // Add /upvoted if we're not on it and the user is logged in
+  if ($lastNavLink && !location.pathname.startsWith('/upvoted')) {
+    let $userLink = document.querySelector('a#me')
+    if ($userLink) {
+      let $upvoted = h('a', {href: `upvoted?id=${$userLink.textContent}`}, 'upvoted')
+      let $separator = h('span', {className: 'upvoted-sep'}, ' | ')
+      if (location.pathname.startsWith('/active')) {
+        // Add after the "active" page title so positioning is consistent
+        $pageTop.append($separator, $upvoted)
+      } else {
+        let $target = $active || $lastNavLink
+        $target.insertAdjacentElement('afterend', $upvoted)
+        $target.insertAdjacentElement('afterend', $separator)
+      }
+    }
+  }
+
+  // Wrap separators in elements so they can be used to hide items
+  for (let $node of $pageTop.childNodes) {
+    if ($node.nodeType == Node.TEXT_NODE && $node.nodeValue == ' | ') {
+      $node.replaceWith(h('span', {
+        className: `${$node.nextSibling?.nodeName == 'FONT' ? 'page-title' : $node.nextSibling?.textContent}-sep`,
+      }, ' | '))
+    }
+  }
+
+  // Create a new row for mobile nav
+  let $mobileNav = /** @type {HTMLTableCellElement} */ ($pageTop.parentElement.cloneNode(true))
+  $mobileNav.querySelector('b.hnname')?.remove()
+  $mobileNav.colSpan = 3
+  $pageTop.closest('tbody').append(h('tr', {className: 'mobilenav'}, $mobileNav))
+
+  // Move everything after b.hnname into a desktop nav wrapper
+  $pageTop.appendChild(h('span', {className: 'desktopnav'}, ...Array.from($pageTop.childNodes).slice(1)))
+}
+//#endregion
+
+//#region <textarea> keyboard submit
+function submitFirstTextAreaWithKeyboard() {
+  let $textArea = /** @type {HTMLTextAreaElement} */ (document.querySelector('form textarea'))
+  if (!$textArea) return
+
+  /** @param {KeyboardEvent} e */
+  function onKeyDown(e) {
+    if (e.isComposing) return
+    if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault()
+      log('submitting form from textarea')
+      $textArea.form.requestSubmit()
+    }
+  }
+
+  function updateEventHandlers() {
+    log(`${config.submitTextAreaWithKeyboard ? 'en' : 'dis'}abling <textarea> keyboard submission`)
+    $textArea[config.submitTextAreaWithKeyboard ? 'addEventListener' : 'removeEventListener']('keydown', onKeyDown)
+  }
+
+  if (config.submitTextAreaWithKeyboard) {
+    updateEventHandlers()
+  }
+
+  chrome.storage.local.onChanged.addListener((changes) => {
+    if (changes.submitTextAreaWithKeyboard) {
+      config.submitTextAreaWithKeyboard = changes.submitTextAreaWithKeyboard.newValue
+      updateEventHandlers()
+    }
+  })
+}
+//#endregion
+
+//#region Theming
+const THEME_CONFIG_KEYS = [
+  'darkMode',
+  'pureBlack',
+]
+
+let footerAnnotated = false
+let headerAnnotated = false
+let logoReplaced = false
+
+function setActiveSize() {
+  let desktop = window.innerWidth > 750
+  document.documentElement.toggleAttribute('desktop', desktop)
+  document.documentElement.toggleAttribute('mobile', !desktop)
+}
+
+/** @param {{darkMode?: boolean, pureBlack?: boolean}} [options] */
+function setActiveTheme({
+  darkMode = localStorage.darkMode == 'true',
+  pureBlack = localStorage.pureBlack == 'true',
+} = {}) {
+  document.documentElement.toggleAttribute('dark', darkMode)
+  document.documentElement.toggleAttribute('light', !darkMode)
+  document.documentElement.toggleAttribute('pure-black', darkMode && pureBlack)
+}
+
+/**
+ * We need to add ids to these ASAP to reduce flash of initial state.
+ */
+function tagHeaderAndFooter() {
+  if (headerAnnotated && footerAnnotated) return
+
+  let annotated = []
+
+  if (!headerAnnotated) {
+    let $pageTop = document.querySelector('span.pagetop')
+    if ($pageTop) {
+      let $header = $pageTop.closest('td[bgcolor]')
+      if ($header) {
+        $header.id = 'header'
+        $header.toggleAttribute('default', $header.getAttribute('bgcolor') == '#ff6600')
+        headerAnnotated = true
+        annotated.push('header')
+      }
+    }
+  }
+
+  if (!footerAnnotated) {
+    let $footer = document.querySelector('#bigbox ~ tr td[bgcolor]:empty:not([id])')
+    if ($footer) {
+      $footer.id = 'footer'
+      $footer.toggleAttribute('default', $footer.getAttribute('bgcolor') == '#ff6600')
+      footerAnnotated = true
+      annotated.push('footer')
+    }
+  }
+
+  if (annotated.length > 0) {
+    log(`${annotated.join(' and ')} annotated`)
   }
 }
 //#endregion
@@ -2110,211 +2304,23 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
   //#endregion
 }
 //#endregion
-
-//#region Submit <textarea> with keyboard
-function submitTextAreaWithKeyboard() {
-  let $textArea = /** @type {HTMLTextAreaElement} */ (document.querySelector('form textarea'))
-  if (!$textArea) return
-
-  /** @param {KeyboardEvent} e */
-  function onKeyDown(e) {
-    if (e.isComposing) return
-    if (e.key == 'Enter' && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault()
-      log('submitting form from textarea')
-      $textArea.form.requestSubmit()
-    }
-  }
-
-  function updateEventHandlers() {
-    log(`${config.submitTextAreaWithKeyboard ? 'en' : 'dis'}abling <textarea> keyboard submission`)
-    $textArea[config.submitTextAreaWithKeyboard ? 'addEventListener' : 'removeEventListener']('keydown', onKeyDown)
-  }
-
-  if (config.submitTextAreaWithKeyboard) {
-    updateEventHandlers()
-  }
-
-  chrome.storage.local.onChanged.addListener((changes) => {
-    if (changes.submitTextAreaWithKeyboard) {
-      config.submitTextAreaWithKeyboard = changes.submitTextAreaWithKeyboard.newValue
-      updateEventHandlers()
-    }
-  })
-}
-//#endregion
-
-//#region Custom CSS
-/** @type {HTMLStyleElement} */
-let $customCssStyle
-
-/** @param {string} [customCss] */
-function configureCustomCss(customCss = localStorage.customCss ?? '') {
-  if (!customCss) {
-    if ($customCssStyle) {
-      $customCssStyle.remove()
-      $customCssStyle = null
-    }
-    return
-  }
-  if (!$customCssStyle) {
-    $customCssStyle = addStyle('custom-css', customCss)
-  }
-  else if ($customCssStyle.textContent != customCss) {
-    $customCssStyle.textContent = customCss
-  }
-}
-//#endregion
-
-//#region Theme
-let initCssMutationCount = 0
-/** @type {MutationObserver} */
-let initCssObserver
-let footerTagged = false
-let headerTagged = false
-let logoReplaced = false
-/** @type {HTMLStyleElement} */
-let $viewTransitionStyle
-
-function setActiveSize() {
-  let desktop = window.innerWidth > 750
-  document.documentElement.toggleAttribute('desktop', desktop)
-  document.documentElement.toggleAttribute('mobile', !desktop)
-}
-
-/** @param {{darkMode?: boolean, pureBlack?: boolean}} [options] */
-function setActiveTheme({
-  darkMode = localStorage.darkMode == 'true',
-  pureBlack = localStorage.pureBlack == 'true',
-} = {}) {
-  document.documentElement.toggleAttribute('dark', darkMode)
-  document.documentElement.toggleAttribute('light', !darkMode)
-  document.documentElement.toggleAttribute('pure-black', darkMode && pureBlack)
-}
-
-/**
- * We need to tag these ASAP to reduce flash of initial style.
- * @param {string} [when]
- */
-function tagHeaderAndFooter(when) {
-  if (headerTagged && footerTagged) return
-
-  let tagged = []
-
-  if (!headerTagged) {
-    let $pageTop = document.querySelector('span.pagetop')
-    if ($pageTop) {
-      let $header = $pageTop.closest('td[bgcolor]')
-      if ($header) {
-        $header.id = 'header'
-        $header.toggleAttribute('default', $header.getAttribute('bgcolor') == '#ff6600')
-        headerTagged = true
-        tagged.push('header')
-      }
-    }
-  }
-
-  if (!footerTagged) {
-    let $footer = document.querySelector('#bigbox ~ tr td[bgcolor]:empty:not([id])')
-    if ($footer) {
-      $footer.id = 'footer'
-      $footer.toggleAttribute('default', $footer.getAttribute('bgcolor') == '#ff6600')
-      footerTagged = true
-      tagged.push('footer')
-    }
-  }
-
-  if (when && tagged.length > 0) {
-    log(`${tagged.join(' and ')} tagged ${when}`)
-  }
-}
-
-function initCss({reinit = false} = {}) {
-  if (reinit) {
-    $viewTransitionStyle = null
-    $customCssStyle = null
-  }
-
-  // @view-transition CSS needs to be applied immediately for pages to be eligible
-  configureViewTransitionCss()
-  configureCustomCss()
-  setActiveSize()
-  setActiveTheme()
-
-  if (!headerTagged || !logoReplaced) {
-    initCssObserver = new MutationObserver(() => {
-      initCssMutationCount++
-      // Tag header td[bgcolor] for styling
-      if (!headerTagged) {
-        tagHeaderAndFooter(`after ${initCssMutationCount} mutation${s(initCssMutationCount)}`)
-      }
-      // Replace HN's <img src="y18.svg"> with an inline version which can be styled
-      if (!logoReplaced) {
-        let $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
-        if ($homeLink) {
-          $homeLink.innerHTML = HN_LOGO_SVG
-          logoReplaced = true
-        }
-      }
-      if (headerTagged && logoReplaced && initCssObserver) {
-        initCssObserver.disconnect()
-        initCssObserver = null
-      }
-    })
-    initCssObserver.observe(document.documentElement, {childList: true, subtree: true})
-  }
-}
-
-/** @param {{enableViewTransitions?: boolean, listItemTransition?: boolean}} [options] */
-function configureViewTransitionCss({
-  enableViewTransitions = localStorage.enableViewTransitions == 'true',
-  listItemTransition = localStorage.listItemTransition == 'true',
-} = {}) {
-  if (!enableViewTransitions) {
-    if ($viewTransitionStyle) {
-      $viewTransitionStyle.remove()
-      $viewTransitionStyle = null
-    }
-    return
-  }
-  /** @type {string[]} */
-  let submissionIds = []
-  if (listItemTransition) {
-    let parsed = parseStoredJSON(sessionStorage, 'submissionIds')
-    submissionIds = Array.isArray(parsed) ? parsed : []
-  }
-  let css = dedent(`
-    @view-transition {
-      navigation: auto;
-    }
-    ::view-transition-old(root),
-    ::view-transition-new(root) {
-      animation-duration: 150ms;
-    }
-    ${submissionIds.map(id => `.submission[id="${id}"] {
-      .votelinks {
-        view-transition-name: item-${id}-votelinks;
-      }
-      .votelinks + .title {
-        view-transition-name: item-${id}-title;
-      }
-      & + tr .subline {
-        view-transition-name: item-${id}-subline;
-      }
-    }`).join('\n')}
-  `)
-  if (!$viewTransitionStyle) {
-    $viewTransitionStyle = addStyle('view-transitions', css)
-  } else {
-    $viewTransitionStyle.textContent = css
-  }
-}
 //#endregion
 
 //#region Main
+/** @type {Array<[string[], (config: Partial<import("./types").Config>) => void]>} */
+const LOCAL_STORAGE_SYNC_CONFIG = [
+  [THEME_CONFIG_KEYS, setActiveTheme],
+  [VIEW_TRANSITION_CONFIG_KEYS, configureViewTransitionCss],
+  [NAV_CONFIG_KEYS, configureNavCss],
+]
+
 /** @type {string} */
 let currentUser
+/** @type {MutationObserver} */
+let documentLoadingObserver
+let loading = document.readyState == 'loading'
 let path = location.pathname.slice(1)
+let startMs = Date.now()
 
 function isItemListPage() {
   return (
@@ -2331,10 +2337,53 @@ function isUserProfilePage() {
   return /^(user|muted)/.test(path)
 }
 
-function processCurrentPage() {
-  if (initCssObserver) {
-    initCssObserver.disconnect()
-    initCssObserver = null
+//#region document_start
+function onDocumentStart({restart = false} = {}) {
+  if (restart) {
+    $viewTransitionStyle = null
+    $customCssStyle = null
+    $navStyle = null
+  }
+
+  // @view-transition CSS needs to be applied immediately for pages to be eligible
+  configureViewTransitionCss()
+  configureCustomCss()
+  configureNavCss()
+  setActiveSize()
+  setActiveTheme()
+
+  if (!headerAnnotated || !logoReplaced || !navEnhanced) {
+    documentLoadingObserver = new MutationObserver(() => {
+      // Tag header td[bgcolor] for styling
+      if (!headerAnnotated) {
+        tagHeaderAndFooter()
+      }
+      // Replace HN's <img src="y18.svg"> with an inline version which can be styled
+      if (!logoReplaced) {
+        let $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
+        if ($homeLink) {
+          $homeLink.innerHTML = HN_LOGO_SVG
+          logoReplaced = true
+        }
+      }
+      // Tweak the nav bar when it loads
+      tweakNav()
+      // Stop observing if we've done everything we can
+      if (headerAnnotated && logoReplaced && navEnhanced && documentLoadingObserver) {
+        documentLoadingObserver.disconnect()
+        documentLoadingObserver = null
+      }
+    })
+    documentLoadingObserver.observe(document.documentElement, {childList: true, subtree: true})
+  }
+}
+//#endregion
+
+//#region DOMContentLoaded
+function onDOMContentLoaded() {
+  if (documentLoadingObserver) {
+    documentLoadingObserver.disconnect()
+    documentLoadingObserver = null
   }
 
   let $currentUserLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a#me'))
@@ -2352,13 +2401,13 @@ function processCurrentPage() {
   }
 
   if (path == 'muted') {
+    log('creating /muted page for logged-out users')
     document.documentElement.innerHTML = LOGGED_OUT_USER_PAGE
     // Safari on macOS has a default dark background in dark mode
     if (IS_SAFARI) {
       addStyle('muted-safari', 'html { background-color: var(--bg-color); }')
     }
-    log('re-initing CSS for /muted page')
-    initCss({reinit: true})
+    onDocumentStart({restart: true})
   }
 
   if (document.querySelector('body > pre:only-child')) {
@@ -2368,7 +2417,7 @@ function processCurrentPage() {
 
   tagHeaderAndFooter()
   tweakNav()
-  submitTextAreaWithKeyboard()
+  submitFirstTextAreaWithKeyboard()
 
   if (isItemListPage()) {
     itemListPage()
@@ -2381,9 +2430,11 @@ function processCurrentPage() {
     userProfilePage()
   }
 }
+//#endregion
 
+//#region main()
 function main() {
-  initCss()
+  onDocumentStart()
 
   window.addEventListener('resize', setActiveSize)
 
@@ -2402,40 +2453,15 @@ function main() {
         configureCustomCss(changes.customCss.newValue)
       }
     }
-    if (changes.darkMode) {
-      if (config) {
-        config.darkMode = changes.darkMode.newValue
-      }
-      if (localStorage.darkMode != String(changes.darkMode.newValue)) {
-        localStorage.darkMode = changes.darkMode.newValue
-        setActiveTheme({darkMode: changes.darkMode.newValue})
-      }
-    }
-    if (changes.pureBlack) {
-      if (config) {
-        config.pureBlack = changes.pureBlack.newValue
-      }
-      if (localStorage.pureBlack != String(changes.pureBlack.newValue)) {
-        localStorage.pureBlack = changes.pureBlack.newValue
-        setActiveTheme({pureBlack: changes.pureBlack.newValue})
-      }
-    }
-    if (changes.enableViewTransitions) {
-      if (config) {
-        config.enableViewTransitions = changes.enableViewTransitions.newValue
-      }
-      if (localStorage.enableViewTransitions != String(changes.enableViewTransitions.newValue)) {
-        localStorage.enableViewTransitions = changes.enableViewTransitions.newValue
-        configureViewTransitionCss({enableViewTransitions: changes.enableViewTransitions.newValue})
-      }
-    }
-    if (changes.listItemTransition) {
-      if (config) {
-        config.listItemTransition = changes.listItemTransition.newValue
-      }
-      if (localStorage.listItemTransition != String(changes.listItemTransition.newValue)) {
-        localStorage.listItemTransition = changes.listItemTransition.newValue
-        configureViewTransitionCss({listItemTransition: changes.listItemTransition.newValue})
+    for (let [keys, fn] of LOCAL_STORAGE_SYNC_CONFIG) {
+      for (let key of keys) {
+        if (!changes[key]) continue
+        let {newValue} = changes[key]
+        if (config) config[key] = newValue
+        if (localStorage.getItem(key) != String(newValue)) {
+          localStorage.setItem(key, newValue)
+          fn({[key]: newValue})
+        }
       }
     }
   })
@@ -2445,48 +2471,38 @@ function main() {
     defaultConfig = settings.DEFAULT_CONFIG
     config = {...defaultConfig, ...storedConfig}
     debug = config.debug
-    log('config', config)
+    log('effective config', config)
 
     // Sync effective config with localStorage and apply any differences
     if (localStorage.debug != String(debug)) {
       localStorage.debug = debug
     }
-    if (localStorage.enableViewTransitions != String(config.enableViewTransitions) ||
-        localStorage.listItemTransition != String(config.listItemTransition)) {
-      localStorage.enableViewTransitions = config.enableViewTransitions
-      localStorage.listItemTransition = config.listItemTransition
-      configureViewTransitionCss({
-        enableViewTransitions: config.enableViewTransitions,
-        listItemTransition: config.listItemTransition,
-      })
-    }
     if (localStorage.customCss != config.customCss) {
       localStorage.customCss = config.customCss
       configureCustomCss(config.customCss)
     }
-    if (localStorage.darkMode != String(config.darkMode) ||
-        localStorage.pureBlack != String(config.pureBlack)) {
-      localStorage.darkMode = config.darkMode
-      localStorage.pureBlack = config.pureBlack
-      setActiveTheme({
-        darkMode: config.darkMode,
-        pureBlack: config.pureBlack,
-      })
+    for (let [keys, fn] of LOCAL_STORAGE_SYNC_CONFIG) {
+      if (keys.some(key => localStorage.getItem(key) != String(config[key]))) {
+        for (let key of keys) localStorage.setItem(key, config[key])
+        fn(config)
+      }
     }
 
     if (document.readyState == 'loading') {
-      let start = Date.now()
       document.addEventListener('DOMContentLoaded', () => {
-        log(`document ${document.readyState} after ${Date.now() - start}ms`)
-        processCurrentPage()
+        log('DOMContentLoaded')
+        loading = false
+        onDOMContentLoaded()
       })
     } else {
-      processCurrentPage()
+      onDOMContentLoaded()
     }
   })
 }
 
 if (!path.endsWith('.html')) {
+  log('starting')
   main()
 }
+//#endregion
 //#endregion
