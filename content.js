@@ -2337,6 +2337,11 @@ function processCurrentPage() {
     initCss({reinit: true})
   }
 
+  if (document.querySelector('body > pre:only-child')) {
+    log('error screen')
+    return
+  }
+
   tagHeaderAndFooter()
   tweakNav()
   submitTextAreaWithKeyboard()
