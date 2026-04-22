@@ -379,12 +379,11 @@ function itemPage() {
     }
     .toggle {
       cursor: pointer;
-      margin-right: 3px;
       background: transparent;
       border: 0;
       padding: 0;
       color: inherit;
-      font-family: inherit;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       transition: color .15s ease;
     }
     /* Only show mute control at mobile widths */
