@@ -2397,7 +2397,7 @@ function onDOMContentLoaded() {
   let $currentUserLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a#me'))
   currentUser = $currentUserLink?.innerText ?? ''
 
-  if (path == 'x' || document.querySelector('input[type="submit"][value="create account"]')) {
+  if (path == 'forgot' || path == 'x' || document.querySelector('input[type="submit"][value="create account"]')) {
     log('auth page')
     document.documentElement.setAttribute('unstyled', '')
     // XXX This doesn't work
