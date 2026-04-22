@@ -157,7 +157,7 @@ const autosizeTextArea = (() => {
   /** @type {Number} */
   let textAreaPadding
 
-  return function autosizeTextarea($textArea) {
+  return function autosizeTextArea($textArea) {
     if (!$textArea.offsetParent) return
     if (textAreaPadding == null) {
       textAreaPadding = Number(getComputedStyle($textArea).paddingTop.replace('px', '')) * 2
@@ -252,12 +252,6 @@ function log(...args) {
   }
 }
 
-function warn(...args) {
-  if (debug) {
-    console.log('❗', ...args)
-  }
-}
-
 /**
  * @param {Storage} storage
  * @param {string} key
@@ -308,6 +302,12 @@ function toggleVisibility($el, hidden) {
   // We need to enforce visibility setting as the page's own script expands
   // all comments on page load.
   $el.style.visibility = hidden ? 'hidden' : 'visible'
+}
+
+function warn(...args) {
+  if (debug) {
+    console.log('❗', ...args)
+  }
 }
 //#endregion
 
