@@ -12,7 +12,7 @@ html {
   --text-topsel: #ffffff;
   --text-green: #3c963c;
 
-  --link: #000000;
+  --link: var(--text-primary);
   --link-header: #000000;
 
   --fade-1: #5a5a5a;
@@ -50,9 +50,6 @@ html[dark] {
   --text-topsel: #ffffff;
   --text-green: #4caf50;
 
-  --link: #e0e0e0;
-  --link-header: #000000;
-
   --comment-dead: #181818;
   --fade-1: color-mix(in srgb, var(--text-primary) 80%, var(--comment-dead));
   --fade-2: color-mix(in srgb, var(--text-primary) 65%, var(--comment-dead));
@@ -76,10 +73,17 @@ html[dark] {
 html[pure-black] {
   --bg-page: #000000;
   --bg-content: #000000;
-  --bg-highlight: #121212;
-  --bg-input: #1a1a1a;
+  --bg-header: #c25f18;
+  --bg-highlight: #111111;
+  --bg-input: #111111;
+
+  --text-primary: #d0d0d0;
+  --text-secondary: #949494;
+
   --comment-dead: #101010;
+
   --hovercard-bg: #0e0e0e;
+  --hovercard-border: rgba(255, 255, 255, .1);
   --hovercard-shadow: rgba(0, 0, 0, .7) 0px 10px 25px, rgba(0, 0, 0, .5) 0px 0px 4px 1px;
 }
 /* #endregion */
