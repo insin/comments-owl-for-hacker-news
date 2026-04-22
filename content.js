@@ -292,24 +292,12 @@ function toggleVisibility($el, hidden) {
 function tweakNav() {
   let $pageTop = document.querySelector('span.pagetop')
   if (!$pageTop) {
-    warn('pagetop not found')
+    warn('.pagetop not found')
     return
   }
 
-  // Add id and default attributes for theming
-  let $header = $pageTop.closest('td[bgcolor]')
-  if ($header) {
-    $header.id = 'header'
-    $header.toggleAttribute('default', $header.getAttribute('bgcolor') == '#ff6600')
-  }
-  let $footer = document.querySelector('#bigbox ~ tr td[bgcolor]:empty')
-  if ($footer) {
-    $footer.id = 'footer'
-    $footer.toggleAttribute('default', $footer.getAttribute('bgcolor') == '#ff6600')
-  }
-
   if ($pageTop.querySelector(':scope > b:only-child')) {
-    log(`${path} has no nav items`)
+    log(`/${path} has no nav items`)
     return
   }
 
@@ -2137,8 +2125,9 @@ function submitTextAreaWithKeyboard() {
 /** @type {HTMLStyleElement} */
 let $customCssStyle
 
-function configureCustomCss() {
-  if (!config.customCss) {
+/** @param {string} [customCss] */
+function configureCustomCss(customCss = localStorage.customCss ?? '') {
+  if (!customCss) {
     if ($customCssStyle) {
       $customCssStyle.remove()
       $customCssStyle = null
@@ -2146,14 +2135,20 @@ function configureCustomCss() {
     return
   }
   if (!$customCssStyle) {
-    $customCssStyle = addStyle('custom-css', config.customCss)
-  } else {
-    $customCssStyle.textContent = config.customCss
+    $customCssStyle = addStyle('custom-css', customCss)
+  }
+  else if ($customCssStyle.textContent != customCss) {
+    $customCssStyle.textContent = customCss
   }
 }
 //#endregion
 
 //#region Theme
+let initCssMutationCount = 0
+/** @type {MutationObserver} */
+let initCssObserver
+let footerTagged = false
+let headerTagged = false
 let logoReplaced = false
 /** @type {HTMLStyleElement} */
 let $viewTransitionStyle
@@ -2172,28 +2167,76 @@ function setActiveTheme() {
   document.documentElement.toggleAttribute('pure-black', dark && pureBlack)
 }
 
-async function initTheme() {
+/**
+ * We need to tag these ASAP to reduce flash of initial style.
+ * @param {string} [when]
+ */
+function tagHeaderAndFooter(when) {
+  if (headerTagged && footerTagged) return
+
+  let tagged = []
+
+  if (!headerTagged) {
+    let $pageTop = document.querySelector('span.pagetop')
+    if ($pageTop) {
+      let $header = $pageTop.closest('td[bgcolor]')
+      if ($header) {
+        $header.id = 'header'
+        $header.toggleAttribute('default', $header.getAttribute('bgcolor') == '#ff6600')
+        headerTagged = true
+        tagged.push('header')
+      }
+    }
+  }
+
+  if (!footerTagged) {
+    let $footer = document.querySelector('#bigbox ~ tr td[bgcolor]:empty:not([id])')
+    if ($footer) {
+      $footer.id = 'footer'
+      $footer.toggleAttribute('default', $footer.getAttribute('bgcolor') == '#ff6600')
+      footerTagged = true
+      tagged.push('footer')
+    }
+  }
+
+  if (when && tagged.length > 0) {
+    log(`${tagged.join(' and ')} tagged ${when}`)
+  }
+}
+
+function initCss({reinit = false} = {}) {
+  if (reinit) {
+    $viewTransitionStyle = null
+    $customCssStyle = null
+  }
+
+  // @view-transition CSS needs to be applied immediately for pages to be eligible
+  configureViewTransitionCss()
+  configureCustomCss()
   setActiveSize()
   setActiveTheme()
-  // Replace HN's <img src="y18.svg"> with an inline version which can be styled
-  if (!logoReplaced) {
-    let $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
-    if (!$homeLink) {
-      await new Promise((resolve) => {
-        new MutationObserver((_, observer) => {
-          $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
-          if ($homeLink) {
-            observer.disconnect()
-            resolve()
-          }
-        }).observe(document.documentElement, {childList: true, subtree: true})
-      })
-    }
-    // The custom /muted page will re-apply CSS
-    if (logoReplaced) return
-    log('replacing HN logo with inline version')
-    $homeLink.innerHTML = HN_LOGO_SVG
-    logoReplaced = true
+
+  if (!headerTagged || !logoReplaced) {
+    initCssObserver = new MutationObserver(() => {
+      initCssMutationCount++
+      // Tag header td[bgcolor] for styling
+      if (!headerTagged) {
+        tagHeaderAndFooter(`after ${initCssMutationCount} mutation${s(initCssMutationCount)}`)
+      }
+      // Replace HN's <img src="y18.svg"> with an inline version which can be styled
+      if (!logoReplaced) {
+        let $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
+        if ($homeLink) {
+          $homeLink.innerHTML = HN_LOGO_SVG
+          logoReplaced = true
+        }
+      }
+      if (headerTagged && logoReplaced && initCssObserver) {
+        initCssObserver.disconnect()
+        initCssObserver = null
+      }
+    })
+    initCssObserver.observe(document.documentElement, {childList: true, subtree: true})
   }
 }
 
@@ -2259,6 +2302,11 @@ function isUserProfilePage() {
 }
 
 function processCurrentPage() {
+  if (initCssObserver) {
+    initCssObserver.disconnect()
+    initCssObserver = null
+  }
+
   debug = config.debug
   if (localStorage.debug != String(debug)) {
     localStorage.debug = debug
@@ -2283,11 +2331,11 @@ function processCurrentPage() {
     if (IS_SAFARI) {
       addStyle('muted-safari', 'html { background-color: var(--bg-color); }')
     }
-    log('re-applying CSS for /muted page')
-    initTheme()
-    configureViewTransitionCss()
+    log('re-initing CSS for /muted page')
+    initCss({reinit: true})
   }
 
+  tagHeaderAndFooter()
   tweakNav()
   submitTextAreaWithKeyboard()
 
@@ -2304,9 +2352,7 @@ function processCurrentPage() {
 }
 
 function main() {
-  // @view-transition CSS needs to be applied immediately for pages to be eligible
-  configureViewTransitionCss()
-  initTheme()
+  initCss()
 
   window.addEventListener('resize', setActiveSize)
 
@@ -2322,7 +2368,10 @@ function main() {
       if (config) {
         config.customCss = changes.customCss.newValue
       }
-      configureCustomCss()
+      if (localStorage.customCss != changes.customCss.newValue) {
+        localStorage.customCss = changes.customCss.newValue
+        configureCustomCss(changes.customCss.newValue)
+      }
     }
     if (changes.darkMode) {
       if (config) {
@@ -2365,10 +2414,6 @@ function main() {
   })
 
   chrome.storage.local.get(async (storedConfig) => {
-    // Apply custom CSS ASAP
-    config = /** @type {import("./types").Config} */ (storedConfig)
-    configureCustomCss()
-
     let settings = await import(chrome.runtime.getURL('settings.js'))
     defaultConfig = settings.DEFAULT_CONFIG
     config = {...defaultConfig, ...storedConfig}
@@ -2386,11 +2431,15 @@ function main() {
       localStorage.pureBlack = config.pureBlack
       setActiveTheme()
     }
+    if (localStorage.customCss != config.customCss) {
+      localStorage.customCss = config.customCss
+      configureCustomCss(config.customCss)
+    }
 
     if (document.readyState == 'loading') {
       let start = Date.now()
       document.addEventListener('DOMContentLoaded', () => {
-        log(`document.readyState = ${document.readyState} after ${Date.now() - start}ms`)
+        log(`document ${document.readyState} after ${Date.now() - start}ms`)
         processCurrentPage()
       })
     } else {
