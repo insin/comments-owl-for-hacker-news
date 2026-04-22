@@ -2316,10 +2316,12 @@ function processCurrentPage() {
   let $currentUserLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a#me'))
   currentUser = $currentUserLink?.innerText ?? ''
 
-  if (path == 'login') {
-    log('login screen')
+  if (path == 'x' || document.querySelector('input[type="submit"][value="create account"]')) {
+    log('auth screen')
+    document.documentElement.setAttribute('auth', '')
+    // XXX This doesn't work
     if (IS_SAFARI) {
-      log('trying to prevent Safari zooming in on the autofocused input')
+      log('trying to prevent Safari zooming in on auth screen inputs')
       addStyle('login-safari', `input[type="text"], input[type="password"] { font-size: 16px; }`)
     }
     return

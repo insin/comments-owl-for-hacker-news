@@ -136,8 +136,11 @@ body { background-color: var(--bg-page); }
 /* #endregion */
 
 /* #region Additional theming */
-body:has(form[action="login"]) {
+/* Provide basic styling for auth screens */
+html[auth] body {
   color: var(--text-primary);
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 10pt;
   a { color: var(--text-link); }
 }
 #header[default] #hnlogo {
