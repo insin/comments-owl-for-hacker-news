@@ -107,9 +107,8 @@ Visit.fromJSON = function(obj) {
 }
 
 function getLastVisit(itemId) {
-  let json = localStorage.getItem(itemId)
-  if (json == null) return null
-  return Visit.fromJSON(JSON.parse(json))
+  let parsed = parseStoredJSON(localStorage, itemId)
+  return isObject(parsed) ? Visit.fromJSON(parsed) : null
 }
 
 function storeVisit(itemId, visit) {
@@ -118,21 +117,23 @@ function storeVisit(itemId, visit) {
 }
 
 /** @returns {Set<string>} */
-function getMutedUsers(json = localStorage[MUTED_USERS_KEY]) {
-  return new Set(JSON.parse(json || '[]'))
+function getMutedUsers(json = localStorage.getItem(MUTED_USERS_KEY)) {
+  let parsed = safeParseJSON(json)
+  return new Set(Array.isArray(parsed) ? parsed : [])
 }
 
 /** @returns {Record<string, string>} */
-function getUserNotes(json = localStorage[USER_NOTES_KEY]) {
-  return JSON.parse(json || '{}')
+function getUserNotes(json = localStorage.getItem(USER_NOTES_KEY)) {
+  let parsed =  safeParseJSON(json)
+  return isObject(parsed) ? parsed : {}
 }
 
 function storeMutedUsers(mutedUsers) {
-  localStorage[MUTED_USERS_KEY] = JSON.stringify(Array.from(mutedUsers))
+  localStorage.setItem(MUTED_USERS_KEY, JSON.stringify(Array.from(mutedUsers)))
 }
 
 function storeUserNotes(userNotes) {
-  localStorage[USER_NOTES_KEY] = JSON.stringify(userNotes)
+  localStorage.setItem(USER_NOTES_KEY, JSON.stringify(userNotes))
 }
 //#endregion
 
@@ -241,6 +242,10 @@ function h(tagName, attributes, ...children) {
   return $el
 }
 
+function isObject(maybeObj) {
+  return maybeObj != null && Object.getPrototypeOf(maybeObj) === Object.prototype
+}
+
 function log(...args) {
   if (debug) {
     console.log('🦉', ...args)
@@ -254,6 +259,14 @@ function warn(...args) {
 }
 
 /**
+ * @param {Storage} storage
+ * @param {string} key
+ */
+function parseStoredJSON(storage, key) {
+  return safeParseJSON(storage.getItem(key))
+}
+
+/**
  * @param {number} count
  * @param {string} suffixes
  * @returns {string}
@@ -263,6 +276,16 @@ function s(count, suffixes = ',s') {
     suffixes = `,${suffixes}`
   }
   return suffixes.split(',')[count == 1 ? 0 : 1]
+}
+
+/** @param {string | null} json */
+function safeParseJSON(json) {
+  if (json) {
+    try {
+      return JSON.parse(json)
+    } catch {}
+  }
+  return null
 }
 
 /**
@@ -2159,12 +2182,14 @@ function setActiveSize() {
   document.documentElement.toggleAttribute('mobile', !desktop)
 }
 
-function setActiveTheme() {
-  let dark = localStorage.darkMode == 'true'
-  let pureBlack = localStorage.pureBlack == 'true'
-  document.documentElement.toggleAttribute('dark', dark)
-  document.documentElement.toggleAttribute('light', !dark)
-  document.documentElement.toggleAttribute('pure-black', dark && pureBlack)
+/** @param {{darkMode?: boolean, pureBlack?: boolean}} [options] */
+function setActiveTheme({
+  darkMode = localStorage.darkMode == 'true',
+  pureBlack = localStorage.pureBlack == 'true',
+} = {}) {
+  document.documentElement.toggleAttribute('dark', darkMode)
+  document.documentElement.toggleAttribute('light', !darkMode)
+  document.documentElement.toggleAttribute('pure-black', darkMode && pureBlack)
 }
 
 /**
@@ -2240,8 +2265,12 @@ function initCss({reinit = false} = {}) {
   }
 }
 
-function configureViewTransitionCss() {
-  if (localStorage.enableViewTransitions != 'true') {
+/** @param {{enableViewTransitions?: boolean, listItemTransition?: boolean}} [options] */
+function configureViewTransitionCss({
+  enableViewTransitions = localStorage.enableViewTransitions == 'true',
+  listItemTransition = localStorage.listItemTransition == 'true',
+} = {}) {
+  if (!enableViewTransitions) {
     if ($viewTransitionStyle) {
       $viewTransitionStyle.remove()
       $viewTransitionStyle = null
@@ -2250,8 +2279,9 @@ function configureViewTransitionCss() {
   }
   /** @type {string[]} */
   let submissionIds = []
-  if (localStorage.listItemTransition == 'true') {
-    submissionIds = JSON.parse(sessionStorage.submissionIds || '[]')
+  if (listItemTransition) {
+    let parsed = parseStoredJSON(sessionStorage, 'submissionIds')
+    submissionIds = Array.isArray(parsed) ? parsed : []
   }
   let css = dedent(`
     @view-transition {
@@ -2307,12 +2337,6 @@ function processCurrentPage() {
     initCssObserver = null
   }
 
-  debug = config.debug
-  if (localStorage.debug != String(debug)) {
-    localStorage.debug = debug
-  }
-  log('config', config)
-
   let $currentUserLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a#me'))
   currentUser = $currentUserLink?.innerText ?? ''
 
@@ -2363,10 +2387,8 @@ function main() {
 
   window.addEventListener('resize', setActiveSize)
 
-  // Reflect config which is needed at document_start in localStorage
+  // Sync config changes which are needed at document_start to localStorage
   chrome.storage.local.onChanged.addListener((changes) => {
-    let needsViewTransitionUpdate = false
-
     if (changes.debug) {
       debug = changes.debug.newValue
       localStorage.debug = debug
@@ -2386,7 +2408,7 @@ function main() {
       }
       if (localStorage.darkMode != String(changes.darkMode.newValue)) {
         localStorage.darkMode = changes.darkMode.newValue
-        setActiveTheme()
+        setActiveTheme({darkMode: changes.darkMode.newValue})
       }
     }
     if (changes.pureBlack) {
@@ -2395,7 +2417,7 @@ function main() {
       }
       if (localStorage.pureBlack != String(changes.pureBlack.newValue)) {
         localStorage.pureBlack = changes.pureBlack.newValue
-        setActiveTheme()
+        setActiveTheme({pureBlack: changes.pureBlack.newValue})
       }
     }
     if (changes.enableViewTransitions) {
@@ -2404,7 +2426,7 @@ function main() {
       }
       if (localStorage.enableViewTransitions != String(changes.enableViewTransitions.newValue)) {
         localStorage.enableViewTransitions = changes.enableViewTransitions.newValue
-        needsViewTransitionUpdate = true
+        configureViewTransitionCss({enableViewTransitions: changes.enableViewTransitions.newValue})
       }
     }
     if (changes.listItemTransition) {
@@ -2413,34 +2435,43 @@ function main() {
       }
       if (localStorage.listItemTransition != String(changes.listItemTransition.newValue)) {
         localStorage.listItemTransition = changes.listItemTransition.newValue
-        needsViewTransitionUpdate = true
+        configureViewTransitionCss({listItemTransition: changes.listItemTransition.newValue})
       }
     }
-
-    if (needsViewTransitionUpdate) configureViewTransitionCss()
   })
 
   chrome.storage.local.get(async (storedConfig) => {
     let settings = await import(chrome.runtime.getURL('settings.js'))
     defaultConfig = settings.DEFAULT_CONFIG
     config = {...defaultConfig, ...storedConfig}
+    debug = config.debug
+    log('config', config)
 
-    // Sync localStorage with stored config
+    // Sync effective config with localStorage and apply any differences
+    if (localStorage.debug != String(debug)) {
+      localStorage.debug = debug
+    }
     if (localStorage.enableViewTransitions != String(config.enableViewTransitions) ||
         localStorage.listItemTransition != String(config.listItemTransition)) {
       localStorage.enableViewTransitions = config.enableViewTransitions
       localStorage.listItemTransition = config.listItemTransition
-      configureViewTransitionCss()
+      configureViewTransitionCss({
+        enableViewTransitions: config.enableViewTransitions,
+        listItemTransition: config.listItemTransition,
+      })
+    }
+    if (localStorage.customCss != config.customCss) {
+      localStorage.customCss = config.customCss
+      configureCustomCss(config.customCss)
     }
     if (localStorage.darkMode != String(config.darkMode) ||
         localStorage.pureBlack != String(config.pureBlack)) {
       localStorage.darkMode = config.darkMode
       localStorage.pureBlack = config.pureBlack
-      setActiveTheme()
-    }
-    if (localStorage.customCss != config.customCss) {
-      localStorage.customCss = config.customCss
-      configureCustomCss(config.customCss)
+      setActiveTheme({
+        darkMode: config.darkMode,
+        pureBlack: config.pureBlack,
+      })
     }
 
     if (document.readyState == 'loading') {
