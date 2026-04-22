@@ -360,6 +360,13 @@ function warn(...args) {
  * comment id on the page and the current time as the last visit time.
  */
 function itemPage() {
+  if (document.body.childElementCount == 0 &&
+      document.body.textContent.includes('No such item')) {
+    warn('invalid item')
+    document.documentElement.setAttribute('unstyled', '')
+    return
+  }
+
   //#region CSS
   addStyle('comments-static', `
     /* Remove 1px gap between comments */
@@ -1503,7 +1510,8 @@ let $profileStyle
 function userProfilePage({$context = document, textAreaProps = {cols: 60}, onMutesChanged, onNotesChanged} = {}) {
   let $userLink = /** @type {HTMLAnchorElement} */ ($context.querySelector('a.hnuser'))
   if ($userLink == null) {
-    warn('not a valid user')
+    warn('invalid user')
+    document.documentElement.setAttribute('unstyled', '')
     return
   }
 
@@ -2390,11 +2398,11 @@ function onDOMContentLoaded() {
   currentUser = $currentUserLink?.innerText ?? ''
 
   if (path == 'x' || document.querySelector('input[type="submit"][value="create account"]')) {
-    log('auth screen')
-    document.documentElement.setAttribute('auth', '')
+    log('auth page')
+    document.documentElement.setAttribute('unstyled', '')
     // XXX This doesn't work
     if (IS_SAFARI) {
-      log('trying to prevent Safari zooming in on auth screen inputs')
+      log('trying to prevent Safari zooming in on auth page inputs')
       addStyle('login-safari', `input[type="text"], input[type="password"] { font-size: 16px; }`)
     }
     return
@@ -2411,7 +2419,8 @@ function onDOMContentLoaded() {
   }
 
   if (document.querySelector('body > pre:only-child')) {
-    log('error screen')
+    log('error page')
+    document.documentElement.setAttribute('unstyled', '')
     return
   }
 

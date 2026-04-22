@@ -136,8 +136,8 @@ body { background-color: var(--bg-page); }
 /* #endregion */
 
 /* #region Additional theming */
-/* Provide basic styling for auth screens */
-html[auth] body {
+/* Provide basic styling for unstyled pages */
+html[unstyled] body {
   color: var(--text-primary);
   font-family: Verdana, Geneva, sans-serif;
   font-size: 10pt;
