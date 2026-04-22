@@ -363,17 +363,17 @@ function tweakNav() {
   }
 
   let $active
-  let $submit = $pageTop.querySelector('a[href="submit"]')
+  let $lastNavLink = $pageTop.querySelector(':scope > a:last-of-type')
 
   // Add /active if we're not on it
-  if ($submit && !location.pathname.startsWith('/active')) {
+  if ($lastNavLink && !location.pathname.startsWith('/active')) {
     $active = h('a', {href: 'active'}, 'active')
-    $submit.insertAdjacentElement('afterend', $active)
-    $submit.insertAdjacentElement('afterend', h('span', {className: 'active-sep'}, ' | '))
+    $lastNavLink.insertAdjacentElement('afterend', $active)
+    $lastNavLink.insertAdjacentElement('afterend', h('span', {className: 'active-sep'}, ' | '))
   }
 
   // Add /upvoted if we're not on it and the user is logged in
-  if ($submit && !location.pathname.startsWith('/upvoted')) {
+  if ($lastNavLink && !location.pathname.startsWith('/upvoted')) {
     let $userLink = document.querySelector('a#me')
     if ($userLink) {
       let $upvoted = h('a', {href: `upvoted?id=${$userLink.textContent}`}, 'upvoted')
@@ -382,7 +382,7 @@ function tweakNav() {
         // Add after the "active" page title so positioning is consistent
         $pageTop.append($separator, $upvoted)
       } else {
-        let $target = $active || $submit
+        let $target = $active || $lastNavLink
         $target.insertAdjacentElement('afterend', $upvoted)
         $target.insertAdjacentElement('afterend', $separator)
       }
