@@ -377,14 +377,20 @@ function itemPage() {
     a.togg {
       display: none;
     }
-    .toggle {
+    .toggle,
+    .child-count-toggle {
       cursor: pointer;
       background: transparent;
       border: 0;
       padding: 0;
       color: inherit;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       transition: color .15s ease;
+    }
+    .toggle {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .child-count-toggle {
+      font: inherit;
     }
     /* Only show mute control at mobile widths */
     .mute {
@@ -452,14 +458,14 @@ function itemPage() {
             display: none;
           }
           /* Indicate when clicking will activate the toggle */
-          &:hover .toggle {
+          &:hover :is(.toggle, .child-count-toggle) {
             color: var(--link);
           }
         }
-        .comhead:hover .toggle {
+        .comhead:hover :is(.toggle, .child-count-toggle) {
           color: inherit;
         }
-        .comhead .toggle:hover {
+        .comhead :is(.toggle, .child-count-toggle):hover {
           color: var(--link);
         }
       `,
@@ -594,6 +600,9 @@ function itemPage() {
       this.$childCount = null
 
       /** @type {HTMLElement} */
+      this.$childCountControl = null
+
+      /** @type {HTMLElement} */
       this.$comhead = this.$topBar.querySelector('span.comhead')
 
       /** @type {HTMLElement} */
@@ -633,12 +642,8 @@ function itemPage() {
       return this._childComments
     }
 
-    get collapsedChildrenText() {
-      return this.childCommentCount == 0 ? '' : [
-        this.isDeleted ? '(' : ' | (',
-        this.childCommentCount,
-        ` child${s(this.childCommentCount, 'ren')})`,
-      ].join('')
+    get collapsedChildrenLabel() {
+      return `(${this.childCommentCount} child${s(this.childCommentCount, 'ren')})`
     }
 
     get nonMutedChildComments() {
@@ -665,6 +670,47 @@ function itemPage() {
 
     get childCommentCount() {
       return this.nonMutedChildComments.length
+    }
+
+    createChildCountControl() {
+      this.$childCountControl = h('button', {
+        className: 'child-count-toggle',
+        onclick: (e) => {
+          e.stopPropagation()
+          this.toggleCollapsed(false)
+        },
+        type: 'button',
+      }, this.collapsedChildrenLabel)
+
+      this.$childCount = h('span', {
+        className: 'child-count',
+      }, this.isDeleted ? '' : ' | ', this.$childCountControl)
+
+      this.$comhead.appendChild(this.$childCount)
+    }
+
+    removeChildCountControl() {
+      this.$childCount?.remove()
+      this.$childCount = null
+      this.$childCountControl = null
+    }
+
+    updateChildCountControl() {
+      this.$childCountControl.textContent = this.collapsedChildrenLabel
+    }
+
+    updateChildCountDisplay() {
+      if (this.childCommentCount == 0) {
+        this.removeChildCountControl()
+      }
+      else if (this.$childCount) {
+        this.updateChildCountControl()
+        toggleDisplay(this.$childCount, !this.isCollapsed)
+      }
+      else if (this.isCollapsed) {
+        this.createChildCountControl()
+        toggleDisplay(this.$childCount, false)
+      }
     }
 
     addControls() {
@@ -695,13 +741,7 @@ function itemPage() {
       this.$toggleControl.textContent = this.isCollapsed ? TOGGLE_SHOW : TOGGLE_HIDE
 
       // Show/hide the number of child comments when collapsed
-      if (this.childCommentCount > 0) {
-        if (this.isCollapsed && this.$childCount == null) {
-          this.$childCount = h('span', null, this.collapsedChildrenText)
-          this.$comhead.appendChild(this.$childCount)
-        }
-        toggleDisplay(this.$childCount, !this.isCollapsed)
-      }
+      this.updateChildCountDisplay()
 
       if (!excludeChildren) {
         for (let i = 0; i < this.nonMutedChildComments.length; i++) {
@@ -1108,9 +1148,7 @@ function itemPage() {
       }
 
       comment._nonMutedChildComments = null
-      if (comment.$childCount) {
-        comment.$childCount.textContent = comment.collapsedChildrenText
-      }
+      comment.updateChildCountDisplay()
     }
 
     hideMutedUsers()
