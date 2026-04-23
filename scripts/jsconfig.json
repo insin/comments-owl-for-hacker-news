@@ -1,12 +1,15 @@
 {
   "compilerOptions": {
     "checkJs": true,
+    "maxNodeModuleJsDepth": 0,
     "strict": false,
     "target": "es2024",
-    "types": ["chrome"]
+    "types": ["node"]
   },
   "include": [
-    "*.js",
-    "safari/Shared (App)/Resources/**/*.js"
+    "*.js"
+  ],
+  "exclude": [
+    "node_modules"
   ]
 }

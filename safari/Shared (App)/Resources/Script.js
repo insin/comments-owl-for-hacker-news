@@ -11,9 +11,11 @@ function show(platform, state) {
 }
 
 document.querySelector('button.open-preferences').addEventListener('click', () => {
+  // @ts-expect-error
   webkit.messageHandlers.controller.postMessage('open-preferences')
 })
 
 document.querySelector('.ad').addEventListener('click', () =>{
+  // @ts-expect-error
   webkit.messageHandlers.controller.postMessage('open-ad')
 })
