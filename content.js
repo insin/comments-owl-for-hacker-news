@@ -1564,9 +1564,10 @@ function userPage({$context = document, textAreaProps = {cols: 60}, onMutesChang
 
   let isCurrentUser = userId == currentUser || location.pathname.startsWith('/muted')
   let isUserPage = $context === document
+  let isHovercard = !isUserPage
 
   // Don't add anything if the current user is looking at their own hovercard
-  if (isCurrentUser && !isUserPage) return
+  if (isCurrentUser && isHovercard) return
 
   document.documentElement.toggleAttribute('user', isUserPage)
   if (isCurrentUser) {
@@ -1617,22 +1618,24 @@ function userPage({$context = document, textAreaProps = {cols: 60}, onMutesChang
     let $mutedUsers = createMutedUsers()
     $table.append($mutedUsers)
 
-    window.addEventListener('storage', (e) => {
-      if (e.storageArea !== localStorage ||
-          e.newValue == null ||
-          e.key != MUTED_USERS_KEY && e.key != USER_NOTES_KEY) {
-        return
-      }
+    // Only listen for mute and note changes in user pages
+    if (isUserPage) {
+      window.addEventListener('storage', (e) => {
+        if (e.storageArea !== localStorage ||
+            e.key != MUTED_USERS_KEY && e.key != USER_NOTES_KEY) {
+          return
+        }
 
-      if (e.key == MUTED_USERS_KEY) {
-        mutedUsers = getMutedUsers(e.newValue)
-      }
-      else if (e.key == USER_NOTES_KEY) {
-        userNotes = getUserNotes(e.newValue)
-      }
+        if (e.key == MUTED_USERS_KEY) {
+          mutedUsers = getMutedUsers(e.newValue)
+        }
+        else if (e.key == USER_NOTES_KEY) {
+          userNotes = getUserNotes(e.newValue)
+        }
 
-      replaceMutedUsers()
-    })
+        replaceMutedUsers()
+      })
+    }
     //#endregion
     //#endregion
   }
@@ -1691,7 +1694,11 @@ function userPage({$context = document, textAreaProps = {cols: 60}, onMutesChang
       // Don't save initial blanks or duplicates
       if (userNotes[userId] == note || note == '' && !userHasNote()) return
 
-      userNotes[userId] = $textArea.value.trim()
+      if (note == '') {
+        delete userNotes[userId]
+      } else {
+        userNotes[userId] = note
+      }
       storeUserNotes(userNotes)
       onNotesChanged?.()
 
@@ -1766,22 +1773,26 @@ function userPage({$context = document, textAreaProps = {cols: 60}, onMutesChang
 
     autosizeTextArea($textArea)
 
-    window.addEventListener('storage', (e) => {
-      if (e.storageArea !== localStorage || e.newValue == null) return
+    // Only listen for mute and note changes in user pages
+    if (isUserPage) {
+      window.addEventListener('storage', (e) => {
+        if (e.storageArea !== localStorage) return
 
-      if (e.key == MUTED_USERS_KEY) {
-        mutedUsers = getMutedUsers(e.newValue)
-        if ($muted.textContent != getMutedStatusText()) {
-          $muted.textContent = getMutedStatusText()
+        if (e.key == MUTED_USERS_KEY) {
+          mutedUsers = getMutedUsers(e.newValue)
+          if ($muted.textContent != getMutedStatusText()) {
+            $muted.textContent = getMutedStatusText()
+          }
         }
-      }
-      else if (e.key == USER_NOTES_KEY) {
-        userNotes = getUserNotes(e.newValue)
-        if (userHasNote() && $textArea.value.trim() != getUserNote()) {
-          $textArea.value = getUserNote()
+        else if (e.key == USER_NOTES_KEY) {
+          userNotes = getUserNotes(e.newValue)
+          if (document.activeElement != $textArea && $textArea.value.trim() != getUserNote()) {
+            $textArea.value = getUserNote()
+            autosizeTextArea($textArea)
+          }
         }
-      }
-    })
+      })
+    }
     //#endregion
     //#endregion
   }
