@@ -1,7 +1,9 @@
 const IS_SAFARI = navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test(navigator.userAgent)
+const MUTES_CHANGED_EVENT = 'comments-owl:mutes-changed'
 const MUTED_USERS_KEY = 'mutedUsers'
 const TOGGLE_HIDE = '[–]'
 const TOGGLE_SHOW = '[+]'
+const USER_NOTES_CHANGED_EVENT = 'comments-owl:user-notes-changed'
 const USER_NOTES_KEY = 'userNotes'
 
 const HN_LOGO_SVG = `
@@ -127,11 +129,13 @@ function getUserNotes(json = localStorage.getItem(USER_NOTES_KEY)) {
 /** @param {Set<string>} mutedUsers */
 function storeMutedUsers(mutedUsers) {
   localStorage.setItem(MUTED_USERS_KEY, JSON.stringify(Array.from(mutedUsers)))
+  window.dispatchEvent(new CustomEvent(MUTES_CHANGED_EVENT))
 }
 
 /** @param {Record<string, string>} userNotes */
 function storeUserNotes(userNotes) {
   localStorage.setItem(USER_NOTES_KEY, JSON.stringify(userNotes))
+  window.dispatchEvent(new CustomEvent(USER_NOTES_CHANGED_EVENT))
 }
 
 /**
@@ -499,6 +503,8 @@ function itemPage() {
   /** @type {Record<string, HNComment>} */
   let commentsById = {}
   let commentCount = 0
+  /** @type {Set<string>} */
+  let commentUsers = new Set()
   /** @type {FocusedComment} */
   let focusedComment
   let hasNewComments = false
@@ -732,7 +738,7 @@ function itemPage() {
       }
     }
 
-    updateDisplay({excludeChildren = false} = {}) {
+    updateOwnDisplay() {
       // Show/hide this comment, preserving display of the meta bar
       toggleDisplay(this.$comment, this.isCollapsed)
       if (this.$voteLinks) {
@@ -742,28 +748,10 @@ function itemPage() {
 
       // Show/hide the number of child comments when collapsed
       this.updateChildCountDisplay()
-
-      if (!excludeChildren) {
-        for (let i = 0; i < this.nonMutedChildComments.length; i++) {
-          let child = this.nonMutedChildComments[i]
-          toggleDisplay(child.$wrapper, this.isCollapsed)
-          if (child.isCollapsed) {
-            i += child.childComments.length
-          }
-        }
-      }
     }
 
     updateNote() {
       this.$note.textContent = userNotes[this.user] ? ` | nb: ${userNotes[this.user].split(/\r?\n/)[0]}` : ''
-    }
-
-    /**
-     * Completely hides this comment and its replies.
-     */
-    hide() {
-      toggleDisplay(this.$wrapper, true)
-      this.childComments.forEach((child) => toggleDisplay(child.$wrapper, true))
     }
 
     /** @param {number} commentId */
@@ -779,7 +767,7 @@ function itemPage() {
     /** @param {boolean} isCollapsed */
     toggleCollapsed(isCollapsed = !this.isCollapsed) {
       this.isCollapsed = isCollapsed
-      this.updateDisplay()
+      reconcileCommentVisibility()
     }
 
     /**
@@ -889,9 +877,12 @@ function itemPage() {
         i += comment.childComments.length
         continue
       }
-      sortedCommentIds.push(comment.id)
+      if (!comment.isDeleted) {
+        sortedCommentIds.push(comment.id)
+      }
     }
-    sortedCommentIds.sort()
+    if (sortedCommentIds.length == 0) return
+    sortedCommentIds.sort((a, b) => a - b)
 
     let showNewCommentsAfter = Math.max(0, sortedCommentIds.length - 1)
     let howMany = sortedCommentIds.length - showNewCommentsAfter
@@ -971,13 +962,71 @@ function itemPage() {
     }
   }
 
-  function hideMutedUsers() {
+  /** @param {Set<string>} nextMutedUsers */
+  function hasRelevantMuteChange(nextMutedUsers) {
+    for (let user of commentUsers) {
+      if (mutedUsers.has(user) != nextMutedUsers.has(user)) {
+        return true
+      }
+    }
+    return false
+  }
+
+  /** @param {Record<string, string>} nextUserNotes */
+  function getUserNoteChanges(nextUserNotes) {
+    let changedUsers = []
+    for (let user of commentUsers) {
+      if ((userNotes[user] || '') != (nextUserNotes[user] || '')) {
+        changedUsers.push(user)
+      }
+    }
+    return changedUsers
+  }
+
+  function updateMutedCommentCounts() {
+    mutedCommentCount = 0
+    replyToMutedCommentCount = 0
     for (let i = 0; i < comments.length; i++) {
       let comment = comments[i]
       if (comment.isMuted) {
-        comment.hide()
-        // Skip replies as hide() already hid them
+        mutedCommentCount++
+        for (let j = i + 1; j <= i + comment.childComments.length; j++) {
+          if (comments[j].isMuted) {
+            mutedCommentCount++
+          } else {
+            replyToMutedCommentCount++
+          }
+        }
+        // Skip child comments as we've already accounted for them
         i += comment.childComments.length
+      }
+    }
+  }
+
+  function reconcileCommentVisibility() {
+    /** @type {number | null} */
+    let collapsedAncestorIndent = null
+    /** @type {number | null} */
+    let mutedAncestorIndent = null
+
+    for (let comment of comments) {
+      if (collapsedAncestorIndent != null && comment.indent <= collapsedAncestorIndent) {
+        collapsedAncestorIndent = null
+      }
+      if (mutedAncestorIndent != null && comment.indent <= mutedAncestorIndent) {
+        mutedAncestorIndent = null
+      }
+
+      let hiddenByAncestor = collapsedAncestorIndent != null || mutedAncestorIndent != null
+      let hidden = hiddenByAncestor || comment.isMuted
+      toggleDisplay(comment.$wrapper, hidden)
+      comment.updateOwnDisplay()
+
+      if (comment.isMuted) {
+        mutedAncestorIndent = comment.indent
+      }
+      else if (!hidden && comment.isCollapsed) {
+        collapsedAncestorIndent = comment.indent
       }
     }
   }
@@ -1041,7 +1090,6 @@ function itemPage() {
     mutedUsers = getMutedUsers()
     mutedUsers.add(user)
     storeMutedUsers(mutedUsers)
-    updateMutedUsersDisplay()
   }
 
   function processCommentThread() {
@@ -1052,7 +1100,10 @@ function itemPage() {
     for (let $wrapper of commentWrappers) {
       let comment = new HNComment($wrapper, commentIndex++)
       comments.push(comment)
-      if (!comment.isMuted && !comment.isDeleted) {
+      if (comment.user) {
+        commentUsers.add(comment.user)
+      }
+      if (!comment.isDeleted) {
         commentsById[comment.id] = comment
       }
     }
@@ -1080,21 +1131,16 @@ function itemPage() {
       if (!comment.isDeleted && comment.isNewerThan(lastVisitMaxCommentId)) {
         newCommentCount++
       }
+    }
 
+    for (let comment of comments) {
       comment.addControls()
     }
 
-    // Update display of any comments which were already collapsed by HN's own
-    // functionality, e.g. deleted comments
-    for (let comment of comments) {
-      if (comment.isCollapsed) {
-        comment.updateDisplay({excludeChildren: true})
-      }
-    }
+    reconcileCommentVisibility()
 
-    hideMutedUsers()
-
-    maxCommentId = comments.map(comment => comment.id).sort().pop()
+    let commentIds = comments.filter(comment => !comment.isDeleted).map(comment => comment.id)
+    maxCommentId = commentIds.length > 0 ? Math.max(...commentIds) : -1
     hasNewComments = lastVisit != null && newCommentCount > 0
 
     // New comment highlighting for submission pages with a comment count
@@ -1136,22 +1182,14 @@ function itemPage() {
     addSubmissionPageControls()
   }
 
-  function updateMutedUsersDisplay() {
-    // Invalidate non-muted child caches and update child counts on any
-    // comments which have been collapsed.
-    for (let i = 0; i < comments.length; i++) {
-      let comment = comments[i]
-
-      if (comment.isMuted) {
-        i += comment.childComments.length
-        continue
-      }
-
+  /** @param {Set<string>} [nextMutedUsers] */
+  function updateMutedUsersDisplay(nextMutedUsers = getMutedUsers()) {
+    mutedUsers = nextMutedUsers
+    updateMutedCommentCounts()
+    for (let comment of comments) {
       comment._nonMutedChildComments = null
-      comment.updateChildCountDisplay()
     }
-
-    hideMutedUsers()
+    reconcileCommentVisibility()
   }
 
   function updateUserNotes(username) {
@@ -1164,19 +1202,29 @@ function itemPage() {
       }
     }
   }
+
+  function syncMutedUsers() {
+    let nextMutedUsers = getMutedUsers()
+    if (hasRelevantMuteChange(nextMutedUsers)) {
+      updateMutedUsersDisplay(nextMutedUsers)
+    } else {
+      mutedUsers = nextMutedUsers
+    }
+  }
+
+  function syncUserNotes() {
+    let nextUserNotes = getUserNotes()
+    let changedUsers = getUserNoteChanges(nextUserNotes)
+    userNotes = nextUserNotes
+    for (let user of changedUsers) {
+      updateUserNotes(user)
+    }
+  }
+
   //#endregion
 
   //#region Main
-  userHovercards({
-    onNotesChanged: (username) => {
-      userNotes = getUserNotes()
-      updateUserNotes(username)
-    },
-    onMutesChanged: () => {
-      mutedUsers = getMutedUsers()
-      updateMutedUsersDisplay()
-    },
-  })
+  userHovercards()
 
   // Figure out which type of item page we're on
   $submission = document.querySelector('.fatitem tr.submission')
@@ -1201,6 +1249,21 @@ function itemPage() {
   }
 
   processCommentThread()
+
+  window.addEventListener('storage', (e) => {
+    if (e.storageArea !== localStorage) return
+
+    if (e.key == MUTED_USERS_KEY) {
+      syncMutedUsers()
+    }
+    else if (e.key == USER_NOTES_KEY) {
+      syncUserNotes()
+    }
+  })
+
+  window.addEventListener(MUTES_CHANGED_EVENT, syncMutedUsers)
+
+  window.addEventListener(USER_NOTES_CHANGED_EVENT, syncUserNotes)
 
   chrome.storage.local.onChanged.addListener((changes) => {
     if (changes.clickHeaderToCollapse) {
@@ -1544,12 +1607,11 @@ let $userStyle
  * This is reused for user hovercards by pointing it at their DOM instead.
  * @param {{
  *   $context?: Document | HTMLElement
+ *   onMuted?: () => void
  *   textAreaProps?: any
- *   onMutesChanged?: () => void
- *   onNotesChanged?: () => void
  * }} options
  */
-function userPage({$context = document, textAreaProps = {cols: 60}, onMutesChanged, onNotesChanged} = {}) {
+function userPage({$context = document, onMuted = () => {}, textAreaProps = {cols: 60}} = {}) {
   let $userLink = /** @type {HTMLAnchorElement} */ ($context.querySelector('a.hnuser'))
   if ($userLink == null) {
     warn('invalid user')
@@ -1700,7 +1762,6 @@ function userPage({$context = document, textAreaProps = {cols: 60}, onMutesChang
         userNotes[userId] = note
       }
       storeUserNotes(userNotes)
-      onNotesChanged?.()
 
       if ($saved.classList.contains('show')) {
         $saved.classList.remove('show')
@@ -1758,7 +1819,7 @@ function userPage({$context = document, textAreaProps = {cols: 60}, onMutesChang
                   this.firstElementChild.innerText = 'unmute'
                 }
                 storeMutedUsers(mutedUsers)
-                onMutesChanged?.()
+                onMuted()
               }
             },
             $muted
@@ -2096,13 +2157,7 @@ function tagHeaderAndFooter() {
 //#endregion
 
 //#region User hovercards
-/**
- * @param {{
- *   onMutesChanged?: () => void
- *   onNotesChanged?: (username: string) => void
- * }} [options]
- */
-function userHovercards({onMutesChanged, onNotesChanged} = {}) {
+function userHovercards() {
   const CLOSE_DELAY_MS = 400
   const FADE_MS = 120
   const NOTE_TEXT_AREA_PROPS = {style: {width: '100%', maxHeight: '12em', overflowY: 'auto'}}
@@ -2304,13 +2359,7 @@ function userHovercards({onMutesChanged, onNotesChanged} = {}) {
     let username = $user.textContent
     let userPageOptions = {
       $context: $hovercard,
-      onMutesChanged: () => {
-        if (onMutesChanged) hideHovercard({immediate: true})
-        onMutesChanged?.()
-      },
-      onNotesChanged: () => {
-        onNotesChanged?.(username)
-      },
+      onMuted: () => hideHovercard({immediate: true}),
       textAreaProps: NOTE_TEXT_AREA_PROPS,
     }
 
