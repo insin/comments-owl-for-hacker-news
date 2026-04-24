@@ -220,17 +220,17 @@ function h(tagName, attributes, ...children) {
   let $el = document.createElement(tagName)
 
   if (attributes) {
-    for (let [prop, value] of Object.entries(attributes)) {
-      if (prop.indexOf('on') == 0) {
-        $el.addEventListener(prop.slice(2).toLowerCase(), value)
+    for (let [key, value] of Object.entries(attributes)) {
+      if (key.indexOf('on') == 0) {
+        $el.addEventListener(key.slice(2).toLowerCase(), value)
       }
-      else if (prop.toLowerCase() == 'style') {
+      else if (key.toLowerCase() == 'style') {
         for (let [styleProp, styleValue] of Object.entries(value)) {
           $el.style[styleProp] = styleValue
         }
       }
       else {
-        $el[prop] = value
+        $el[key] = value
       }
     }
   }
@@ -364,9 +364,8 @@ function warn(...args) {
  * comment id on the page and the current time as the last visit time.
  */
 function itemPage() {
-  if (document.body.childElementCount == 0 &&
-      document.body.textContent.includes('No such item')) {
-    warn('invalid item')
+  if (document.body.childElementCount == 0) {
+    warn('item error page')
     document.documentElement.setAttribute('unstyled', '')
     return
   }
@@ -1046,9 +1045,7 @@ function itemPage() {
               e.preventDefault()
               $form.removeAttribute('hidden')
               $reply.remove()
-            }},
-              'reply'
-            )
+            }}, 'reply')
           )
         )
         $cell.append($reply)
@@ -1332,7 +1329,27 @@ function itemPage() {
  * those.
  */
 function itemListPage() {
+  if (document.body.childElementCount == 0) {
+    warn('item list error page')
+    document.documentElement.setAttribute('unstyled', '')
+    return
+  }
   log('processing item list page')
+
+  const HIDE_AI_CONFIG_KEYS = [
+    'hideAiItems',
+    'hideAiTitleRegex',
+    'hideAiTitleRegexError',
+    'hideAiSiteRegex',
+    'hideAiSiteRegexError',
+  ]
+  const HIDE_CUSTOM_ITEMS_CONFIG_KEYS = [
+    'hideCustomItems',
+    'hideCustomTitleRegex',
+    'hideCustomTitleRegexError',
+    'hideCustomSiteRegex',
+    'hideCustomSiteRegexError',
+  ]
 
   //#region CSS
   addStyle('item-list', `
@@ -1345,34 +1362,88 @@ function itemListPage() {
         display: none;
       }
     }
+    .new-comments {
+      font-weight: bold;
+    }
   `)
   //#endregion
 
+  //#region State
+  /** @type {Map<string, HNListItem>} */
+  let commentItems = new Map()
+  /** @type {Set<string>} */
+  let itemIds = new Set()
+  //#endregion
+
+  //#region Classes
+  class HNListItem {
+    /** @param {Element} $row */
+    constructor($row) {
+      /** @type {string} */
+      this.id = $row.id
+
+      let $subline = $row.nextElementSibling?.querySelector('span.subline')
+      if (!$subline) return
+
+      this.$commentLink = $subline.querySelector(':scope > a[href^="item?id="]:last-child')
+      if (this.$commentLink) {
+        let commentCount = Number(/^(\d+)/.exec(this.$commentLink.textContent ?? '')?.[1] || 0)
+        let lastVisit = getLastVisit(this.id)
+        if (lastVisit && Number.isFinite(lastVisit.commentCount) && commentCount > lastVisit.commentCount) {
+          this.$new = h('span', null,
+            ' (', h('a', {className: 'new-comments', href: `item?shownew&id=${this.id}`},
+              `${commentCount - lastVisit.commentCount} new`
+            ), ')'
+          )
+          this.$commentLink.insertAdjacentElement('afterend', this.$new)
+        }
+      }
+
+      if (location.pathname != '/flagged') {
+        let $flag = $subline.querySelector(':scope > a[href^="flag"]')
+        $flag?.addEventListener('click', confirmFlag, true)
+      }
+      if (location.pathname != '/hidden') {
+        let $hide = $subline.querySelector(':scope > a[href^="hide"]')
+        $hide?.addEventListener('click', confirmHide, true)
+      }
+    }
+
+    /** @param {Visit} visit */
+    markAsRead(visit) {
+      if (!Number.isFinite(visit.commentCount)) return
+      this.$commentLink.textContent = `${visit.commentCount} comment${s(visit.commentCount)}`
+      if (this.$new) {
+        this.$new.remove()
+        this.$new = null
+      }
+    }
+  }
+  //#endregion
+
   //#region Functions
-  function confirmFlag(e) {
-    if (!config.preventAccidentally) return
+  function confirmAction(e, action) {
     let title = e.target.closest('tr').previousElementSibling.querySelector('.titleline a')?.textContent || 'this item'
-    if (!confirm(`Are you sure you want to flag "${title}"?`)) {
-      e.stopPropagation()
+    if (!confirm(`Are you sure you want to ${action} "${title}"?`)) {
+      log(`preventing ${action} on "${title}"`)
       e.stopImmediatePropagation()
+      e.stopPropagation()
       e.preventDefault()
       return false
     }
+  }
+
+  function confirmFlag(e) {
+    return config.preventAccidentally ? confirmAction(e, 'flag') : undefined
   }
 
   function confirmHide(e) {
-    if (!config.preventAccidentally) return
-    let title = e.target.closest('tr').previousElementSibling.querySelector('.titleline a')?.textContent || 'this item'
-    if (!confirm(`Are you sure you want to hide "${title}"?`)) {
-      e.stopPropagation()
-      e.stopImmediatePropagation()
-      e.preventDefault()
-      return false
-    }
+    return config.preventAccidentally ? confirmAction(e, 'hide') : undefined
   }
 
-  function toggleItemVisibility() {
-    if (!['/', '/active', '/ask', '/front', '/newest', '/news', '/show', '/shownew'].includes(location.pathname)) return
+  /** @param {NodeListOf<Element> | Element[]} $rows */
+  function toggleItemVisibility($rows = document.querySelectorAll('tr.submission')) {
+    if (isUserItemListPage()) return
 
     let aiTitleRe
     if (config.hideAiTitleRegexError || !config.hideAiTitleRegex) {
@@ -1399,107 +1470,94 @@ function itemListPage() {
       if (customSiteRe.source == '(?:)') customSiteRe = null
     }
 
-    let aiCount = 0
     let aiMatches = []
-    let customCount = 0
     let customMatches = []
-    let totalCount = 0
 
-    for (let $submission of document.querySelectorAll('tr.submission')) {
-      let isAi = false
-      let isCustom = false
-      let $link = $submission.querySelector('.titleline > a')
-      let $site = $submission.querySelector('.sitebit > a')
+    for (let $row of $rows) {
+      let hide = false
+      let $link = $row.querySelector('.titleline > a')
+      let $site = $row.querySelector('.sitebit > a')
 
       if (config.hideAiItems) {
-        if (debug) {
-          let match = $link?.textContent.match(aiTitleRe)
+        let match = $link?.textContent.match(aiTitleRe)
+        if (match) {
+          aiMatches.push(`[title] "${match[0]}" → ${$link.textContent}`)
+        }
+        hide = Boolean(match)
+        if (!hide) {
+          match = $site?.textContent.match(aiSiteRE)
           if (match) {
-            aiMatches.push(`[title] "${match[0]}" → ${$link.textContent}`)
+            aiMatches.push(`[site] ${$site.textContent} → ${$link.textContent}`)
           }
-        }
-        isAi = aiTitleRe.test($link?.textContent)
-        if (!isAi) {
-          if (debug) {
-            let match = $site?.textContent.match(aiSiteRE)
-            if (match) {
-              aiMatches.push(`[site] ${$site.textContent} → ${$link.textContent}`)
-            }
-          }
-          isAi = aiSiteRE.test($site?.textContent)
-        }
-        if (isAi) {
-          aiCount++
+          hide = Boolean(match)
         }
       }
 
-      if (!isAi && config.hideCustomItems) {
+      if (!hide && config.hideCustomItems) {
         if (customTitleRe) {
-          if (debug) {
-            let match = $link?.textContent.match(customTitleRe)
-            if (match) {
-              customMatches.push(`[title] "${match[0]}" → ${$link.textContent}`)
-            }
+          let match = $link?.textContent.match(customTitleRe)
+          if (match) {
+            customMatches.push(`[title] "${match[0]}" → ${$link.textContent}`)
           }
-          isCustom = customTitleRe.test($link?.textContent)
+          hide = Boolean(match)
         }
-        if (!isCustom && customSiteRe) {
-          if (debug) {
-            let match = $site?.textContent.match(customSiteRe)
-            if (match) {
-              customMatches.push(`[site] ${$site.textContent} → ${$link.textContent}`)
-            }
+        if (!hide && customSiteRe) {
+          let match = $site?.textContent.match(customSiteRe)
+          if (match) {
+            customMatches.push(`[site] ${$site.textContent} → ${$link.textContent}`)
           }
-          isCustom = customSiteRe.test($site?.textContent)
-        }
-        if (isCustom) {
-          customCount++
+          hide = Boolean(match)
         }
       }
 
-      totalCount++
-      $submission.classList.toggle('hidden', isAi || isCustom)
+      $row.classList.toggle('hidden', hide)
     }
 
-    if (config.hideAiItems) {
-      log(`${aiCount} "AI" item${s(aiCount)} hidden${
-        aiCount > 0 ? ` (${Math.round(aiCount / totalCount * 100)}%)` : ''
-      }${
-        aiMatches.length > 0 ? `\n${aiMatches.join('\n')}` : ''
-      }`)
+    if (config.hideAiItems && aiMatches.length > 0) {
+      log([
+        `${aiMatches.length} "AI" item${s(aiMatches.length)} hidden`,
+        $rows.length > 1 && aiMatches.length > 0 ? ` (${Math.round(aiMatches.length / $rows.length)}%)` : '',
+        `\n${aiMatches.join('\n')}`,
+      ].filter(Boolean).join(''))
     }
-    if (config.hideCustomItems && (customTitleRe || customSiteRe)) {
-      log(`${customCount} custom item${s(customCount)} hidden${
-        customCount > 0 ? ` (${Math.round(customCount / totalCount * 100)}%)` : ''
-      }${
-        customMatches.length > 0 ? `\n${customMatches.join('\n')}` : ''
-      }`)
+    if (config.hideCustomItems && (customTitleRe || customSiteRe) && customMatches.length > 0) {
+      log([
+        `${customMatches.length} custom item${s(customMatches.length)} hidden`,
+        $rows.length > 1 && customMatches.length > 0 ? ` (${Math.round(customMatches.length / $rows.length * 100)}%)` : '',
+        `\n${customMatches.join('\n')}`,
+      ].filter(Boolean).join(''))
     }
 
     // Adjust item numbers
     let rank = null
-    for (let $submission of document.querySelectorAll('tr.submission')) {
-      let $rank = $submission.querySelector('.rank')
+    for (let $row of document.querySelectorAll('tr.submission')) {
+      let $rank = $row.querySelector('.rank')
       if (rank == null) {
         rank = parseInt($rank.textContent)
       }
-      if (!$submission.classList.contains('hidden')) {
+      if (!$row.classList.contains('hidden')) {
         $rank.textContent = `${rank++}.`
       }
     }
   }
 
   function storeSubmissionIds() {
-    let submissionIds = [...document.querySelectorAll('tr.submission')].map($submission => $submission.id)
-    sessionStorage.submissionIds = JSON.stringify(submissionIds)
-    configureViewTransitionCss()
+    if (config.enableViewTransitions && config.listItemTransition) {
+      sessionStorage.submissionIds = JSON.stringify(itemIds)
+      configureViewTransitionCss()
+    }
   }
   //#endregion
 
   //#region Main
   document.documentElement.setAttribute('item-list', '')
-  if (config.enableViewTransitions && config.listItemTransition) {
-    storeSubmissionIds()
+
+  for (let $row of document.querySelectorAll('tr.submission')) {
+    let item = new HNListItem($row)
+    itemIds.add(item.id)
+    if (item.$commentLink) {
+      commentItems.set(item.id, item)
+    }
   }
 
   if (location.pathname != '/flagged') {
@@ -1514,58 +1572,49 @@ function itemListPage() {
     }
   }
 
-  let commentLinks = /** @type {NodeListOf<HTMLAnchorElement>} */ (document.querySelectorAll('span.subline > a[href^="item?id="]:last-child'))
-  log('number of comments/discuss links', commentLinks.length)
-
-  let noCommentsCount = 0
-  let noLastVisitCount = 0
-
-  for (let $commentLink of commentLinks) {
-    let id = $commentLink.href.split('=').pop()
-
-    let commentCountMatch = /^(\d+)/.exec($commentLink.textContent)
-    if (commentCountMatch == null) {
-      noCommentsCount++
-      continue
-    }
-
-    let lastVisit = getLastVisit(id)
-    if (lastVisit == null) {
-      noLastVisitCount++
-      continue
-    }
-
-    let commentCount = Number(commentCountMatch[1])
-    if (commentCount <= lastVisit.commentCount) {
-      log(`${id} doesn't have any new comments`, lastVisit)
-      continue
-    }
-
-    $commentLink.insertAdjacentElement('afterend',
-      h('span', null,
-        ' (',
-        h('a', {
-            href: `item?shownew&id=${id}`,
-            style: {fontWeight: 'bold'},
-          },
-          commentCount - lastVisit.commentCount,
-          ' new'
-        ),
-        ')',
-      )
-    )
-  }
-
-  if (noCommentsCount > 0) {
-    log(`${noCommentsCount} item${s(noCommentsCount, " doesn't,s don't")} have any comments`)
-  }
-  if (noLastVisitCount > 0) {
-    log(`${noLastVisitCount} item${s(noLastVisitCount, " doesn't,s don't")} have a last visit stored`)
-  }
-
   if (config.hideAiItems || config.hideCustomItems) {
     toggleItemVisibility()
   }
+
+  storeSubmissionIds()
+
+  // Watch for items being removed when hidden, and replacements being added
+  let $tbody = document.querySelector('#bigbox tbody')
+  if ($tbody) {
+    new MutationObserver((mutations) => {
+      for (let mutation of mutations) {
+        for (let $removed of mutation.removedNodes) {
+          if (!($removed instanceof HTMLElement) || !$removed.classList.contains('submission')) continue
+          itemIds.delete($removed.id)
+          commentItems.delete($removed.id)
+        }
+        for (let $added of mutation.addedNodes) {
+          if (!($added instanceof HTMLElement) || !$added.classList.contains('submission')) continue
+          log('new item added')
+          let item = new HNListItem($added)
+          itemIds.add(item.id)
+          if (item.$commentLink) {
+            commentItems.set(item.id, item)
+          }
+          if (config.hideAiItems || config.hideCustomItems) {
+            toggleItemVisibility([$added])
+          }
+        }
+      }
+      storeSubmissionIds()
+    }).observe($tbody, {childList: true})
+  }
+
+  // Update items when they're visited in other tabs
+  window.addEventListener('storage', (e) => {
+    if (e.storageArea !== localStorage) return
+    let item = commentItems.get(e.key)
+    if (!item) return
+    let visit = getLastVisit(item.id)
+    if (visit) {
+      item.markAsRead(visit)
+    }
+  })
 
   chrome.storage.local.onChanged.addListener((changes) => {
     // Store submissions if transitioning them is turned on
@@ -1576,22 +1625,19 @@ function itemListPage() {
     if (changes.preventAccidentally) {
       config.preventAccidentally = changes.preventAccidentally.newValue
     }
-    let hasHideAiChanges = false
-    for (let [configProp, change] of Object.entries(changes)) {
-      if (['hideAiItems', 'hideAiTitleRegex', 'hideAiTitleRegexError', 'hideAiSiteRegex', 'hideAiSiteRegexError'].includes(configProp)) {
-        // Reset regexes to the default when they're removed
-        config[configProp] = change.newValue === undefined ? defaultConfig[configProp] : change.newValue
-        hasHideAiChanges = true
+    let updateItemVisibility = false
+    for (let [key, change] of Object.entries(changes)) {
+      if (HIDE_AI_CONFIG_KEYS.includes(key)) {
+        // Reset "AI" regexes to the default if they're removed
+        config[key] = change.newValue === undefined ? defaultConfig[key] : change.newValue
+        updateItemVisibility = true
+      }
+      if (HIDE_CUSTOM_ITEMS_CONFIG_KEYS.includes(key)) {
+        config[key] = change.newValue
+        updateItemVisibility = true
       }
     }
-    let hasHideCustomChanges = false
-    for (let [configProp, change] of Object.entries(changes)) {
-      if (['hideCustomItems', 'hideCustomTitleRegex', 'hideCustomTitleRegexError', 'hideCustomSiteRegex', 'hideCustomSiteRegexError'].includes(configProp)) {
-        config[configProp] = change.newValue
-        hasHideCustomChanges = true
-      }
-    }
-    if (hasHideAiChanges || hasHideCustomChanges) {
+    if (updateItemVisibility) {
       toggleItemVisibility()
     }
   })
@@ -1612,28 +1658,35 @@ let $userStyle
  * }} options
  */
 function userPage({$context = document, onMuted = () => {}, textAreaProps = {cols: 60}} = {}) {
-  let $userLink = /** @type {HTMLAnchorElement} */ ($context.querySelector('a.hnuser'))
-  if ($userLink == null) {
-    warn('invalid user')
+  let isUserPage = $context === document
+  if (isUserPage && document.body.childElementCount == 0) {
+    warn('user error page')
     document.documentElement.setAttribute('unstyled', '')
     return
   }
 
+  let $userLink = /** @type {HTMLAnchorElement} */ ($context.querySelector('a.hnuser'))
+  if ($userLink == null) {
+    warn('a.hnuser not found')
+    if (isUserPage) {
+      document.documentElement.setAttribute('unstyled', '')
+    }
+    return
+  }
+
   let userId = $userLink.innerText
+  let isCurrentUser = userId == currentUser || location.pathname.startsWith('/muted')
+  // Don't do anything if the current user is looking at their own hovercard
+  if (isCurrentUser && !isUserPage) return
+
   let mutedUsers = getMutedUsers()
   let userNotes = getUserNotes()
   let $table = $userLink.closest('table')
 
-  let isCurrentUser = userId == currentUser || location.pathname.startsWith('/muted')
-  let isUserPage = $context === document
-  let isHovercard = !isUserPage
-
-  // Don't add anything if the current user is looking at their own hovercard
-  if (isCurrentUser && isHovercard) return
-
   document.documentElement.toggleAttribute('user', isUserPage)
   if (isCurrentUser) {
     //#region Current user's profile
+    //#region Functions
     function createMutedUsers() {
       if (mutedUsers.size == 0) {
         return h('tbody', null,
@@ -1673,36 +1726,34 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
       $mutedUsers.replaceWith($newMutedUsers)
       $mutedUsers = $newMutedUsers
     }
+    //#endregion
 
     //#region Main
     log('processing own user page')
     document.documentElement.setAttribute('current-user', '')
+
     let $mutedUsers = createMutedUsers()
     $table.append($mutedUsers)
 
-    // Only listen for mute and note changes in user pages
-    if (isUserPage) {
-      window.addEventListener('storage', (e) => {
-        if (e.storageArea !== localStorage ||
-            e.key != MUTED_USERS_KEY && e.key != USER_NOTES_KEY) {
-          return
-        }
-
-        if (e.key == MUTED_USERS_KEY) {
-          mutedUsers = getMutedUsers(e.newValue)
-        }
-        else if (e.key == USER_NOTES_KEY) {
-          userNotes = getUserNotes(e.newValue)
-        }
-
-        replaceMutedUsers()
-      })
-    }
+    window.addEventListener('storage', (e) => {
+      if (e.storageArea !== localStorage) return
+      if (e.key == MUTED_USERS_KEY) {
+        mutedUsers = getMutedUsers(e.newValue)
+      }
+      else if (e.key == USER_NOTES_KEY) {
+        userNotes = getUserNotes(e.newValue)
+      }
+      else {
+        return
+      }
+      replaceMutedUsers()
+    })
     //#endregion
     //#endregion
   }
   else {
     //#region Other user profile
+    //#region CSS
     if (!$userStyle) {
       $userStyle = addStyle('user', `
         .saved {
@@ -1736,7 +1787,9 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
         }
       `)
     }
+    //#endregion
 
+    //#region Functions
     function getMutedStatusText() {
       return mutedUsers.has(userId) ? 'unmute' : 'mute'
     }
@@ -1769,6 +1822,7 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
       }
       $saved.classList.add('show')
     }
+    //#endregion
 
     //#region Main
     if (isUserPage) {
@@ -1834,11 +1888,9 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
 
     autosizeTextArea($textArea)
 
-    // Only listen for mute and note changes in user pages
     if (isUserPage) {
       window.addEventListener('storage', (e) => {
         if (e.storageArea !== localStorage) return
-
         if (e.key == MUTED_USERS_KEY) {
           mutedUsers = getMutedUsers(e.newValue)
           if ($muted.textContent != getMutedStatusText()) {
@@ -1940,7 +1992,7 @@ function configureCustomCss(customCss = localStorage.customCss ?? '') {
 //#endregion
 
 //#region Navigation
-let NAV_CONFIG_KEYS = [
+const NAVIGATION_CONFIG_KEYS = [
   'addActiveToHeader',
   'addUpvotedToHeader',
   'hideCommentsNav',
@@ -1949,12 +2001,12 @@ let NAV_CONFIG_KEYS = [
   'hideSubmitNav',
 ]
 
-let navEnhanced = false
+let navigationProcessed = false
 
 /** @type {HTMLStyleElement} */
-let $navStyle
+let $navigationStyle
 
-function configureNavCss({
+function configureNavigationCss({
   hidePastNav = localStorage.hidePastNav == 'true',
   hideCommentsNav = localStorage.hideCommentsNav == 'true',
   hideJobsNav = localStorage.hideJobsNav == 'true',
@@ -1962,7 +2014,7 @@ function configureNavCss({
   addActiveToHeader = localStorage.addActiveToHeader == 'true',
   addUpvotedToHeader = localStorage.addUpvotedToHeader == 'true',
 } = {}) {
-  let hideNavSelectors = [
+  let hideSelectors = [
     hidePastNav && 'span.past-sep, span.past-sep + a',
     hideCommentsNav && 'span.comments-sep, span.comments-sep + a',
     hideJobsNav && 'span.jobs-sep, span.jobs-sep + a',
@@ -1971,35 +2023,32 @@ function configureNavCss({
     !addUpvotedToHeader && 'span.upvoted-sep, span.upvoted-sep + a',
   ].filter(Boolean)
   let css = dedent(`
-    ${hideNavSelectors.join(',\n')} {
+    ${hideSelectors.join(',\n')} {
       display: none;
     }
   `)
-  if (!$navStyle) {
-    $navStyle = addStyle('nav', css)
+  if (!$navigationStyle) {
+    $navigationStyle = addStyle('navigation', css)
   } else {
-    $navStyle.textContent = css
+    $navigationStyle.textContent = css
   }
 }
 
-function tweakNav() {
-  if (navEnhanced) return
+function processNavigation() {
+  if (navigationProcessed) return
 
-  let $pageTop = document.querySelector('span.pagetop')
-  if (!$pageTop) {
+  let $pagetop = document.querySelector('span.pagetop')
+  if (!$pagetop) {
     if (!loading) {
       warn('.pagetop not found')
     }
     return
   }
 
-  if (loading) {
-    log('navigation enhanced')
-  }
-  navEnhanced = true
+try {
 
-  if ($pageTop.querySelector(':scope > b:only-child')) {
-    log(`/${path} has no navigation items`)
+  if ($pagetop.querySelector(':scope > b:only-child')) {
+    log(`/${path} .pagetop has no navigation items`)
     return
   }
 
@@ -2014,26 +2063,26 @@ function tweakNav() {
   }
 
   let $active
-  let $lastNavLink = $pageTop.querySelector(':scope > a:last-of-type')
+  let $lastLink = $pagetop.querySelector(':scope > a:last-of-type')
 
   // Add /active if we're not on it
-  if ($lastNavLink && !location.pathname.startsWith('/active')) {
+  if ($lastLink && !location.pathname.startsWith('/active')) {
     $active = h('a', {href: 'active'}, 'active')
-    $lastNavLink.insertAdjacentElement('afterend', $active)
-    $lastNavLink.insertAdjacentElement('afterend', h('span', {className: 'active-sep'}, ' | '))
+    $lastLink.insertAdjacentElement('afterend', $active)
+    $lastLink.insertAdjacentElement('afterend', h('span', {className: 'active-sep'}, ' | '))
   }
 
   // Add /upvoted if we're not on it and the user is logged in
-  if ($lastNavLink && !location.pathname.startsWith('/upvoted')) {
+  if ($lastLink && !location.pathname.startsWith('/upvoted')) {
     let $userLink = document.querySelector('a#me')
     if ($userLink) {
       let $upvoted = h('a', {href: `upvoted?id=${$userLink.textContent}`}, 'upvoted')
       let $separator = h('span', {className: 'upvoted-sep'}, ' | ')
       if (location.pathname.startsWith('/active')) {
         // Add after the "active" page title so positioning is consistent
-        $pageTop.append($separator, $upvoted)
+        $pagetop.append($separator, $upvoted)
       } else {
-        let $target = $active || $lastNavLink
+        let $target = $active || $lastLink
         $target.insertAdjacentElement('afterend', $upvoted)
         $target.insertAdjacentElement('afterend', $separator)
       }
@@ -2041,7 +2090,7 @@ function tweakNav() {
   }
 
   // Wrap separators in elements so they can be used to hide items
-  for (let $node of $pageTop.childNodes) {
+  for (let $node of $pagetop.childNodes) {
     if ($node.nodeType == Node.TEXT_NODE && $node.nodeValue == ' | ') {
       $node.replaceWith(h('span', {
         className: `${$node.nextSibling?.nodeName == 'FONT' ? 'page-title' : $node.nextSibling?.textContent}-sep`,
@@ -2050,13 +2099,21 @@ function tweakNav() {
   }
 
   // Create a new row for mobile nav
-  let $mobileNav = /** @type {HTMLTableCellElement} */ ($pageTop.parentElement.cloneNode(true))
+  let $mobileNav = /** @type {HTMLTableCellElement} */ ($pagetop.parentElement.cloneNode(true))
   $mobileNav.querySelector('b.hnname')?.remove()
   $mobileNav.colSpan = 3
-  $pageTop.closest('tbody').append(h('tr', {className: 'mobilenav'}, $mobileNav))
+  $pagetop.closest('tbody').append(h('tr', {className: 'mobilenav'}, $mobileNav))
 
   // Move everything after b.hnname into a desktop nav wrapper
-  $pageTop.appendChild(h('span', {className: 'desktopnav'}, ...Array.from($pageTop.childNodes).slice(1)))
+  $pagetop.appendChild(h('span', {className: 'desktopnav'}, ...Array.from($pagetop.childNodes).slice(1)))
+
+} finally {
+  if (loading) {
+    log('pagetop processsed')
+  }
+  navigationProcessed = true
+}
+
 }
 //#endregion
 
@@ -2099,8 +2156,8 @@ const THEME_CONFIG_KEYS = [
   'pureBlack',
 ]
 
-let footerAnnotated = false
-let headerAnnotated = false
+let footerProcessed = false
+let headerProcessed = false
 let logoReplaced = false
 
 function setActiveSize() {
@@ -2120,38 +2177,38 @@ function setActiveTheme({
 }
 
 /**
- * We need to add ids to these ASAP to reduce flash of initial state.
+ * We need to add ids to these ASAP to reduce flash of initial style.
  */
-function tagHeaderAndFooter() {
-  if (headerAnnotated && footerAnnotated) return
+function processThemedHeaderAndFooter() {
+  if (headerProcessed && footerProcessed) return
 
-  let annotated = []
+  let processed = []
 
-  if (!headerAnnotated) {
+  if (!headerProcessed) {
     let $pageTop = document.querySelector('span.pagetop')
     if ($pageTop) {
       let $header = $pageTop.closest('td[bgcolor]')
       if ($header) {
         $header.id = 'header'
         $header.toggleAttribute('default', $header.getAttribute('bgcolor') == '#ff6600')
-        headerAnnotated = true
-        annotated.push('header')
+        headerProcessed = true
+        processed.push('header')
       }
     }
   }
 
-  if (!footerAnnotated) {
+  if (!footerProcessed) {
     let $footer = document.querySelector('#bigbox ~ tr td[bgcolor]:empty:not([id])')
     if ($footer) {
       $footer.id = 'footer'
       $footer.toggleAttribute('default', $footer.getAttribute('bgcolor') == '#ff6600')
-      footerAnnotated = true
-      annotated.push('footer')
+      footerProcessed = true
+      processed.push('footer')
     }
   }
 
-  if (annotated.length > 0) {
-    log(`${annotated.join(' and ')} annotated`)
+  if (processed.length > 0) {
+    log(`themed ${processed.join(' and ')} processed`)
   }
 }
 //#endregion
@@ -2195,16 +2252,17 @@ function userHovercards() {
   //#endregion
 
   //#region State
-  /** @type {ReturnType<typeof setTimeout>} */
+  /** @type {number} */
   let hideTimer
-  /** @type {ReturnType<typeof setTimeout>} */
+  /** @type {number} */
   let prefetchTimer
   /** @type {Map<string, import("./types").UserProfile>} */
   let profileData = new Map()
     /** @type {Map<string, Promise<import("./types").UserProfile>>} */
   let profileRequests = new Map()
-  /** @type {ReturnType<typeof setTimeout>} */
+  /** @type {number} */
   let showTimer
+
   /** @type {HTMLAnchorElement} */
   let $activeUser
   //#endregion
@@ -2435,7 +2493,7 @@ function userHovercards() {
 const LOCAL_STORAGE_SYNC_CONFIG = [
   [THEME_CONFIG_KEYS, setActiveTheme],
   [VIEW_TRANSITION_CONFIG_KEYS, configureViewTransitionCss],
-  [NAV_CONFIG_KEYS, configureNavCss],
+  [NAVIGATION_CONFIG_KEYS, configureNavigationCss],
 ]
 
 /** @type {string} */
@@ -2448,17 +2506,25 @@ let startMs = Date.now()
 
 function isItemListPage() {
   return (
-    /^($|active|ask|best($|\?)|flagged|front|hidden|invited|launches|news|newest|noobstories|pool|show|shownew|submitted|upvoted)/.test(path) ||
-    /^favorites/.test(path) && !location.search.includes('&comments=t')
+    /^(?:active|ask(?:new)?|best|classic|front|hidden|invited|launches|news|newest|noobstories|over|pool|show(?:new)?|submitted|upvoted|vouched)?$/.test(path) ||
+    /^flagged$/.test(path) && !location.search.includes('&kind=comment') ||
+    /^favorites$/.test(path) && !location.search.includes('&comments=t')
   )
 }
 
 function isItemPage() {
-  return /^item/.test(path)
+  return /^item$/.test(path)
+}
+
+/**
+ * @returns `true` when we're on an item list page showing things a user did.
+ */
+function isUserItemListPage() {
+  return /^(?:favorites|flagged|hidden|submitted|upvoted|vouched)$/.test(path)
 }
 
 function isUserProfilePage() {
-  return /^(user|muted)/.test(path)
+  return /^(?:user|muted)$/.test(path)
 }
 
 //#region document_start
@@ -2466,21 +2532,21 @@ function onDocumentStart({restart = false} = {}) {
   if (restart) {
     $viewTransitionStyle = null
     $customCssStyle = null
-    $navStyle = null
+    $navigationStyle = null
   }
 
   // @view-transition CSS needs to be applied immediately for pages to be eligible
   configureViewTransitionCss()
   configureCustomCss()
-  configureNavCss()
+  configureNavigationCss()
   setActiveSize()
   setActiveTheme()
 
-  if (!headerAnnotated || !logoReplaced || !navEnhanced) {
+  if (!headerProcessed || !logoReplaced || !navigationProcessed) {
     documentLoadingObserver = new MutationObserver(() => {
-      // Tag header td[bgcolor] for styling
-      if (!headerAnnotated) {
-        tagHeaderAndFooter()
+      // Prepare the themed td[bgcolor] header for styling
+      if (!headerProcessed) {
+        processThemedHeaderAndFooter()
       }
       // Replace HN's <img src="y18.svg"> with an inline version which can be styled
       if (!logoReplaced) {
@@ -2490,10 +2556,10 @@ function onDocumentStart({restart = false} = {}) {
           logoReplaced = true
         }
       }
-      // Tweak the nav bar when it loads
-      tweakNav()
+      // Process the navigation bar when it loads
+      processNavigation()
       // Stop observing if we've done everything we can
-      if (headerAnnotated && logoReplaced && navEnhanced && documentLoadingObserver) {
+      if (headerProcessed && logoReplaced && navigationProcessed && documentLoadingObserver) {
         documentLoadingObserver.disconnect()
         documentLoadingObserver = null
       }
@@ -2540,8 +2606,8 @@ function onDOMContentLoaded() {
     return
   }
 
-  tagHeaderAndFooter()
-  tweakNav()
+  processThemedHeaderAndFooter()
+  processNavigation()
   submitFirstTextAreaWithKeyboard()
 
   if (isItemListPage()) {
@@ -2595,7 +2661,10 @@ function main() {
     defaultConfig = settings.DEFAULT_CONFIG
     config = {...defaultConfig, ...storedConfig}
     debug = config.debug
-    log('effective config', config)
+    log('config', {
+      ...config,
+      customCss: `${config.customCss.slice(0, 50)}${config.customCss.length > 50 ? '…' : '}'}`,
+    })
 
     // Sync effective config with localStorage and apply any differences
     if (localStorage.debug != String(debug)) {
