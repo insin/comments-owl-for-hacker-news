@@ -1030,6 +1030,7 @@ function itemPage() {
     }
   }
 
+  // TODO Do this at document_start to reduce flash
   function toggleHideSubmissionCommentForm() {
     if (!$submission) return
     let $form = document.querySelector('form[action="comment"]')
