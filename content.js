@@ -1963,7 +1963,7 @@ function configureViewTransitionCss({
   `)
   if (!$viewTransitionStyle) {
     $viewTransitionStyle = addStyle('view-transitions', css)
-  } else {
+  } else if ($viewTransitionStyle.textContent != css) {
     $viewTransitionStyle.textContent = css
   }
 }
@@ -2029,7 +2029,7 @@ function configureNavigationCss({
   `)
   if (!$navigationStyle) {
     $navigationStyle = addStyle('navigation', css)
-  } else {
+  } else if ($navigationStyle.textContent != css) {
     $navigationStyle.textContent = css
   }
 }
@@ -2640,18 +2640,23 @@ function main() {
       }
       if (localStorage.customCss != changes.customCss.newValue) {
         localStorage.customCss = changes.customCss.newValue
-        configureCustomCss(changes.customCss.newValue)
       }
+      configureCustomCss(changes.customCss.newValue)
     }
     for (let [keys, fn] of LOCAL_STORAGE_SYNC_CONFIG) {
+      let changedConfig = {}
       for (let key of keys) {
-        if (!changes[key]) continue
-        let {newValue} = changes[key]
-        if (config) config[key] = newValue
-        if (localStorage.getItem(key) != String(newValue)) {
-          localStorage.setItem(key, newValue)
-          fn({[key]: newValue})
+        if (changes[key]) {
+          let {newValue} = changes[key]
+          if (config) config[key] = newValue
+          changedConfig[key] = newValue
+          if (localStorage.getItem(key) != String(newValue)) {
+            localStorage.setItem(key, newValue)
+          }
         }
+      }
+      if (Object.keys(changedConfig).length > 0) {
+        fn(config ?? changedConfig)
       }
     }
   })
@@ -2672,13 +2677,15 @@ function main() {
     }
     if (localStorage.customCss != config.customCss) {
       localStorage.customCss = config.customCss
-      configureCustomCss(config.customCss)
     }
+    configureCustomCss(config.customCss)
     for (let [keys, fn] of LOCAL_STORAGE_SYNC_CONFIG) {
-      if (keys.some(key => localStorage.getItem(key) != String(config[key]))) {
-        for (let key of keys) localStorage.setItem(key, config[key])
-        fn(config)
+      for (let key of keys) {
+        if (localStorage.getItem(key) != String(config[key])) {
+          localStorage.setItem(key, config[key])
+        }
       }
+      fn(config)
     }
 
     if (document.readyState == 'loading') {
