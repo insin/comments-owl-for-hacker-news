@@ -55,7 +55,7 @@ body.browser-mac.browserAction {
 }
 
 body.browser-firefox .viewTransitionsOption,
-body:is(.browser-ios, .tab) #customCssInfo,
+body.tab #customCssInfo,
 body:not(.darkMode) .darkMode,
 body:not(.hidingAiItems) .hidingAiItems,
 body:not(.hidingCustomItems) .hidingCustomItems,
