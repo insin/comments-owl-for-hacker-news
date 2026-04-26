@@ -516,6 +516,7 @@ function configureItemPageCss() {
 
 //#region Global functions
 /**
+ * Side-effect: adds `[submission-item]` or `[comment-item]` to `<html>`.
  * @returns {boolean} `true` when no further observation is needed.
  */
 function toggleHideSubmissionCommentForm({
@@ -523,12 +524,26 @@ function toggleHideSubmissionCommentForm({
   hide = config.hideSubmissionCommentForm,
 } = {}) {
   if (!$item) return
-  if (!$item.classList.contains('submission')) return true
+  if (!$item.classList.contains('submission')) {
+    document.documentElement.setAttribute('comment-item', '')
+    return true
+  }
+  document.documentElement.setAttribute('submission-item', '')
+
   let $form = document.querySelector('form[action="comment"]')
-  if (!$form) return
+  if (!$form) {
+    // If .comment-tree has loaded but there's no form, we're done
+    if (document.querySelector('.comment-tree')) {
+      log('no comment form on this submission')
+      return true
+    }
+    return
+  }
+
   let $cell = $form.closest('td')
   if (!$cell) return
   let $reply = $cell.querySelector('#submission-reply')
+
   if (hide) {
     log('hiding submission comment form')
     if (!$reply) {
@@ -1311,10 +1326,8 @@ function itemPage() {
 
   // Figure out which type of item page we're on
   $submission = document.querySelector('.fatitem tr.submission')
-  document.documentElement.setAttribute('item', '')
   if ($submission) {
     log('processing submission item page')
-    document.documentElement.setAttribute('submission-item', '')
     toggleHideSubmissionCommentForm({$item: $submission})
     $submissionCommentCount = document.querySelector('td.subtext .subline > a[href^=item]')
     if ($submissionCommentCount) {
@@ -1324,7 +1337,6 @@ function itemPage() {
     }
   } else {
     log('processing comment item page')
-    document.documentElement.setAttribute('comment-item', '')
     let $focusedComment = /** @type {HTMLElement} */ (document.querySelector('.fatitem tr.athing'))
     if ($focusedComment) {
       focusedComment = new FocusedComment($focusedComment)
@@ -1636,8 +1648,6 @@ function itemListPage() {
   //#endregion
 
   //#region Main
-  document.documentElement.setAttribute('item-list', '')
-
   for (let $row of document.querySelectorAll('tr.submission')) {
     let item = new HNListItem($row)
     itemIds.add(item.id)
@@ -2582,8 +2592,15 @@ function onDocumentStart({restart = false} = {}) {
   setActiveSize()
   setActiveTheme()
 
-  if (isItemPage()) {
+  if (isItemListPage()) {
+    document.documentElement.setAttribute('item-list', '')
+  }
+  else if (isItemPage()) {
+    document.documentElement.setAttribute('item', '')
     configureItemPageCss()
+  }
+  else if (isUserProfilePage()) {
+    document.documentElement.setAttribute('user', '')
   }
 
   startupObserver = new MutationObserver(() => {
@@ -2603,8 +2620,8 @@ function onDocumentStart({restart = false} = {}) {
     processNavigation()
     // Page-specific features which benefit from early processing
     let pageStartupProcessed = true
-    if (isItemPage() && config.hideSubmissionCommentForm) {
-      pageStartupProcessed = toggleHideSubmissionCommentForm({hide: true})
+    if (isItemPage()) {
+      pageStartupProcessed = toggleHideSubmissionCommentForm()
     }
     // Stop observing if we've done everything we can
     if (headerProcessed && logoReplaced && navigationProcessed && pageStartupProcessed && startupObserver) {
