@@ -1184,9 +1184,10 @@ function itemPage() {
   }
 
   function muteUser(user) {
-    mutedUsers = getMutedUsers()
-    mutedUsers.add(user)
-    storeMutedUsers(mutedUsers)
+    let nextMutedUsers = getMutedUsers()
+    nextMutedUsers.add(user)
+    storeMutedUsers(nextMutedUsers)
+    updateMutedUsersDisplay(nextMutedUsers)
   }
 
   function processCommentThread() {
