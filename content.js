@@ -1629,7 +1629,7 @@ function itemListPage() {
 
   function storeSubmissionIds() {
     if (config.enableViewTransitions && config.listItemTransition) {
-      sessionStorage.submissionIds = JSON.stringify(itemIds)
+      sessionStorage.submissionIds = JSON.stringify([...itemIds])
       configureViewTransitionCss()
     }
   }
