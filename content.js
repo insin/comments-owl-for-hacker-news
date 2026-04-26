@@ -629,11 +629,9 @@ function itemPage() {
   let lastVisit
   /** @type {number} */
   let maxCommentId
-  let mutedCommentCount = 0
   /** @type {Set<string>} */
   let mutedUsers = getMutedUsers()
   let newCommentCount = 0
-  let replyToMutedCommentCount = 0
   /** @type {Record<string, string>} */
   let userNotes = getUserNotes()
 
@@ -679,11 +677,14 @@ function itemPage() {
       /** @type {HTMLElement} */
       this.$wrapper = $wrapper
 
-      /** @type {HNComment[]} */
-      this._childComments = null
+      /** @type {boolean} */
+      this._hidden = false
 
-      /** @type {HNComment[]} */
-      this._nonMutedChildComments = null
+      /** @type {HNComment | null} */
+      this.parent = null
+
+      /** @type {number} */
+      this.subtreeEndIndex = index
 
       /**
        * The comment's id.
@@ -712,8 +713,7 @@ function itemPage() {
 
       /**
        * The displayed age of the comment; `${n} minutes/hours/days ago`, or
-       * `on ${date}` for older comments.
-       * Will be blank for deleted comments.
+       * `on ${date}` for older comments. Will be blank for deleted comments.
        * @type {string}
        */
       this.when = ''
@@ -730,7 +730,9 @@ function itemPage() {
       /** @type {HTMLElement} */
       this.$toggleControl = h('button', {
         className: 'toggle',
-        onclick: () => this.toggleCollapsed(),
+        onclick: () => {
+          this.toggleCollapsed()
+        },
       }, this.isCollapsed ? TOGGLE_SHOW : TOGGLE_HIDE)
 
       if (!this.isDeleted) {
@@ -747,92 +749,26 @@ function itemPage() {
       })
     }
 
+    get collapsedChildrenLabel() {
+      let visibleDescendantCount = this.visibleDescendantCount
+      return `(${visibleDescendantCount} child${s(visibleDescendantCount, 'ren')})`
+    }
+
     get isMuted() {
       return mutedUsers.has(this.user)
     }
 
-    get childComments() {
-      if (this._childComments == null) {
-        this._childComments = []
-        for (let i = this.index + 1; i < comments.length; i++) {
-          if (comments[i].indent <= this.indent) {
-            break
-          }
-          this._childComments.push(comments[i])
+    get visibleDescendantCount() {
+      let count = 0
+      for (let i = this.index + 1; i <= this.subtreeEndIndex; i++) {
+        let comment = comments[i]
+        if (comment.isMuted) {
+          i = comment.subtreeEndIndex
+          continue
         }
+        count++
       }
-      return this._childComments
-    }
-
-    get collapsedChildrenLabel() {
-      return `(${this.childCommentCount} child${s(this.childCommentCount, 'ren')})`
-    }
-
-    get nonMutedChildComments() {
-      if (this._nonMutedChildComments == null) {
-        let muteIndent = null
-        this._nonMutedChildComments = this.childComments.filter(comment => {
-          if (muteIndent != null) {
-            if (comment.indent > muteIndent) {
-              return false
-            }
-            muteIndent = null
-          }
-
-          if (comment.isMuted) {
-            muteIndent = comment.indent
-            return false
-          }
-
-          return true
-        })
-      }
-      return this._nonMutedChildComments
-    }
-
-    get childCommentCount() {
-      return this.nonMutedChildComments.length
-    }
-
-    createChildCountControl() {
-      this.$childCountControl = h('button', {
-        className: 'child-count-toggle',
-        onclick: (e) => {
-          e.stopPropagation()
-          this.toggleCollapsed(false)
-        },
-        type: 'button',
-      }, this.collapsedChildrenLabel)
-
-      this.$childCount = h('span', {
-        className: 'child-count',
-      }, this.isDeleted ? '' : ' | ', this.$childCountControl)
-
-      this.$comhead.appendChild(this.$childCount)
-    }
-
-    removeChildCountControl() {
-      this.$childCount?.remove()
-      this.$childCount = null
-      this.$childCountControl = null
-    }
-
-    updateChildCountControl() {
-      this.$childCountControl.textContent = this.collapsedChildrenLabel
-    }
-
-    updateChildCountDisplay() {
-      if (this.childCommentCount == 0) {
-        this.removeChildCountControl()
-      }
-      else if (this.$childCount) {
-        this.updateChildCountControl()
-        toggleDisplay(this.$childCount, !this.isCollapsed)
-      }
-      else if (this.isCollapsed) {
-        this.createChildCountControl()
-        toggleDisplay(this.$childCount, false)
-      }
+      return count
     }
 
     addControls() {
@@ -865,6 +801,71 @@ function itemPage() {
       }
     }
 
+    createChildCountControl() {
+      this.$childCountControl = h('button', {
+        className: 'child-count-toggle',
+        onclick: (e) => {
+          e.stopPropagation()
+          this.toggleCollapsed()
+        },
+        type: 'button',
+      }, this.collapsedChildrenLabel)
+
+      this.$childCount = h('span', {
+        className: 'child-count',
+      }, this.isDeleted ? '' : ' | ', this.$childCountControl)
+
+      this.$comhead.appendChild(this.$childCount)
+    }
+
+    /** @param {number} commentId */
+    hasVisibleDescendantNewerThan(commentId) {
+      for (let i = this.index + 1; i <= this.subtreeEndIndex; i++) {
+        let comment = comments[i]
+        if (comment.isMuted) {
+          i = comment.subtreeEndIndex
+          continue
+        }
+        if (comment.isNewerThan(commentId)) {
+          return true
+        }
+      }
+      return false
+    }
+
+    /** @param {number} commentId */
+    isNewerThan(commentId) {
+      return this.id > commentId
+    }
+
+    removeChildCountControl() {
+      this.$childCount?.remove()
+      this.$childCount = null
+      this.$childCountControl = null
+    }
+
+    updateChildCountControl() {
+      this.$childCountControl.textContent = this.collapsedChildrenLabel
+    }
+
+    updateChildCountDisplay() {
+      if (this.visibleDescendantCount == 0) {
+        this.removeChildCountControl()
+      }
+      else if (this.$childCount) {
+        this.updateChildCountControl()
+        toggleDisplay(this.$childCount, !this.isCollapsed)
+      }
+      else if (this.isCollapsed) {
+        this.createChildCountControl()
+        toggleDisplay(this.$childCount, false)
+      }
+    }
+
+    updateNote() {
+      this.$note.textContent = userNotes[this.user] ? ` | nb: ${userNotes[this.user].split(/\r?\n/)[0]}` : ''
+    }
+
     updateOwnDisplay() {
       // Show/hide this comment, preserving display of the meta bar
       toggleDisplay(this.$comment, this.isCollapsed)
@@ -873,29 +874,21 @@ function itemPage() {
       }
       this.$toggleControl.textContent = this.isCollapsed ? TOGGLE_SHOW : TOGGLE_HIDE
 
-      // Show/hide the number of child comments when collapsed
+      // Show/hide the number of child comments
       this.updateChildCountDisplay()
     }
 
-    updateNote() {
-      this.$note.textContent = userNotes[this.user] ? ` | nb: ${userNotes[this.user].split(/\r?\n/)[0]}` : ''
-    }
-
-    /** @param {number} commentId */
-    hasChildCommentsNewerThan(commentId) {
-      return this.nonMutedChildComments.some((comment) => comment.isNewerThan(commentId))
-    }
-
-    /** @param {number} commentId */
-    isNewerThan(commentId) {
-      return this.id > commentId
-    }
-
     /** @param {boolean} isCollapsed */
-    toggleCollapsed(isCollapsed = !this.isCollapsed) {
+    setCollapsed(isCollapsed) {
+      if (this.isCollapsed == isCollapsed) return
       this.isCollapsed = isCollapsed
       this.$wrapper.classList.toggle('coll', isCollapsed)
-      reconcileCommentVisibility()
+      return true
+    }
+
+    toggleCollapsed() {
+      this.setCollapsed(!this.isCollapsed)
+      updateCommentVisibility()
     }
 
     /**
@@ -1002,7 +995,7 @@ function itemPage() {
       let comment = comments[i]
       if (comment.isMuted) {
         // Skip muted comments and their replies as they're always hidden
-        i += comment.childComments.length
+        i = comment.subtreeEndIndex
         continue
       }
       if (!comment.isDeleted) {
@@ -1069,24 +1062,28 @@ function itemPage() {
    * @param {number} referenceCommentId
    */
   function collapseThreadsWithoutNewComments(collapse, referenceCommentId) {
+    let changed = false
     for (let i = 0; i < comments.length; i++) {
       let comment = comments[i]
       if (comment.isMuted) {
         // Skip muted comments and their replies as they're always hidden
-        i += comment.childComments.length
+        i = comment.subtreeEndIndex
         continue
       }
       let shouldToggleCollapse = !comment.isNewerThan(referenceCommentId) &&
-                                 !comment.hasChildCommentsNewerThan(referenceCommentId)
+                                 !comment.hasVisibleDescendantNewerThan(referenceCommentId)
       if (shouldToggleCollapse) {
-        comment.toggleCollapsed(collapse)
+        changed = comment.setCollapsed(collapse) || changed
         // Skip replies as we've already checked them
-        i += comment.childComments.length
+        i = comment.subtreeEndIndex
       }
       else if (comment.isCollapsed) {
         // Expand comments which are collapsed but should no longer be
-        comment.toggleCollapsed(false)
+        changed = comment.setCollapsed(false) || changed
       }
+    }
+    if (changed) {
+      updateCommentVisibility()
     }
   }
 
@@ -1111,54 +1108,6 @@ function itemPage() {
     return changedUsers
   }
 
-  function updateMutedCommentCounts() {
-    mutedCommentCount = 0
-    replyToMutedCommentCount = 0
-    for (let i = 0; i < comments.length; i++) {
-      let comment = comments[i]
-      if (comment.isMuted) {
-        mutedCommentCount++
-        for (let j = i + 1; j <= i + comment.childComments.length; j++) {
-          if (comments[j].isMuted) {
-            mutedCommentCount++
-          } else {
-            replyToMutedCommentCount++
-          }
-        }
-        // Skip child comments as we've already accounted for them
-        i += comment.childComments.length
-      }
-    }
-  }
-
-  function reconcileCommentVisibility() {
-    /** @type {number | null} */
-    let collapsedAncestorIndent = null
-    /** @type {number | null} */
-    let mutedAncestorIndent = null
-
-    for (let comment of comments) {
-      if (collapsedAncestorIndent != null && comment.indent <= collapsedAncestorIndent) {
-        collapsedAncestorIndent = null
-      }
-      if (mutedAncestorIndent != null && comment.indent <= mutedAncestorIndent) {
-        mutedAncestorIndent = null
-      }
-
-      let hiddenByAncestor = collapsedAncestorIndent != null || mutedAncestorIndent != null
-      let hidden = hiddenByAncestor || comment.isMuted
-      toggleDisplay(comment.$wrapper, hidden)
-      comment.updateOwnDisplay()
-
-      if (comment.isMuted) {
-        mutedAncestorIndent = comment.indent
-      }
-      else if (!hidden && comment.isCollapsed) {
-        collapsedAncestorIndent = comment.indent
-      }
-    }
-  }
-
   /**
    * Toggles highlighting comments newer than the given comment id.
    * @param {boolean} highlight
@@ -1169,7 +1118,7 @@ function itemPage() {
       let comment = comments[i]
       if (comment.isMuted) {
         // Skip muted comments and their replies as they're always hidden
-        i += comment.childComments.length
+        i = comment.subtreeEndIndex
         continue
       }
       let shouldHighlight = comment.isNewerThan(referenceCommentId)
@@ -1192,7 +1141,7 @@ function itemPage() {
 
   function processCommentThread() {
     let commentWrappers = /** @type {NodeListOf<HTMLElement>} */ (document.querySelectorAll('.comment-tree tr.athing'))
-    log(commentWrappers.length, `comment element${s(commentWrappers.length)}`)
+    log(`${commentWrappers.length} comment element${s(commentWrappers.length)}`)
 
     let commentIndex = 0
     for (let $wrapper of commentWrappers) {
@@ -1206,26 +1155,28 @@ function itemPage() {
       }
     }
 
+    let ancestorStack = []
+    for (let comment of comments) {
+      while (ancestorStack.length > 0 && ancestorStack[ancestorStack.length - 1].indent >= comment.indent) {
+        ancestorStack.pop().subtreeEndIndex = comment.index - 1
+      }
+      comment.parent = ancestorStack.at(-1) ?? null
+      ancestorStack.push(comment)
+    }
+    while (ancestorStack.length > 0) {
+      ancestorStack.pop().subtreeEndIndex = comments.length - 1
+    }
+
+    // Count new comments
     let lastVisitMaxCommentId = lastVisit?.maxCommentId ?? Infinity
     for (let i = 0; i < comments.length; i++) {
       let comment = comments[i]
-
+      // Don't consider muted comments or their replies
       if (comment.isMuted) {
-        mutedCommentCount++
-        for (let j = i + 1; j <= i + comment.childComments.length; j++) {
-          if (comments[j].isMuted) {
-            mutedCommentCount++
-          } else {
-            replyToMutedCommentCount++
-          }
-        }
-        // Skip child comments as we've already accounted for them
-        i += comment.childComments.length
-        // Don't consider muted comments or their replies when counting new
-        // comments, or add controls to them, as they'll all be hidden.
+        // Skip child comments
+        i = comment.subtreeEndIndex
         continue
       }
-
       if (!comment.isDeleted && comment.isNewerThan(lastVisitMaxCommentId)) {
         newCommentCount++
       }
@@ -1235,7 +1186,7 @@ function itemPage() {
       comment.addControls()
     }
 
-    reconcileCommentVisibility()
+    updateCommentVisibility()
 
     let commentIds = comments.filter(comment => !comment.isDeleted).map(comment => comment.id)
     maxCommentId = commentIds.length > 0 ? Math.max(...commentIds) : -1
@@ -1271,8 +1222,6 @@ function itemPage() {
         maxCommentId,
         newCommentCount,
         hasNewComments,
-        mutedCommentCount,
-        replyToMutedCommentCount,
       })
     }
 
@@ -1280,14 +1229,23 @@ function itemPage() {
     addSubmissionPageControls()
   }
 
+  function updateCommentVisibility() {
+    for (let comment of comments) {
+      let hiddenByAncestor = Boolean(
+        comment.parent &&
+        (comment.parent._hidden || comment.parent.isMuted || comment.parent.isCollapsed)
+      )
+      let hidden = hiddenByAncestor || comment.isMuted
+      comment._hidden = hidden
+      toggleDisplay(comment.$wrapper, hidden)
+      comment.updateOwnDisplay()
+    }
+  }
+
   /** @param {Set<string>} [nextMutedUsers] */
   function updateMutedUsersDisplay(nextMutedUsers = getMutedUsers()) {
     mutedUsers = nextMutedUsers
-    updateMutedCommentCounts()
-    for (let comment of comments) {
-      comment._nonMutedChildComments = null
-    }
-    reconcileCommentVisibility()
+    updateCommentVisibility()
   }
 
   function updateUserNotes(username) {
