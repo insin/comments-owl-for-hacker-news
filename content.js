@@ -371,10 +371,6 @@ let $itemPageStaticStyle
 
 function configureItemPageCss() {
   $itemPageStaticStyle ??= addStyle('item', `
-    /* Reduce gap between submission and comments */
-    .fatitem + br {
-      display: none;
-    }
     /* Remove 1px gap between comments */
     .comment-tree {
       border-collapse: collapse;
