@@ -3,7 +3,7 @@
     "message": "Comments Owl for Hacker News"
   },
   "extensionDescription": {
-    "message": "Highlight new comments, mute users, and other tweaks for Hacker News",
+    "message": "Highlight new comments, mute & note users, filter items, dark mode, custom CSS and other tweaks for Hacker News",
     "description": "<= 112 characters"
   },
   "addActiveToHeader": {
@@ -16,16 +16,16 @@
     "message": "Appearance"
   },
   "autoCollapseNotNew": {
-    "message": "Auto collapse threads without new comments"
+    "message": "Auto-collapse threads without new comments"
   },
   "autoHighlightNew": {
-    "message": "Auto highlight new comments"
+    "message": "Auto-highlight new comments on submissions"
   },
   "clickHeaderToCollapse": {
-    "message": "Click comment header to collapse"
+    "message": "Click comment headers to toggle threads"
   },
-  "commentPagesOptions": {
-    "message": "Comment pages"
+  "commentsOptions": {
+    "message": "Comments"
   },
   "customCss": {
     "message": "Custom CSS"
@@ -51,6 +51,21 @@
   "hideAiItemsMenuItem": {
     "message": "Hide \"AI\" Items"
   },
+  "hideCollapsedNavs": {
+    "message": "Hide nav links on collapsed comments"
+  },
+  "hideComheadNext": {
+    "message": "Hide \"next\""
+  },
+  "hideComheadParent": {
+    "message": "Hide \"parent\""
+  },
+  "hideComheadPrev": {
+    "message": "Hide \"prev\""
+  },
+  "hideComheadRoot": {
+    "message": "Hide \"root\""
+  },
   "hideCommentsNav": {
     "message": "Hide \"comments\""
   },
@@ -75,6 +90,9 @@
   "hideSubmitNav": {
     "message": "Hide \"submit\""
   },
+  "itemPagesOptions": {
+    "message": "Item pages"
+  },
   "listItemTransition": {
     "message": "List → item transition"
   },
@@ -97,7 +115,7 @@
     "message": "Prevent accidental flagging & hiding"
   },
   "preventAccidentallyInfo": {
-    "message": "Makes flagging & hiding require confirmation"
+    "message": "Adds a confirm() step"
   },
   "pureBlack": {
     "message": "Pure black (OLED)"
@@ -121,7 +139,7 @@
     "message": "Site regex"
   },
   "submitTextAreaWithKeyboard": {
-    "message": "Submit comments and forms with $SHORTCUT$",
+    "message": "Submit from textareas with $SHORTCUT$",
     "placeholders": {
       "SHORTCUT": {
         "content": "$1"
@@ -130,5 +148,8 @@
   },
   "titleRegex": {
     "message": "Title regex"
+  },
+  "uxOptions": {
+    "message": "UX"
   }
 }

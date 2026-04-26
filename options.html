@@ -22,7 +22,7 @@
             <input type="checkbox" name="preventAccidentally">
             <span class="toggle"></span>
           </label>
-          <p id="preventAccidentallyInfo">Makes flagging & hiding require confirmation</p>
+          <p id="preventAccidentallyInfo">Adds a confirm() step</p>
         </section>
         <section class="checkbox">
           <label>
@@ -70,38 +70,38 @@
     </section>
 
     <section class="group labelled collapsible">
-      <label data-collapse-id="comment">
+      <label data-collapse-id="item">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">
           <path d="m6.24 8.999 3.614-3.613a.498.498 0 0 0 0-.707.5.5 0 0 0-.707 0L5.999 7.826 2.854 4.68a.5.5 0 0 0-.707.707L5.759 9l.481-.001z"/>
         </svg>
-        <span id="commentPagesOptions">Comment pages</span>
+        <span id="itemPagesOptions">Item pages</span>
       </label>
       <div class="options">
         <section class="checkbox">
           <label>
-            <span id="autoHighlightNew">Auto highlight new comments</span>
-            <input type="checkbox" name="autoHighlightNew">
+            <span id="makeSubmissionTextReadable">Increase contrast of submission text</span>
+            <input type="checkbox" name="makeSubmissionTextReadable">
             <span class="toggle"></span>
           </label>
         </section>
         <section class="checkbox">
           <label>
-            <span id="autoCollapseNotNew">Auto collapse threads without new comments</span>
-            <input type="checkbox" name="autoCollapseNotNew">
-            <span class="toggle"></span>
-          </label>
-        </section>
-        <section class="checkbox">
-          <label>
-            <span id="hideSubmissionCommentForm">Hide submission comment form behind a "reply" link</span>
+            <span id="hideSubmissionCommentForm">Hide submission comment form behind "reply" link</span>
             <input type="checkbox" name="hideSubmissionCommentForm">
             <span class="toggle"></span>
           </label>
         </section>
         <section class="checkbox">
           <label>
-            <span id="clickHeaderToCollapse">Click comment header to collapse</span>
-            <input type="checkbox" name="clickHeaderToCollapse">
+            <span id="autoHighlightNew">Auto-highlight new comments on submissions</span>
+            <input type="checkbox" name="autoHighlightNew">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="autoCollapseNotNew">Auto-collapse threads without new comments</span>
+            <input type="checkbox" name="autoCollapseNotNew">
             <span class="toggle"></span>
           </label>
         </section>
@@ -112,17 +112,56 @@
             <span class="toggle"></span>
           </label>
         </section>
+      </div>
+    </section>
+
+    <section class="group labelled collapsible">
+      <label data-collapse-id="comments">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">
+          <path d="m6.24 8.999 3.614-3.613a.498.498 0 0 0 0-.707.5.5 0 0 0-.707 0L5.999 7.826 2.854 4.68a.5.5 0 0 0-.707.707L5.759 9l.481-.001z"/>
+        </svg>
+        <span id="commentsOptions">Comments</span>
+      </label>
+      <div class="options">
         <section class="checkbox">
           <label>
-            <span id="submitTextAreaWithKeyboard">Submit comments and forms with Ctrl+Enter/⌘ Return</span>
-            <input type="checkbox" name="submitTextAreaWithKeyboard">
+            <span id="clickHeaderToCollapse">Click comment headers to toggle threads</span>
+            <input type="checkbox" name="clickHeaderToCollapse">
             <span class="toggle"></span>
           </label>
         </section>
         <section class="checkbox">
           <label>
-            <span id="makeSubmissionTextReadable">Increase contrast of submission text</span>
-            <input type="checkbox" name="makeSubmissionTextReadable">
+            <span id="hideCollapsedNavs">Hide nav links on collapsed comments</span>
+            <input type="checkbox" name="hideCollapsedNavs">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="hideComheadRoot">Hide "root"</span>
+            <input type="checkbox" name="hideComheadRoot">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="hideComheadParent">Hide "parent"</span>
+            <input type="checkbox" name="hideComheadParent">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="hideComheadPrev">Hide "prev"</span>
+            <input type="checkbox" name="hideComheadPrev">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox">
+          <label>
+            <span id="hideComheadNext">Hide "next"</span>
+            <input type="checkbox" name="hideComheadNext">
             <span class="toggle"></span>
           </label>
         </section>
@@ -230,6 +269,24 @@
               </label>
             </section>
           </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="group labelled collapsible">
+      <label data-collapse-id="ux">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">
+          <path d="m6.24 8.999 3.614-3.613a.498.498 0 0 0 0-.707.5.5 0 0 0-.707 0L5.999 7.826 2.854 4.68a.5.5 0 0 0-.707.707L5.759 9l.481-.001z"/>
+        </svg>
+        <span id="uxOptions">UX</span>
+      </label>
+      <div class="options">
+        <section class="checkbox">
+          <label>
+            <span id="submitTextAreaWithKeyboard">Submit from textareas with Ctrl+Enter/⌘ Return</span>
+            <input type="checkbox" name="submitTextAreaWithKeyboard">
+            <span class="toggle"></span>
+          </label>
         </section>
       </div>
     </section>

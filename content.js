@@ -73,9 +73,11 @@ const LOGGED_OUT_USER_PAGE = `
 `.trim()
 
 //#region User settings
-let debug = localStorage.debug == 'true'
 /** @type {import("./types").Config} */
-let config
+let config = getCachedConfig()
+/** @type {Array<(changes: Partial<import("./types").Config>) => void>} */
+let configChangeListeners = []
+let debug = Boolean(config.debug)
 /** @type {import("./types").Config} */
 let defaultConfig
 //#endregion
@@ -108,6 +110,11 @@ Visit.fromJSON = function(obj) {
   })
 }
 
+function getCachedConfig() {
+  let parsed = parseStoredJSON(localStorage, 'config')
+  return isObject(parsed) ? parsed : {}
+}
+
 /** @param {string} itemId */
 function getLastVisit(itemId) {
   let parsed = parseStoredJSON(localStorage, itemId)
@@ -124,6 +131,13 @@ function getMutedUsers(json = localStorage.getItem(MUTED_USERS_KEY)) {
 function getUserNotes(json = localStorage.getItem(USER_NOTES_KEY)) {
   let parsed =  safeParseJSON(json)
   return isObject(parsed) ? parsed : {}
+}
+
+function storeCachedConfig() {
+  let configJSON = JSON.stringify(config)
+  if (localStorage.config != configJSON) {
+    localStorage.config = configJSON
+  }
 }
 
 /** @param {Set<string>} mutedUsers */
@@ -151,16 +165,39 @@ function storeVisit(itemId, visit) {
 //#region Utility functions
 /**
  * @param {string} role
- * @param {...string} css
+ * @param {string} [css]
  */
-function addStyle(role, ...css) {
+function addStyle(role, css) {
   let $style = document.createElement('style')
   $style.setAttribute('inserted-by', 'comments-owl')
   $style.setAttribute('role', role)
-  if (css.length > 0) {
-    $style.textContent = css.filter(Boolean).map(dedent).join('\n')
+  if (css) {
+    $style.textContent = dedent(css)
   }
   document.documentElement.appendChild($style)
+  return $style
+}
+
+/**
+ * @param {HTMLStyleElement} $style
+ * @param {{
+ *   role: string
+ *   css: string
+ *   removeIfEmpty?: boolean
+ * }} options
+ * @returns {HTMLStyleElement}
+ */
+function setCss($style, {role, css, removeIfEmpty}) {
+  if (removeIfEmpty && !css) {
+    $style?.remove()
+    return null
+  }
+  if (!$style) {
+    return addStyle(role, css)
+  }
+  if ($style.textContent != css) {
+    $style.textContent = dedent(css)
+  }
   return $style
 }
 
@@ -170,9 +207,7 @@ const autosizeTextArea = (() => {
 
   return function autosizeTextArea($textArea) {
     if (!$textArea.offsetParent) return
-    if (textAreaPadding == null) {
-      textAreaPadding = Number(getComputedStyle($textArea).paddingTop.replace('px', '')) * 2
-    }
+    textAreaPadding ??= Number(getComputedStyle($textArea).paddingTop.replace('px', '')) * 2
     $textArea.style.height = '0px'
     $textArea.style.height = $textArea.scrollHeight + textAreaPadding + 'px'
   }
@@ -328,50 +363,18 @@ function warn(...args) {
 
 //#region Page handlers
 //#region Item page
-/**
- * Each comment on a comment page has the following structure:
- *
- * ```html
- * <tr class="athing"> (wrapper)
- *   <td>
- *     <table>
- *       <tr>
- *         <td class="ind">
- *           <img src="s.gif" height="1" width="123"> (indentation)
- *         </td>
- *         <td class="votelinks">…</td> (vote up/down controls)
- *         <td class="default">
- *           <div style="margin-top:2px; margin-bottom:-10px;">
- *             <div class="comhead"> (meta bar: user, age and folding control)
- *             …
- *             <div class="comment">
- *             <span class="comtext"> (text and reply link)
- * ```
- *
- * We want to be able to collapse comment trees which don't contain new comments
- * and highlight new comments, so for each wrapper we'll create a `HNComment`
- * object to manage this.
- *
- * Comments are rendered as a flat list of table rows, so we'll use the width of
- * the indentation spacer to determine which comments are descendants of a given
- * comment.
- *
- * Since we have to reimplement our own comment folding, we'll hide the built-in
- * folding controls and create new ones in a better position (on the left), with
- * a larger hitbox (larger font and an en dash [–] instead of a hyphen [-]).
- *
- * On each comment page view, we store the current comment count, the max
- * comment id on the page and the current time as the last visit time.
- */
-function itemPage() {
-  if (document.body.childElementCount == 0) {
-    warn('item error page')
-    document.documentElement.setAttribute('unstyled', '')
-    return
-  }
+//#region CSS
+/** @type {HTMLStyleElement} */
+let $itemPageDynamicStyle
+/** @type {HTMLStyleElement} */
+let $itemPageStaticStyle
 
-  //#region CSS
-  addStyle('item', `
+function configureItemPageCss() {
+  $itemPageStaticStyle ??= addStyle('item', `
+    /* Reduce gap between submission and comments */
+    .fatitem + br {
+      display: none;
+    }
     /* Remove 1px gap between comments */
     .comment-tree {
       border-collapse: collapse;
@@ -443,56 +446,151 @@ function itemPage() {
     }
   `)
 
-  let $style = addStyle('item-dynamic')
+  let hideComheadNavsSelectors = [
+    config.hideComheadNext && '.comhead .next-sep, .comhead .next-sep + a',
+    config.hideComheadParent && '.comhead .parent-sep, .comhead .parent-sep + a',
+    config.hideComheadPrev && '.comhead .prev-sep, .comhead .prev-sep + a',
+    config.hideComheadRoot && '.comhead .root-sep, .comhead .root-sep + a',
+  ].filter(Boolean)
 
-  function configureCss() {
-    $style.textContent = [
-      config.clickHeaderToCollapse && `
-        /* Make comments full width so the comment header can always be clicked */
-        .comment-tree,
-        .comment-tree td.default {
-          width: 100%;
-        }
-        .comhead-wrap {
-          /* Negative margin gets removed from the click target in some browsers */
-          margin-bottom: .5em !important;
-          /* Hide the <br> the negative margin was adjusting for */
-          + br {
-            display: none;
-          }
-          /* Indicate when clicking will activate the toggle */
-          &:hover :is(.toggle, .child-count-toggle) {
-            color: var(--link);
-          }
-        }
-        .comhead:hover :is(.toggle, .child-count-toggle) {
-          color: inherit;
-        }
-        .comhead :is(.toggle, .child-count-toggle):hover {
-          color: var(--link);
-        }
-      `,
-      config.hideReplyLinks && `
-        div.reply {
-          margin-top: 8px;
-        }
-        div.reply p, #submission-reply {
+  let css = [
+    config.clickHeaderToCollapse && `
+      /* Make comments full width so the comment header can always be clicked */
+      .comment-tree,
+      .comment-tree td.default {
+        width: 100%;
+      }
+      .comhead-wrap {
+        /* Negative margin gets removed from the click target in some browsers */
+        margin-bottom: .5em !important;
+        /* Hide the <br> the negative margin was adjusting for */
+        + br {
           display: none;
         }
-      `,
-      config.makeSubmissionTextReadable && `
-        div.toptext {
-          color: var(--text-primary);
-          a:link {
-            text-decoration: underline;
-          }
+        /* Indicate when clicking will activate the toggle */
+        &:hover :is(.toggle, .child-count-toggle) {
+          color: var(--link);
         }
-      `,
-    ].filter(Boolean).map(dedent).join('\n')
-  }
+      }
+      .comhead:hover :is(.toggle, .child-count-toggle) {
+        color: inherit;
+      }
+      .comhead :is(.toggle, .child-count-toggle):hover {
+        color: var(--link);
+      }
+    `,
+    config.hideCollapsedNavs && `
+      .comment-tree .athing.coll .navs {
+        display: none;
+      }
+    `,
+    hideComheadNavsSelectors.length > 0 ? `
+      ${hideComheadNavsSelectors.join(',\n')} {
+        display: none;
+      }
+    ` : '',
+    config.hideReplyLinks && `
+      div.reply {
+        margin-top: 8px;
+      }
+      div.reply p, #submission-reply {
+        display: none;
+      }
+    `,
+    config.makeSubmissionTextReadable && `
+      div.toptext {
+        color: var(--text-primary);
+        a:link {
+          text-decoration: underline;
+        }
+      }
+    `,
+  ].filter(Boolean).join('\n')
+  $itemPageDynamicStyle = setCss($itemPageDynamicStyle, {role: 'item-dynamic', css})
+}
+//#endregion
 
-  configureCss()
-  //#endregion
+//#region Global functions
+/**
+ * @returns {boolean} `true` when no further observation is needed.
+ */
+function toggleHideSubmissionCommentForm({
+  $item = document.querySelector('.fatitem tr.athing'),
+  hide = config.hideSubmissionCommentForm,
+} = {}) {
+  if (!$item) return
+  if (!$item.classList.contains('submission')) return true
+  let $form = document.querySelector('form[action="comment"]')
+  if (!$form) return
+  let $cell = $form.closest('td')
+  if (!$cell) return
+  let $reply = $cell.querySelector('#submission-reply')
+  if (hide) {
+    log('hiding submission comment form')
+    if (!$reply) {
+        $reply = h('font', {id: 'submission-reply', size: '1'},
+        h('u', null,
+          h('a', {href: '#', onclick(e) {
+            e.preventDefault()
+            $form.removeAttribute('hidden')
+            $reply.remove()
+          }}, 'reply')
+        )
+      )
+      $cell.append($reply)
+    }
+    $form.setAttribute('hidden', '')
+  } else {
+    if ($reply) {
+      $reply.remove()
+    }
+    $form.removeAttribute('hidden')
+  }
+  return true
+}
+//#endregion
+
+/**
+ * Each comment on a comment page has the following structure:
+ *
+ * ```html
+ * <tr class="athing"> (wrapper)
+ *   <td>
+ *     <table>
+ *       <tr>
+ *         <td class="ind">
+ *           <img src="s.gif" height="1" width="123"> (indentation)
+ *         </td>
+ *         <td class="votelinks">…</td> (vote up/down controls)
+ *         <td class="default">
+ *           <div style="margin-top:2px; margin-bottom:-10px;">
+ *             <div class="comhead"> (meta bar: user, age and folding control)
+ *             …
+ *             <div class="comment">
+ *             <span class="comtext"> (text and reply link)
+ * ```
+ *
+ * We want to be able to collapse comment trees which don't contain new comments
+ * and highlight new comments, so for each wrapper we'll create a `HNComment`
+ * object to manage this.
+ *
+ * Comments are rendered as a flat list of table rows, so we'll use the width of
+ * the indentation spacer to determine which comments are descendants of a given
+ * comment.
+ *
+ * Since we have to reimplement our own comment folding, we'll hide the built-in
+ * folding controls and create new ones in a better position (on the left), with
+ * a larger hitbox (larger font and an en dash [–] instead of a hyphen [-]).
+ *
+ * On each comment page view, we store the current comment count, the max
+ * comment id on the page and the current time as the last visit time.
+ */
+function itemPage() {
+  if (document.body.childElementCount == 0) {
+    warn('item error page')
+    document.documentElement.setAttribute('unstyled', '')
+    return
+  }
 
   //#region State
   let autoCollapseNotNew = config.autoCollapseNotNew || location.search.includes('?shownew')
@@ -722,6 +820,17 @@ function itemPage() {
       this.$comhead.insertAdjacentText('afterbegin', ' ')
       this.$comhead.insertAdjacentElement('afterbegin', this.$toggleControl)
       this.$comhead.append(this.$note)
+      let $navs = this.$comhead.querySelector('.navs')
+      if ($navs) {
+        // Wrap separators in elements so they can be used to hide items
+        for (let $node of $navs.childNodes) {
+          if ($node.nodeType == Node.TEXT_NODE && $node.nodeValue == ' | ') {
+            $node.replaceWith(h('span', {
+              className: `${$node.nextSibling?.textContent}-sep`,
+            }, ' | '))
+          }
+        }
+      }
       if (this.user && this.user != currentUser) {
         this.$comhead.append(
           h('span', {className: 'mute'}, ' | ', h('a', {
@@ -766,6 +875,7 @@ function itemPage() {
     /** @param {boolean} isCollapsed */
     toggleCollapsed(isCollapsed = !this.isCollapsed) {
       this.isCollapsed = isCollapsed
+      this.$wrapper.classList.toggle('coll', isCollapsed)
       reconcileCommentVisibility()
     }
 
@@ -1030,36 +1140,6 @@ function itemPage() {
     }
   }
 
-  // TODO Do this at document_start to reduce flash
-  function toggleHideSubmissionCommentForm() {
-    if (!$submission) return
-    let $form = document.querySelector('form[action="comment"]')
-    if (!$form) return
-    let $cell = $form.closest('td')
-    if (!$cell) return
-    let $reply = $cell.querySelector('#submission-reply')
-    if (config.hideSubmissionCommentForm) {
-      if (!$reply) {
-         $reply = h('font', {id: 'submission-reply', size: '1'},
-          h('u', null,
-            h('a', {href: '#', onclick(e) {
-              e.preventDefault()
-              $form.removeAttribute('hidden')
-              $reply.remove()
-            }}, 'reply')
-          )
-        )
-        $cell.append($reply)
-      }
-      $form.setAttribute('hidden', '')
-    } else {
-      if ($reply) {
-        $reply.remove()
-      }
-      $form.removeAttribute('hidden')
-    }
-  }
-
   /**
    * Toggles highlighting comments newer than the given comment id.
    * @param {boolean} highlight
@@ -1222,6 +1302,7 @@ function itemPage() {
   //#endregion
 
   //#region Main
+  configureItemPageCss()
   userHovercards()
 
   // Figure out which type of item page we're on
@@ -1230,7 +1311,7 @@ function itemPage() {
   if ($submission) {
     log('processing submission item page')
     document.documentElement.setAttribute('submission-item', '')
-    toggleHideSubmissionCommentForm()
+    toggleHideSubmissionCommentForm({$item: $submission})
     $submissionCommentCount = document.querySelector('td.subtext .subline > a[href^=item]')
     if ($submissionCommentCount) {
       lastVisit = getLastVisit(itemId)
@@ -1248,6 +1329,7 @@ function itemPage() {
 
   processCommentThread()
 
+  //#region Events
   window.addEventListener('storage', (e) => {
     if (e.storageArea !== localStorage) return
 
@@ -1263,24 +1345,26 @@ function itemPage() {
 
   window.addEventListener(USER_NOTES_CHANGED_EVENT, syncUserNotes)
 
-  chrome.storage.local.onChanged.addListener((changes) => {
-    if (changes.clickHeaderToCollapse) {
-      config.clickHeaderToCollapse = changes.clickHeaderToCollapse.newValue
-      configureCss()
-    }
-    if (changes.hideReplyLinks) {
-      config.hideReplyLinks = changes.hideReplyLinks.newValue
-      configureCss()
-    }
-    if (changes.hideSubmissionCommentForm) {
-      config.hideSubmissionCommentForm = changes.hideSubmissionCommentForm.newValue
+  const DYNAMIC_CSS_CONFIG_KEYS = [
+    'clickHeaderToCollapse',
+    'hideCollapsedNavs',
+    'hideComheadNext',
+    'hideComheadParent',
+    'hideComheadPrev',
+    'hideComheadRoot',
+    'hideReplyLinks',
+    'makeSubmissionTextReadable',
+  ]
+
+  configChangeListeners.push((changes) => {
+    if (Object.hasOwn(changes, 'hideSubmissionCommentForm')) {
       toggleHideSubmissionCommentForm()
     }
-    if (changes.makeSubmissionTextReadable) {
-      config.makeSubmissionTextReadable = changes.makeSubmissionTextReadable.newValue
-      configureCss()
+    if (DYNAMIC_CSS_CONFIG_KEYS.some((key) => Object.hasOwn(changes, key))) {
+      configureItemPageCss()
     }
   })
+  //#endregion
   //#endregion
 }
 //#endregion
@@ -1533,9 +1617,7 @@ function itemListPage() {
     let rank = null
     for (let $row of document.querySelectorAll('tr.submission')) {
       let $rank = $row.querySelector('.rank')
-      if (rank == null) {
-        rank = parseInt($rank.textContent)
-      }
+      rank ??= parseInt($rank.textContent)
       if (!$row.classList.contains('hidden')) {
         $rank.textContent = `${rank++}.`
       }
@@ -1606,6 +1688,7 @@ function itemListPage() {
     }).observe($tbody, {childList: true})
   }
 
+  //#region Events
   // Update items when they're visited in other tabs
   window.addEventListener('storage', (e) => {
     if (e.storageArea !== localStorage) return
@@ -1617,31 +1700,26 @@ function itemListPage() {
     }
   })
 
-  chrome.storage.local.onChanged.addListener((changes) => {
-    // Store submissions if transitioning them is turned on
-    if (changes.enableViewTransitions && changes.enableViewTransitions.newValue && config.listItemTransition ||
-        changes.listItemTransition && changes.listItemTransition.newValue && config.enableViewTransitions) {
-      storeSubmissionIds()
-    }
-    if (changes.preventAccidentally) {
-      config.preventAccidentally = changes.preventAccidentally.newValue
-    }
+  configChangeListeners.push((changes) => {
     let updateItemVisibility = false
-    for (let [key, change] of Object.entries(changes)) {
+    for (let [key, newValue] of Object.entries(changes)) {
       if (HIDE_AI_CONFIG_KEYS.includes(key)) {
         // Reset "AI" regexes to the default if they're removed
-        config[key] = change.newValue === undefined ? defaultConfig[key] : change.newValue
+        if (newValue === undefined) {
+          config[key] = defaultConfig[key]
+        }
         updateItemVisibility = true
       }
       if (HIDE_CUSTOM_ITEMS_CONFIG_KEYS.includes(key)) {
-        config[key] = change.newValue
         updateItemVisibility = true
       }
     }
     if (updateItemVisibility) {
       toggleItemVisibility()
     }
+    storeSubmissionIds()
   })
+  //#endregion
   //#endregion
 }
 //#endregion
@@ -1755,39 +1833,37 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
   else {
     //#region Other user profile
     //#region CSS
-    if (!$userStyle) {
-      $userStyle = addStyle('user', `
-        .saved {
-          color: var(--text-primary);
+    $userStyle ??= addStyle('user', `
+      .saved {
+        color: var(--text-primary);
+        opacity: 0;
+      }
+      .saved.show {
+        animation: flash 2s forwards;
+      }
+      @keyframes flash {
+        from {
           opacity: 0;
         }
-        .saved.show {
-          animation: flash 2s forwards;
+        15% {
+          opacity: 1;
+          animation-timing-function: ease-in;
         }
-        @keyframes flash {
-          from {
-            opacity: 0;
-          }
-          15% {
-            opacity: 1;
-            animation-timing-function: ease-in;
-          }
-          75% {
-            opacity: 1;
-          }
-          to {
-            opacity: 0;
-            animation-timing-function: ease-out;
-          }
+        75% {
+          opacity: 1;
         }
-        .notes {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 3px;
+        to {
+          opacity: 0;
+          animation-timing-function: ease-out;
         }
-      `)
-    }
+      }
+      .notes {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 3px;
+      }
+    `)
     //#endregion
 
     //#region Functions
@@ -1889,6 +1965,7 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
 
     autosizeTextArea($textArea)
 
+    //#region Events
     if (isUserPage) {
       window.addEventListener('storage', (e) => {
         if (e.storageArea !== localStorage) return
@@ -1909,6 +1986,7 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
     }
     //#endregion
     //#endregion
+    //#endregion
   }
 }
 //#endregion
@@ -1924,12 +2002,8 @@ const VIEW_TRANSITION_CONFIG_KEYS = [
 /** @type {HTMLStyleElement} */
 let $viewTransitionStyle
 
-/** @param {{enableViewTransitions?: boolean, listItemTransition?: boolean}} [options] */
-function configureViewTransitionCss({
-  enableViewTransitions = localStorage.enableViewTransitions == 'true',
-  listItemTransition = localStorage.listItemTransition == 'true',
-} = {}) {
-  if (!enableViewTransitions) {
+function configureViewTransitionCss() {
+  if (!config.enableViewTransitions) {
     if ($viewTransitionStyle) {
       $viewTransitionStyle.remove()
       $viewTransitionStyle = null
@@ -1938,11 +2012,11 @@ function configureViewTransitionCss({
   }
   /** @type {string[]} */
   let submissionIds = []
-  if (listItemTransition) {
+  if (config.listItemTransition) {
     let parsed = parseStoredJSON(sessionStorage, 'submissionIds')
     submissionIds = Array.isArray(parsed) ? parsed : []
   }
-  let css = dedent(`
+  let css = `
     @view-transition {
       navigation: auto;
     }
@@ -1961,12 +2035,8 @@ function configureViewTransitionCss({
         view-transition-name: item-${id}-subline;
       }
     }`).join('\n')}
-  `)
-  if (!$viewTransitionStyle) {
-    $viewTransitionStyle = addStyle('view-transitions', css)
-  } else if ($viewTransitionStyle.textContent != css) {
-    $viewTransitionStyle.textContent = css
-  }
+  `
+  $viewTransitionStyle = setCss($viewTransitionStyle, {role: 'view-transitions', css})
 }
 //#endregion
 
@@ -1974,21 +2044,12 @@ function configureViewTransitionCss({
 /** @type {HTMLStyleElement} */
 let $customCssStyle
 
-/** @param {string} [customCss] */
-function configureCustomCss(customCss = localStorage.customCss ?? '') {
-  if (!customCss) {
-    if ($customCssStyle) {
-      $customCssStyle.remove()
-      $customCssStyle = null
-    }
-    return
-  }
-  if (!$customCssStyle) {
-    $customCssStyle = addStyle('custom-css', customCss)
-  }
-  else if ($customCssStyle.textContent != customCss) {
-    $customCssStyle.textContent = customCss
-  }
+function configureCustomCss() {
+  $customCssStyle = setCss($customCssStyle, {
+    role: 'custom-css',
+    css: config.customCss,
+    removeIfEmpty:true
+  })
 }
 //#endregion
 
@@ -2007,32 +2068,21 @@ let navigationProcessed = false
 /** @type {HTMLStyleElement} */
 let $navigationStyle
 
-function configureNavigationCss({
-  hidePastNav = localStorage.hidePastNav == 'true',
-  hideCommentsNav = localStorage.hideCommentsNav == 'true',
-  hideJobsNav = localStorage.hideJobsNav == 'true',
-  hideSubmitNav = localStorage.hideSubmitNav == 'true',
-  addActiveToHeader = localStorage.addActiveToHeader == 'true',
-  addUpvotedToHeader = localStorage.addUpvotedToHeader == 'true',
-} = {}) {
+function configureNavigationCss() {
   let hideSelectors = [
-    hidePastNav && 'span.past-sep, span.past-sep + a',
-    hideCommentsNav && 'span.comments-sep, span.comments-sep + a',
-    hideJobsNav && 'span.jobs-sep, span.jobs-sep + a',
-    hideSubmitNav && 'span.submit-sep, span.submit-sep + a',
-    !addActiveToHeader && 'span.active-sep, span.active-sep + a',
-    !addUpvotedToHeader && 'span.upvoted-sep, span.upvoted-sep + a',
+    config.hidePastNav && 'span.past-sep, span.past-sep + a',
+    config.hideCommentsNav && 'span.comments-sep, span.comments-sep + a',
+    config.hideJobsNav && 'span.jobs-sep, span.jobs-sep + a',
+    config.hideSubmitNav && 'span.submit-sep, span.submit-sep + a',
+    !config.addActiveToHeader && 'span.active-sep, span.active-sep + a',
+    !config.addUpvotedToHeader && 'span.upvoted-sep, span.upvoted-sep + a',
   ].filter(Boolean)
-  let css = dedent(`
+  let css = hideSelectors.length > 0 ? `
     ${hideSelectors.join(',\n')} {
       display: none;
     }
-  `)
-  if (!$navigationStyle) {
-    $navigationStyle = addStyle('navigation', css)
-  } else if ($navigationStyle.textContent != css) {
-    $navigationStyle.textContent = css
-  }
+  ` : ''
+  $navigationStyle = setCss($navigationStyle, {role: 'navigation', css})
 }
 
 function processNavigation() {
@@ -2142,9 +2192,8 @@ function submitFirstTextAreaWithKeyboard() {
     updateEventHandlers()
   }
 
-  chrome.storage.local.onChanged.addListener((changes) => {
-    if (changes.submitTextAreaWithKeyboard) {
-      config.submitTextAreaWithKeyboard = changes.submitTextAreaWithKeyboard.newValue
+  configChangeListeners.push((changes) => {
+    if (Object.hasOwn(changes, 'submitTextAreaWithKeyboard')) {
       updateEventHandlers()
     }
   })
@@ -2167,14 +2216,10 @@ function setActiveSize() {
   document.documentElement.toggleAttribute('mobile', !desktop)
 }
 
-/** @param {{darkMode?: boolean, pureBlack?: boolean}} [options] */
-function setActiveTheme({
-  darkMode = localStorage.darkMode == 'true',
-  pureBlack = localStorage.pureBlack == 'true',
-} = {}) {
-  document.documentElement.toggleAttribute('dark', darkMode)
-  document.documentElement.toggleAttribute('light', !darkMode)
-  document.documentElement.toggleAttribute('pure-black', darkMode && pureBlack)
+function setActiveTheme() {
+  document.documentElement.toggleAttribute('dark', config.darkMode)
+  document.documentElement.toggleAttribute('light', !config.darkMode)
+  document.documentElement.toggleAttribute('pure-black', config.darkMode && config.pureBlack)
 }
 
 /**
@@ -2490,17 +2535,10 @@ function userHovercards() {
 //#endregion
 
 //#region Main
-/** @type {Array<[string[], (config: Partial<import("./types").Config>) => void]>} */
-const LOCAL_STORAGE_SYNC_CONFIG = [
-  [THEME_CONFIG_KEYS, setActiveTheme],
-  [VIEW_TRANSITION_CONFIG_KEYS, configureViewTransitionCss],
-  [NAVIGATION_CONFIG_KEYS, configureNavigationCss],
-]
-
 /** @type {string} */
 let currentUser
 /** @type {MutationObserver} */
-let documentLoadingObserver
+let startupObserver
 let loading = document.readyState == 'loading'
 let path = location.pathname.slice(1)
 let startMs = Date.now()
@@ -2543,38 +2581,45 @@ function onDocumentStart({restart = false} = {}) {
   setActiveSize()
   setActiveTheme()
 
-  if (!headerProcessed || !logoReplaced || !navigationProcessed) {
-    documentLoadingObserver = new MutationObserver(() => {
-      // Prepare the themed td[bgcolor] header for styling
-      if (!headerProcessed) {
-        processThemedHeaderAndFooter()
-      }
-      // Replace HN's <img src="y18.svg"> with an inline version which can be styled
-      if (!logoReplaced) {
-        let $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
-        if ($homeLink) {
-          $homeLink.innerHTML = HN_LOGO_SVG
-          logoReplaced = true
-        }
-      }
-      // Process the navigation bar when it loads
-      processNavigation()
-      // Stop observing if we've done everything we can
-      if (headerProcessed && logoReplaced && navigationProcessed && documentLoadingObserver) {
-        documentLoadingObserver.disconnect()
-        documentLoadingObserver = null
-      }
-    })
-    documentLoadingObserver.observe(document.documentElement, {childList: true, subtree: true})
+  if (isItemPage()) {
+    configureItemPageCss()
   }
+
+  startupObserver = new MutationObserver(() => {
+    // Prepare the themed td[bgcolor] header for styling
+    if (!headerProcessed) {
+      processThemedHeaderAndFooter()
+    }
+    // Replace HN's <img src="y18.svg"> with an inline version which can be styled
+    if (!logoReplaced) {
+      let $homeLink = document.querySelector('a[href="https://news.ycombinator.com"]')
+      if ($homeLink) {
+        $homeLink.innerHTML = HN_LOGO_SVG
+        logoReplaced = true
+      }
+    }
+    // Process the navigation bar when it loads
+    processNavigation()
+    // Page-specific features which benefit from early processing
+    let pageStartupProcessed = true
+    if (isItemPage() && config.hideSubmissionCommentForm) {
+      pageStartupProcessed = toggleHideSubmissionCommentForm({hide: true})
+    }
+    // Stop observing if we've done everything we can
+    if (headerProcessed && logoReplaced && navigationProcessed && pageStartupProcessed && startupObserver) {
+      startupObserver.disconnect()
+      startupObserver = null
+    }
+  })
+  startupObserver.observe(document.documentElement, {childList: true, subtree: true})
 }
 //#endregion
 
 //#region DOMContentLoaded
 function onDOMContentLoaded() {
-  if (documentLoadingObserver) {
-    documentLoadingObserver.disconnect()
-    documentLoadingObserver = null
+  if (startupObserver) {
+    startupObserver.disconnect()
+    startupObserver = null
   }
 
   let $currentUserLink = /** @type {HTMLAnchorElement} */ (document.querySelector('a#me'))
@@ -2629,36 +2674,37 @@ function main() {
 
   window.addEventListener('resize', setActiveSize)
 
-  // Sync config changes which are needed at document_start to localStorage
-  chrome.storage.local.onChanged.addListener((changes) => {
-    if (changes.debug) {
-      debug = changes.debug.newValue
-      localStorage.debug = debug
+  /** @type {Array<[string[], () => void]>} */
+  const GLOBAL_CSS_CONFIG = [
+    [['customCss'], configureCustomCss],
+    [THEME_CONFIG_KEYS, setActiveTheme],
+    [VIEW_TRANSITION_CONFIG_KEYS, configureViewTransitionCss],
+    [NAVIGATION_CONFIG_KEYS, configureNavigationCss],
+  ]
+
+  chrome.storage.local.onChanged.addListener((storageChanges) => {
+    /** @type {Partial<import("./types").Config>} */
+    let changes = {}
+    for (let [key, change] of Object.entries(storageChanges)) {
+      if (Object.hasOwn(defaultConfig, key)) {
+        changes[key] = config[key] = change.newValue
+      }
     }
-    if (changes.customCss) {
-      if (config) {
-        config.customCss = changes.customCss.newValue
-      }
-      if (localStorage.customCss != changes.customCss.newValue) {
-        localStorage.customCss = changes.customCss.newValue
-      }
-      configureCustomCss(changes.customCss.newValue)
+    storeCachedConfig()
+
+    // Apply global changes
+    if (Object.hasOwn(changes, 'debug')) {
+      debug = config.debug
     }
-    for (let [keys, fn] of LOCAL_STORAGE_SYNC_CONFIG) {
-      let changedConfig = {}
-      for (let key of keys) {
-        if (changes[key]) {
-          let {newValue} = changes[key]
-          if (config) config[key] = newValue
-          changedConfig[key] = newValue
-          if (localStorage.getItem(key) != String(newValue)) {
-            localStorage.setItem(key, newValue)
-          }
-        }
+    for (let [keys, updateCssFn] of GLOBAL_CSS_CONFIG) {
+      if (keys.some(key => Object.hasOwn(changes, key))) {
+        updateCssFn()
       }
-      if (Object.keys(changedConfig).length > 0) {
-        fn(config ?? changedConfig)
-      }
+    }
+
+    // Notify listeners
+    for (let listener of configChangeListeners) {
+      listener(changes)
     }
   })
 
@@ -2667,27 +2713,15 @@ function main() {
     defaultConfig = settings.DEFAULT_CONFIG
     config = {...defaultConfig, ...storedConfig}
     debug = config.debug
-    log('config', {
-      ...config,
-      customCss: `${config.customCss.slice(0, 50)}${config.customCss.length > 50 ? '…' : '}'}`,
-    })
+    log('config', config)
 
-    // Sync effective config with localStorage and apply any differences
-    if (localStorage.debug != String(debug)) {
-      localStorage.debug = debug
-    }
-    if (localStorage.customCss != config.customCss) {
-      localStorage.customCss = config.customCss
-    }
-    configureCustomCss(config.customCss)
-    for (let [keys, fn] of LOCAL_STORAGE_SYNC_CONFIG) {
-      for (let key of keys) {
-        if (localStorage.getItem(key) != String(config[key])) {
-          localStorage.setItem(key, config[key])
-        }
-      }
-      fn(config)
-    }
+    // Sync effective config with localStorage
+    storeCachedConfig()
+
+    configureViewTransitionCss()
+    configureCustomCss()
+    configureNavigationCss()
+    setActiveTheme()
 
     if (document.readyState == 'loading') {
       document.addEventListener('DOMContentLoaded', () => {

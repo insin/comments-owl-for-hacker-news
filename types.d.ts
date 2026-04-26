@@ -14,6 +14,11 @@ export type Config = {
   hideAiSiteRegexError?: string | null
   hideAiTitleRegex: string
   hideAiTitleRegexError?: string | null
+  hideCollapsedNavs: false
+  hideComheadNext: boolean
+  hideComheadParent: boolean
+  hideComheadPrev: boolean
+  hideComheadRoot: boolean
   hideCommentsNav: boolean
   hideCustomItems: boolean
   hideCustomSiteRegex: string

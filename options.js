@@ -28,7 +28,7 @@ for (let translationId of [
   'autoCollapseNotNew',
   'autoHighlightNew',
   'clickHeaderToCollapse',
-  'commentPagesOptions',
+  'commentsOptions',
   'customCss',
   'darkMode',
   'debug',
@@ -36,6 +36,10 @@ for (let translationId of [
   'developerOptions',
   'enableViewTransitions',
   'hideAiItems',
+  'hideComheadNext',
+  'hideComheadParent',
+  'hideComheadPrev',
+  'hideComheadRoot',
   'hideCommentsNav',
   'hideCustomItems',
   'hideJobsNav',
@@ -43,6 +47,7 @@ for (let translationId of [
   'hideReplyLinks',
   'hideSubmissionCommentForm',
   'hideSubmitNav',
+  'itemPagesOptions',
   'listItemTransition',
   'listPagesOptions',
   'makeSubmissionTextReadable',
@@ -50,6 +55,7 @@ for (let translationId of [
   'preventAccidentally',
   'preventAccidentallyInfo',
   'pureBlack',
+  'uxOptions',
 ]) {
   let $el = document.getElementById(translationId)
   if ($el) {

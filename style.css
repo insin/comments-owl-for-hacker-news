@@ -25,6 +25,8 @@ html {
   --fade-8: #cecece;
   --fade-9: #cecece;
 
+  --item-spacing: 5px;
+
   --logo-bg: transparent;
   --logo-mark: var(--text-topsel);
   --logo-border: var(--logo-mark);
@@ -140,6 +142,9 @@ body { background-color: var(--bg-page); }
 /* #endregion */
 
 /* #region Additional theming */
+html[item-list] #bigbox .spacer {
+  height: var(--item-spacing) !important;
+}
 /* Provide basic styling for unstyled pages */
 html[unstyled] body {
   color: var(--text-primary);
