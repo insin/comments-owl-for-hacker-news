@@ -43,7 +43,10 @@
     "message": "Developer"
   },
   "enableViewTransitions": {
-    "message": "Enable view transitions"
+    "message": "Enable cross-document view transitions"
+  },
+  "generalOptions": {
+    "message": "General"
   },
   "hideAiItems": {
     "message": "Hide \"AI\" items"
@@ -139,7 +142,7 @@
     "message": "Site regex"
   },
   "submitTextAreaWithKeyboard": {
-    "message": "Submit from textareas with $SHORTCUT$",
+    "message": "Submit textareas with $SHORTCUT$",
     "placeholders": {
       "SHORTCUT": {
         "content": "$1"
@@ -148,8 +151,5 @@
   },
   "titleRegex": {
     "message": "Title regex"
-  },
-  "uxOptions": {
-    "message": "UX"
   }
 }

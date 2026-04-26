@@ -406,6 +406,10 @@ function configureItemPageCss() {
     td.votelinks.nosee + td .note {
       display: none;
     }
+    /* Remove space after commments */
+    .comment-tree ~ br {
+      display: none;
+    }
     #timeTravel {
       margin-top: 1em;
       vertical-align: middle;
@@ -1332,7 +1336,6 @@ function itemPage() {
   //#region Events
   window.addEventListener('storage', (e) => {
     if (e.storageArea !== localStorage) return
-
     if (e.key == MUTED_USERS_KEY) {
       syncMutedUsers()
     }
@@ -1789,7 +1792,7 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
                   mutedUsers = getMutedUsers()
                   mutedUsers.delete(mutedUserId)
                   storeMutedUsers(mutedUsers)
-                  replaceMutedUsers()
+                  updateMutedUsers()
                 }
               },
               ' (', h('u', null, 'unmute'), ')'
@@ -1800,7 +1803,7 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
       )
     }
 
-    function replaceMutedUsers() {
+    function updateMutedUsers() {
       let $newMutedUsers = createMutedUsers()
       $mutedUsers.replaceWith($newMutedUsers)
       $mutedUsers = $newMutedUsers
@@ -1818,14 +1821,12 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
       if (e.storageArea !== localStorage) return
       if (e.key == MUTED_USERS_KEY) {
         mutedUsers = getMutedUsers(e.newValue)
+        updateMutedUsers()
       }
       else if (e.key == USER_NOTES_KEY) {
         userNotes = getUserNotes(e.newValue)
+        updateMutedUsers()
       }
-      else {
-        return
-      }
-      replaceMutedUsers()
     })
     //#endregion
     //#endregion

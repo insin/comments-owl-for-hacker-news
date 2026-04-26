@@ -8,6 +8,76 @@
 </head>
 <body>
   <form>
+    <section class="group labelled collapsible" id="appearanceOptionsSection">
+      <label data-collapse-id="appearance">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">
+          <path d="m6.24 8.999 3.614-3.613a.498.498 0 0 0 0-.707.5.5 0 0 0-.707 0L5.999 7.826 2.854 4.68a.5.5 0 0 0-.707.707L5.759 9l.481-.001z"/>
+        </svg>
+        <span id="appearanceOptions">Appearance</span>
+      </label>
+      <div class="options">
+        <section class="checkbox">
+          <label>
+            <span id="darkMode">Dark mode</span>
+            <input type="checkbox" name="darkMode">
+            <span class="toggle"></span>
+          </label>
+          <div class="sub-options darkMode">
+            <section class="checkbox">
+              <label>
+                <span id="pureBlack">Pure black (OLED)</span>
+                <input type="checkbox" name="pureBlack">
+                <span class="toggle"></span>
+              </label>
+            </section>
+          </div>
+        </section>
+        <section class="textarea">
+          <label id="customCss" for="customCss">Custom CSS</label>
+          <textarea id="customCss" rows="1"></textarea>
+          <button type="button" id="saveCustomCss" class="saveAndApply">Save and apply</button>
+          <p id="customCssInfo">
+            <span id="needMoreRoom">Need more room?</span>
+            <a href="#appearanceOptionsSection" id="openInTabLink">open in a tab</a>
+          </p>
+        </section>
+      </div>
+    </section>
+
+    <section class="group labelled collapsible">
+      <label data-collapse-id="general">
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">
+          <path d="m6.24 8.999 3.614-3.613a.498.498 0 0 0 0-.707.5.5 0 0 0-.707 0L5.999 7.826 2.854 4.68a.5.5 0 0 0-.707.707L5.759 9l.481-.001z"/>
+        </svg>
+        <span id="generalOptions">General</span>
+      </label>
+      <div class="options">
+        <section class="checkbox">
+          <label>
+            <span id="submitTextAreaWithKeyboard">Submit textareas with Ctrl+Enter/⌘ Return</span>
+            <input type="checkbox" name="submitTextAreaWithKeyboard">
+            <span class="toggle"></span>
+          </label>
+        </section>
+        <section class="checkbox viewTransitionsOption">
+          <label>
+            <span id="enableViewTransitions">Enable cross-document view transitions</span>
+            <input type="checkbox" name="enableViewTransitions">
+            <span class="toggle"></span>
+          </label>
+          <div class="sub-options viewTransitions">
+            <section class="checkbox">
+              <label>
+                <span id="listItemTransition">List → item transition</span>
+                <input type="checkbox" name="listItemTransition">
+                <span class="toggle"></span>
+              </label>
+            </section>
+          </div>
+        </section>
+      </div>
+    </section>
+
     <section class="group labelled collapsible">
       <label data-collapse-id="list">
         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">
@@ -215,76 +285,6 @@
           <label>
             <span id="addUpvotedToHeader">Add "upvoted"</span>
             <input type="checkbox" name="addUpvotedToHeader">
-            <span class="toggle"></span>
-          </label>
-        </section>
-      </div>
-    </section>
-
-    <section class="group labelled collapsible" id="appearanceOptionsSection">
-      <label data-collapse-id="appearance">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">
-          <path d="m6.24 8.999 3.614-3.613a.498.498 0 0 0 0-.707.5.5 0 0 0-.707 0L5.999 7.826 2.854 4.68a.5.5 0 0 0-.707.707L5.759 9l.481-.001z"/>
-        </svg>
-        <span id="appearanceOptions">Appearance</span>
-      </label>
-      <div class="options">
-        <section class="checkbox">
-          <label>
-            <span id="darkMode">Dark mode</span>
-            <input type="checkbox" name="darkMode">
-            <span class="toggle"></span>
-          </label>
-          <div class="sub-options darkMode">
-            <section class="checkbox">
-              <label>
-                <span id="pureBlack">Pure black (OLED)</span>
-                <input type="checkbox" name="pureBlack">
-                <span class="toggle"></span>
-              </label>
-            </section>
-          </div>
-        </section>
-        <section class="textarea">
-          <label id="customCss" for="customCss">Custom CSS</label>
-          <textarea id="customCss" rows="1"></textarea>
-          <button type="button" id="saveCustomCss" class="saveAndApply">Save and apply</button>
-          <p id="customCssInfo">
-            <span id="needMoreRoom">Need more room?</span>
-            <a href="#appearanceOptionsSection" id="openInTabLink">open in a tab</a>
-          </p>
-        </section>
-        <section class="checkbox viewTransitionsOption">
-          <label>
-            <span id="enableViewTransitions">Enable view transitions</span>
-            <input type="checkbox" name="enableViewTransitions">
-            <span class="toggle"></span>
-          </label>
-          <div class="sub-options viewTransitions">
-            <section class="checkbox">
-              <label>
-                <span id="listItemTransition">List → item transition</span>
-                <input type="checkbox" name="listItemTransition">
-                <span class="toggle"></span>
-              </label>
-            </section>
-          </div>
-        </section>
-      </div>
-    </section>
-
-    <section class="group labelled collapsible">
-      <label data-collapse-id="ux">
-        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor">
-          <path d="m6.24 8.999 3.614-3.613a.498.498 0 0 0 0-.707.5.5 0 0 0-.707 0L5.999 7.826 2.854 4.68a.5.5 0 0 0-.707.707L5.759 9l.481-.001z"/>
-        </svg>
-        <span id="uxOptions">UX</span>
-      </label>
-      <div class="options">
-        <section class="checkbox">
-          <label>
-            <span id="submitTextAreaWithKeyboard">Submit from textareas with Ctrl+Enter/⌘ Return</span>
-            <input type="checkbox" name="submitTextAreaWithKeyboard">
             <span class="toggle"></span>
           </label>
         </section>

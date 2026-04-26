@@ -35,6 +35,7 @@ for (let translationId of [
   'debugInfo',
   'developerOptions',
   'enableViewTransitions',
+  'generalOptions',
   'hideAiItems',
   'hideComheadNext',
   'hideComheadParent',
@@ -55,7 +56,6 @@ for (let translationId of [
   'preventAccidentally',
   'preventAccidentallyInfo',
   'pureBlack',
-  'uxOptions',
 ]) {
   let $el = document.getElementById(translationId)
   if ($el) {
