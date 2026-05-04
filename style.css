@@ -35,6 +35,8 @@ html {
   --hovercard-border: #444444;
   --hovercard-shadow: rgba(0, 0, 0, .12) 0 1px 2px, rgba(0, 0, 0, .15) 0 8px 24px;
   --hovercard-text: var(--text-secondary);
+
+  --mobile-header-spacing: 6px;
 }
 /* #endregion */
 
@@ -155,6 +157,16 @@ html[unstyled] body {
 html[desktop] .mobilenav,
 html[mobile] .desktopnav {
   display: none;
+}
+/* Make mobile nav spacing configurable (and items line up with the HN logo) */
+html[mobile] {
+  .pagetop { margin: 0; }
+  #header > table {
+    padding: var(--mobile-header-spacing) !important;
+  }
+  .mobilenav .pagetop {
+    margin-top: calc(var(--mobile-header-spacing) * 2/3) !important;
+  }
 }
 #header[default] #hnlogo {
   border-color: var(--logo-border) !important;
