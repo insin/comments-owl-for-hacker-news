@@ -35,6 +35,7 @@ export type Config = {
   preventAccidentally: boolean
   pureBlack: boolean
   submitTextAreaWithKeyboard: boolean
+  userHovercards: boolean
 }
 
 export type UserProfile = {

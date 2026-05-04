@@ -151,5 +151,8 @@
   },
   "titleRegex": {
     "message": "Title regex"
+  },
+  "userHovercards": {
+    "message": "Add user profile hovercards"
   }
 }

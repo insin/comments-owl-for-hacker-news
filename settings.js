@@ -84,4 +84,5 @@ export const DEFAULT_CONFIG = {
   preventAccidentally: false,
   pureBlack: false,
   submitTextAreaWithKeyboard: true,
+  userHovercards: true,
 }

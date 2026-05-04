@@ -56,6 +56,7 @@ for (let translationId of [
   'preventAccidentally',
   'preventAccidentallyInfo',
   'pureBlack',
+  'userHovercards',
 ]) {
   let $el = document.getElementById(translationId)
   if ($el) {

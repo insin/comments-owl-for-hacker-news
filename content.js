@@ -1277,7 +1277,9 @@ function itemPage() {
 
   //#region Main
   configureItemPageCss()
-  userHovercards()
+  if (config.userHovercards) {
+    userHovercards()
+  }
 
   // Figure out which type of item page we're on
   $submission = document.querySelector('.fatitem tr.submission')
