@@ -81,6 +81,7 @@ export const DEFAULT_CONFIG = {
   hideSubmitNav: false,
   listItemTransition: true,
   makeSubmissionTextReadable: true,
+  pinHeader: false,
   preventAccidentally: false,
   pureBlack: false,
   submitTextAreaWithKeyboard: true,

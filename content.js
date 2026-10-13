@@ -2136,6 +2136,127 @@ try {
 }
 //#endregion
 
+//#region Pinned header
+/** @type {(() => void) | null} */
+let unpinHeader = null
+
+function configurePinnedHeader() {
+  if (!config.pinHeader) {
+    unpinHeader?.()
+    unpinHeader = null
+    return
+  }
+  if (unpinHeader) return
+  let $header = document.querySelector('#header')
+  if ($header instanceof HTMLElement) {
+    unpinHeader = pinHeader($header)
+  }
+}
+
+/** @param {HTMLElement} $header */
+function pinHeader($header) {
+  const SCROLL_THRESHOLD = 8
+  let controller = new AbortController()
+  let hover = matchMedia('(hover: hover) and (pointer: fine)')
+  let height = $header.offsetHeight
+  let lastY = getScrollY()
+  let distance = 0
+  let scrollVisible = lastY <= height
+  let pointerInHeader = false
+  /** @type {{y: number} | null} */
+  let pointer = null
+
+  // Clamp Safari overscroll so bouncing at either end doesn't change direction
+  function getScrollY() {
+    return Math.max(0, Math.min(window.scrollY, document.documentElement.scrollHeight - window.innerHeight))
+  }
+
+  function render(animate = false) {
+    if (controller.signal.aborted) return
+    let atTop = getScrollY() <= height
+    let focused = $header.contains(document.activeElement)
+    let visible = atTop || focused ||
+      (hover.matches ? pointerInHeader : scrollVisible)
+    // Only pointer entry & exit should animate
+    $header.toggleAttribute('header-animate', animate && hover.matches && !atTop && !focused)
+    $header.toggleAttribute('header-hovered', !atTop && hover.matches && pointerInHeader)
+    $header.toggleAttribute('header-hidden', !visible)
+  }
+
+  function updatePointer(animate = false) {
+    if (!hover.matches || !pointer) return
+    // Use a stationary strip across the viewport, independent of the table
+    // width and the header's animated position.
+    pointerInHeader = pointer.y >= 0 && pointer.y <= height
+    render(animate)
+  }
+
+  function onScroll() {
+    let y = getScrollY()
+    let delta = y - lastY
+    lastY = y
+    if (delta) {
+      distance = Math.sign(delta) == Math.sign(distance) ? distance + delta : delta
+      if (Math.abs(distance) >= SCROLL_THRESHOLD) {
+        scrollVisible = distance < 0
+        distance = 0
+      }
+    }
+    if (y <= height) {
+      scrollVisible = true
+      distance = 0
+    }
+    render()
+  }
+
+  $header.setAttribute('pinned', '')
+  window.addEventListener('scroll', onScroll, {passive: true, signal: controller.signal})
+  document.addEventListener('pointermove', (event) => {
+    if (event.pointerType != 'mouse' && event.pointerType != 'pen') return
+    pointer = {y: event.clientY}
+    updatePointer(true)
+  }, {passive: true, signal: controller.signal})
+  document.documentElement.addEventListener('pointerleave', () => {
+    pointer = null
+    pointerInHeader = false
+    render(true)
+  }, {signal: controller.signal})
+  $header.addEventListener('focusin', () => render(), {signal: controller.signal})
+  $header.addEventListener('focusout', () => queueMicrotask(render), {signal: controller.signal})
+  hover.addEventListener('change', () => {
+    pointer = null
+    pointerInHeader = false
+    scrollVisible = getScrollY() <= height
+    render()
+  }, {signal: controller.signal})
+  let observer = new ResizeObserver(() => {
+    height = $header.offsetHeight
+    updatePointer()
+    render()
+  })
+  observer.observe($header)
+  window.addEventListener('resize', () => {
+    updatePointer()
+    render()
+  }, {signal: controller.signal})
+  window.addEventListener('pageshow', () => {
+    lastY = getScrollY()
+    distance = 0
+    render()
+  }, {signal: controller.signal})
+  render()
+
+  return () => {
+    controller.abort()
+    observer.disconnect()
+    $header.removeAttribute('pinned')
+    $header.removeAttribute('header-animate')
+    $header.removeAttribute('header-hovered')
+    $header.removeAttribute('header-hidden')
+  }
+}
+//#endregion
+
 //#region <textarea> keyboard submit
 function submitFirstTextAreaWithKeyboard() {
   let $textArea = /** @type {HTMLTextAreaElement} */ (document.querySelector('form textarea'))
@@ -2629,6 +2750,7 @@ function onDOMContentLoaded() {
 
   processThemedHeaderAndFooter()
   processNavigation()
+  configurePinnedHeader()
   submitFirstTextAreaWithKeyboard()
 
   if (isItemListPage()) {
@@ -2655,6 +2777,7 @@ function main() {
     [THEME_CONFIG_KEYS, setActiveTheme],
     [VIEW_TRANSITION_CONFIG_KEYS, configureViewTransitionCss],
     [NAVIGATION_CONFIG_KEYS, configureNavigationCss],
+    [['pinHeader'], configurePinnedHeader],
   ]
 
   chrome.storage.local.onChanged.addListener((storageChanges) => {

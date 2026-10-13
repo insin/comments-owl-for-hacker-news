@@ -53,6 +53,8 @@ for (let translationId of [
   'listPagesOptions',
   'makeSubmissionTextReadable',
   'navigationOptions',
+  'pinHeader',
+  'pinHeaderInfo',
   'preventAccidentally',
   'preventAccidentallyInfo',
   'pureBlack',

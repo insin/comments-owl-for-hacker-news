@@ -32,6 +32,7 @@ export type Config = {
   hideSubmitNav: boolean
   listItemTransition: boolean
   makeSubmissionTextReadable: boolean
+  pinHeader: boolean
   preventAccidentally: boolean
   pureBlack: boolean
   submitTextAreaWithKeyboard: boolean

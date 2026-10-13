@@ -114,6 +114,12 @@
   "openInTabLink": {
     "message": "open in a tab"
   },
+  "pinHeader": {
+    "message": "Pin and auto-hide the header"
+  },
+  "pinHeaderInfo": {
+    "message": "Hover at the top to reveal, or scroll up on mobile"
+  },
   "preventAccidentally": {
     "message": "Prevent accidental flagging & hiding"
   },

@@ -158,6 +158,34 @@ html[desktop] .mobilenav,
 html[mobile] .desktopnav {
   display: none;
 }
+/* Sticky positioning keeps the header's original table width and layout space. */
+#header[pinned] {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  transform: translateY(0);
+  transition: none;
+}
+#header[pinned][header-hidden]:not(:focus-within) {
+  transform: translateY(-100%);
+}
+/* Match Control Panel for YouTube's full-size theater mode hover reveal. */
+#header[pinned][header-animate][header-hovered]:not([header-hidden]):not(:focus-within) {
+  transition: transform .3s ease-out .35s;
+}
+#header[pinned][header-animate][header-hidden]:not(:focus-within) {
+  transition: transform .15s ease-in;
+}
+#header[pinned]:focus-within {
+  transform: translateY(0);
+  transition: none;
+}
+@media print {
+  #header[pinned] {
+    position: static;
+    transform: none !important;
+  }
+}
 /* Make mobile nav spacing configurable (and items line up with the HN logo) */
 html[mobile] {
   .pagetop { margin: 0; }
