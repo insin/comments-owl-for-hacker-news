@@ -30,9 +30,6 @@
   "customCss": {
     "message": "Custom CSS"
   },
-  "darkMode": {
-    "message": "Dark mode"
-  },
   "debug": {
     "message": "Debug"
   },
@@ -157,6 +154,24 @@
   },
   "titleRegex": {
     "message": "Title regex"
+  },
+  "theme": {
+    "message": "Theme"
+  },
+  "themeDark": {
+    "message": "Dark"
+  },
+  "themeLight": {
+    "message": "Light"
+  },
+  "themeNone": {
+    "message": "None"
+  },
+  "themeNoneInfo": {
+    "message": "Theme colours will not be applied"
+  },
+  "themeSystem": {
+    "message": "System"
   },
   "userHovercards": {
     "message": "Add user profile hovercards"

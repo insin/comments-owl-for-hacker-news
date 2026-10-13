@@ -94,19 +94,19 @@ html[pure-black] {
 /* #endregion */
 
 /* #region news.css equivalent theming */
-body { background-color: var(--bg-page); }
+:where(html[themed]) body { background-color: var(--bg-page); }
 
 /* The header doesn't use content colors as it's effectively perma light mode */
-#header[default] {
+:where(html[themed]) #header[default] {
   background-color: var(--bg-header) !important;
   .pagetop { color: var(--text-header); }
   .pagetop a:link, .pagetop a:visited { color: var(--link-header); }
   .topsel a:link, .topsel a:visited { color: var(--text-topsel); }
 }
 
-#bigbox,
+:where(html[themed]) #bigbox,
 /* Content in /threads and the footer are siblings of #bigbox */
-#bigbox ~ tr {
+:where(html[themed]) #bigbox ~ tr {
   td { color: var(--text-secondary); }
 
   .admin td   { color: var(--text-primary); }
@@ -149,9 +149,11 @@ html[item-list] #bigbox .spacer {
 }
 /* Provide basic styling for unstyled pages */
 html[unstyled] body {
-  color: var(--text-primary);
   font-family: Verdana, Geneva, sans-serif;
   font-size: 10pt;
+}
+html[unstyled]:where([themed]) body {
+  color: var(--text-primary);
   a { color: var(--text-link); }
 }
 html[desktop] .mobilenav,
@@ -197,22 +199,24 @@ html[mobile] {
   }
 }
 #header[default] #hnlogo {
-  border-color: var(--logo-border) !important;
   display: block;
+}
+:where(html[themed]) #header[default] #hnlogo {
+  border-color: var(--logo-border) !important;
   path[fill="#f60"] { fill: var(--logo-bg) !important; }
   path[fill="#fff"] { fill: var(--logo-mark) !important; }
 }
-#footer[default] {
+:where(html[themed]) #footer[default] {
   background-color: var(--bg-header) !important;
 }
-table[bgcolor="#f6f6ef"] {
+:where(html[themed]) table[bgcolor="#f6f6ef"] {
   background-color: var(--bg-content) !important;
 }
-font[color="#3c963c"] {
+:where(html[themed]) font[color="#3c963c"] {
   color: var(--text-green) !important;
 }
-textarea,
-input:not([type="button"], [type="checkbox"], [type="file"], [type="radio"], [type="reset"], [type="submit"]) {
+:where(html[themed]) textarea,
+:where(html[themed]) input:not([type="button"], [type="checkbox"], [type="file"], [type="radio"], [type="reset"], [type="submit"]) {
   background-color: var(--bg-input);
   color: var(--text-primary);
 }

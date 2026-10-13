@@ -60,6 +60,7 @@ body:not(.darkMode) .darkMode,
 body:not(.hidingAiItems) .hidingAiItems,
 body:not(.hidingCustomItems) .hidingCustomItems,
 body:not(.ios) .toggle,
+body:not(.themeNone) .themeNone,
 body:not(.viewTransitions) .viewTransitions {
   display: none;
 }

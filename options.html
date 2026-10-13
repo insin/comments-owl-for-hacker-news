@@ -16,12 +16,17 @@
         <span id="appearanceOptions">Appearance</span>
       </label>
       <div class="options">
-        <section class="checkbox">
+        <section class="select">
           <label>
-            <span id="darkMode">Dark mode</span>
-            <input type="checkbox" name="darkMode">
-            <span class="toggle"></span>
+            <span id="theme">Theme</span>
+            <select name="theme" aria-describedby="themeNoneInfo">
+              <option id="themeLight" value="light">Light</option>
+              <option id="themeDark" value="dark">Dark</option>
+              <option id="themeSystem" value="system">System</option>
+              <option id="themeNone" value="none">None</option>
+            </select>
           </label>
+          <p id="themeNoneInfo" class="themeNone">Theme colours will not be applied</p>
           <div class="sub-options darkMode">
             <section class="checkbox">
               <label>

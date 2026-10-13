@@ -7,7 +7,6 @@ export const DEFAULT_CONFIG = {
   clickHeaderToCollapse: true,
   collapsedGroups: ['developer'],
   customCss: '',
-  darkMode: false,
   debug: false,
   enableViewTransitions: false,
   hideAiItems: false,
@@ -85,5 +84,15 @@ export const DEFAULT_CONFIG = {
   preventAccidentally: false,
   pureBlack: false,
   submitTextAreaWithKeyboard: true,
+  theme: 'light',
   userHovercards: true,
+}
+
+/**
+ * Resolve the previous Dark mode setting when no Theme has been saved.
+ * @param {Partial<import("./types").Config>} config
+ * @returns {import("./types").Config['theme']}
+ */
+export function getTheme(config) {
+  return config.theme ?? (config.darkMode ? 'dark' : 'light')
 }

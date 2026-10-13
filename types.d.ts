@@ -6,7 +6,8 @@ export type Config = {
   clickHeaderToCollapse: boolean
   collapsedGroups: string[]
   customCss: string
-  darkMode: boolean
+  // Replaced by theme
+  darkMode?: boolean
   debug: boolean
   enableViewTransitions: boolean
   hideAiItems: boolean
@@ -36,6 +37,7 @@ export type Config = {
   preventAccidentally: boolean
   pureBlack: boolean
   submitTextAreaWithKeyboard: boolean
+  theme: 'light' | 'dark' | 'system' | 'none'
   userHovercards: boolean
 }
 

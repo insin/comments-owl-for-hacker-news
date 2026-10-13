@@ -1,4 +1,4 @@
-import {DEFAULT_CONFIG} from './settings.js'
+import {DEFAULT_CONFIG, getTheme} from './settings.js'
 import {get, remove, set} from './storage.js'
 
 let $body = document.body
@@ -30,7 +30,6 @@ for (let translationId of [
   'clickHeaderToCollapse',
   'commentsOptions',
   'customCss',
-  'darkMode',
   'debug',
   'debugInfo',
   'developerOptions',
@@ -58,6 +57,12 @@ for (let translationId of [
   'preventAccidentally',
   'preventAccidentallyInfo',
   'pureBlack',
+  'theme',
+  'themeDark',
+  'themeLight',
+  'themeNone',
+  'themeNoneInfo',
+  'themeSystem',
   'userHovercards',
 ]) {
   let $el = document.getElementById(translationId)
@@ -94,6 +99,7 @@ document.querySelector('#submitTextAreaWithKeyboard').textContent = chrome.i18n.
 //#region Config & variables
 /** @type {import("./types").Config} */
 let config
+const systemDark = matchMedia('(prefers-color-scheme: dark)')
 
 // Page elements
 let $collapsibleLabels = document.querySelectorAll('section.labelled.collapsible > label[data-collapse-id]')
@@ -268,9 +274,9 @@ function initRegexSetting({key, $error, $resetLink, $textarea}) {
 function onFormChanged(e) {
   // Textareas are handled separately
   if (e.target instanceof HTMLTextAreaElement) return
-  let $el = /** @type {HTMLInputElement} */ (e.target)
+  let $el = /** @type {HTMLInputElement | HTMLSelectElement} */ (e.target)
   let prop = $el.name
-  let value = $el.type == 'checkbox' ? $el.checked : $el.value
+  let value = $el instanceof HTMLInputElement && $el.type == 'checkbox' ? $el.checked : $el.value
   setState({[prop]: value})
 }
 
@@ -308,7 +314,8 @@ function saveCustomCss() {
  * Update display based on config.
  */
 function updateDisplay() {
-  $body.classList.toggle('darkMode', config.darkMode)
+  $body.classList.toggle('darkMode', config.theme == 'dark' || config.theme == 'system' && systemDark.matches)
+  $body.classList.toggle('themeNone', config.theme == 'none')
   $body.classList.toggle('hidingAiItems', config.hideAiItems)
   $body.classList.toggle('hidingCustomItems', config.hideCustomItems)
   $body.classList.toggle('viewTransitions', config.enableViewTransitions)
@@ -420,7 +427,9 @@ function updateRegexSettingDisplay({key, $error, $resetLink, $textarea}) {
 //#region Main
 async function main() {
   let storedConfig = await(get())
-  config = {...DEFAULT_CONFIG, ...storedConfig}
+  config = {...DEFAULT_CONFIG, ...storedConfig, theme: getTheme(storedConfig)}
+
+  systemDark.addEventListener('change', updateDisplay)
 
   for (let $label of $collapsibleLabels) {
     $label.addEventListener('click', onToggleCollapse)

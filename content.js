@@ -112,7 +112,9 @@ Visit.fromJSON = function(obj) {
 
 function getCachedConfig() {
   let parsed = parseStoredJSON(localStorage, 'config')
-  return isObject(parsed) ? parsed : {}
+  if (!isObject(parsed)) return {}
+  parsed.theme ??= parsed.darkMode ? 'dark' : 'light'
+  return parsed
 }
 
 /** @param {string} itemId */
@@ -468,14 +470,14 @@ function configureItemPageCss() {
           display: none;
         }
         /* Indicate when clicking will activate the toggle */
-        &:hover :is(.toggle, .child-count-toggle) {
+        :where(html[themed]) &:hover :is(.toggle, .child-count-toggle) {
           color: var(--link);
         }
       }
       .comhead:hover :is(.toggle, .child-count-toggle) {
         color: inherit;
       }
-      .comhead :is(.toggle, .child-count-toggle):hover {
+      :where(html[themed]) .comhead :is(.toggle, .child-count-toggle):hover {
         color: var(--link);
       }
     `,
@@ -498,11 +500,11 @@ function configureItemPageCss() {
       }
     `,
     config.makeSubmissionTextReadable && `
-      div.toptext {
+      :where(html[themed]) div.toptext {
         color: var(--text-primary);
-        a:link {
-          text-decoration: underline;
-        }
+      }
+      div.toptext a:link {
+        text-decoration: underline;
       }
     `,
   ].filter(Boolean).join('\n')
@@ -1803,8 +1805,10 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
     //#region CSS
     $userStyle ??= addStyle('user', `
       .saved {
-        color: var(--text-primary);
         opacity: 0;
+      }
+      :where(html[themed]) .saved {
+        color: var(--text-primary);
       }
       .saved.show {
         animation: flash 2s forwards;
@@ -2291,9 +2295,11 @@ function submitFirstTextAreaWithKeyboard() {
 
 //#region Theming
 const THEME_CONFIG_KEYS = [
-  'darkMode',
   'pureBlack',
+  'theme',
 ]
+
+const systemDark = matchMedia('(prefers-color-scheme: dark)')
 
 let footerProcessed = false
 let headerProcessed = false
@@ -2306,9 +2312,12 @@ function setActiveSize() {
 }
 
 function setActiveTheme() {
-  document.documentElement.toggleAttribute('dark', config.darkMode)
-  document.documentElement.toggleAttribute('light', !config.darkMode)
-  document.documentElement.toggleAttribute('pure-black', config.darkMode && config.pureBlack)
+  let theme = config.theme ?? 'light'
+  let dark = theme == 'dark' || theme == 'system' && systemDark.matches
+  document.documentElement.toggleAttribute('themed', theme != 'none')
+  document.documentElement.toggleAttribute('dark', dark)
+  document.documentElement.toggleAttribute('light', !dark)
+  document.documentElement.toggleAttribute('pure-black', dark && config.pureBlack)
 }
 
 /**
@@ -2770,6 +2779,9 @@ function main() {
   onDocumentStart()
 
   window.addEventListener('resize', setActiveSize)
+  systemDark.addEventListener('change', () => {
+    if (config.theme == 'system') setActiveTheme()
+  })
 
   /** @type {Array<[string[], () => void]>} */
   const GLOBAL_CSS_CONFIG = [
@@ -2809,7 +2821,7 @@ function main() {
   chrome.storage.local.get(async (storedConfig) => {
     let settings = await import(chrome.runtime.getURL('settings.js'))
     defaultConfig = settings.DEFAULT_CONFIG
-    config = {...defaultConfig, ...storedConfig}
+    config = {...defaultConfig, ...storedConfig, theme: settings.getTheme(storedConfig)}
     debug = config.debug
     log('config', config)
 
