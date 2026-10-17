@@ -650,14 +650,14 @@ function itemPage() {
      */
     constructor($wrapper, index) {
       /** @type {number} */
-      this.indent = Number( /** @type {HTMLImageElement} */ ($wrapper.querySelector('img[src="s.gif"]')).width)
+      this.indent = Number($wrapper.querySelector('img[src="s.gif"]').getAttribute('width'))
 
       /** @type {number} */
       this.index = index
 
       let $user = /** @type {HTMLElement} */ ($wrapper.querySelector('a.hnuser'))
       /** @type {string} */
-      this.user = $user?.innerText
+      this.user = $user?.textContent
 
       /** @type {HTMLElement} */
       this.$comment = $wrapper.querySelector('div.comment')
@@ -903,7 +903,7 @@ function itemPage() {
     constructor($wrapper) {
       let $user = /** @type {HTMLElement} */ ($wrapper.querySelector('a.hnuser'))
       /** @type {string} */
-      this.user = $user?.innerText
+      this.user = $user?.textContent
 
       /** @type {HTMLElement} */
       this.$note = h('span', {className: 'note'})
