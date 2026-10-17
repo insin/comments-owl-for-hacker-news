@@ -749,7 +749,7 @@
 				DEVELOPMENT_TEAM = 2RDKJDLNY8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "iOS (Extension)/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News Extension";
+				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News Dev Extension";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -761,7 +761,7 @@
 					"-framework",
 					SafariServices,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News.Extension";
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News.Debug.Extension";
 				PRODUCT_NAME = "Comments Owl for Hacker News Extension";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
@@ -810,7 +810,7 @@
 				DEVELOPMENT_TEAM = 2RDKJDLNY8;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "iOS (App)/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News";
+				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News Dev";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -828,7 +828,7 @@
 					"-framework",
 					WebKit,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News";
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News.Debug";
 				PRODUCT_NAME = "Comments Owl for Hacker News";
 				SDKROOT = iphoneos;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -884,7 +884,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "macOS (Extension)/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News Extension";
+				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News Dev Extension";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -896,7 +896,7 @@
 					"-framework",
 					SafariServices,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News.Extension";
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News.Debug.Extension";
 				PRODUCT_NAME = "Comments Owl for Hacker News Extension";
 				SDKROOT = macosx;
 				SKIP_INSTALL = YES;
@@ -947,7 +947,7 @@
 				DEVELOPMENT_TEAM = 2RDKJDLNY8;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News";
+				INFOPLIST_KEY_CFBundleDisplayName = "Comments Owl for Hacker News Dev";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
@@ -962,7 +962,7 @@
 					"-framework",
 					WebKit,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News";
+				PRODUCT_BUNDLE_IDENTIFIER = "dev.jbscript.Comments-Owl-for-Hacker-News.Debug";
 				PRODUCT_NAME = "Comments Owl for Hacker News";
 				SDKROOT = macosx;
 				SWIFT_EMIT_LOC_STRINGS = YES;
