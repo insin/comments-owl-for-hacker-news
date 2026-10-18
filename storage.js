@@ -10,18 +10,20 @@ export function get(keys) {
   })
 }
 
+/** @returns {Promise<void>} */
 export function remove(keys) {
   return new Promise((resolve, reject) => {
-    chrome.storage.local.remove(keys, (result) => {
+    chrome.storage.local.remove(keys, () => {
       if (chrome.runtime.lastError) {
         reject(chrome.runtime.lastError)
       } else {
-        resolve(result)
+        resolve()
       }
     })
   })
 }
 
+/** @returns {Promise<void>} */
 export function set(keys) {
   return new Promise((resolve, reject) => {
     chrome.storage.local.set(keys, () => {

@@ -2159,13 +2159,11 @@ function configurePinnedHeader() {
 
 /** @param {HTMLElement} $header */
 function pinHeader($header) {
-  const SCROLL_THRESHOLD = 8
   let controller = new AbortController()
   let hover = matchMedia('(hover: hover) and (pointer: fine)')
   let height = $header.offsetHeight
   let lastY = getScrollY()
-  let distance = 0
-  let scrollVisible = lastY <= height
+  let scrollOffset = Math.min(lastY, height)
   let pointerInHeader = false
   /** @type {{y: number} | null} */
   let pointer = null
@@ -2177,10 +2175,12 @@ function pinHeader($header) {
 
   function render(animate = false) {
     if (controller.signal.aborted) return
-    let atTop = getScrollY() <= height
+    let atTop = getScrollY() <= (hover.matches ? height : 0)
     let focused = $header.contains(document.activeElement)
+    if (!hover.matches && (atTop || focused)) scrollOffset = 0
     let visible = atTop || focused ||
-      (hover.matches ? pointerInHeader : scrollVisible)
+      (hover.matches ? pointerInHeader : scrollOffset < height)
+    $header.style.setProperty('--header-scroll-offset', `${hover.matches ? 0 : -scrollOffset}px`)
     // Only pointer entry & exit should animate
     $header.toggleAttribute('header-animate', animate && hover.matches && !atTop && !focused)
     $header.toggleAttribute('header-hovered', !atTop && hover.matches && pointerInHeader)
@@ -2199,17 +2199,9 @@ function pinHeader($header) {
     let y = getScrollY()
     let delta = y - lastY
     lastY = y
-    if (delta) {
-      distance = Math.sign(delta) == Math.sign(distance) ? distance + delta : delta
-      if (Math.abs(distance) >= SCROLL_THRESHOLD) {
-        scrollVisible = distance < 0
-        distance = 0
-      }
-    }
-    if (y <= height) {
-      scrollVisible = true
-      distance = 0
-    }
+    // Follow touch scrolling pixel for pixel, reversing immediately without
+    // accumulating extra distance once the header is fully shown or hidden.
+    scrollOffset = Math.max(0, Math.min(height, scrollOffset + delta))
     render()
   }
 
@@ -2230,11 +2222,14 @@ function pinHeader($header) {
   hover.addEventListener('change', () => {
     pointer = null
     pointerInHeader = false
-    scrollVisible = getScrollY() <= height
+    lastY = getScrollY()
+    scrollOffset = Math.min(lastY, height)
     render()
   }, {signal: controller.signal})
   let observer = new ResizeObserver(() => {
+    let hidden = scrollOffset >= height
     height = $header.offsetHeight
+    scrollOffset = hidden ? height : Math.min(scrollOffset, height)
     updatePointer()
     render()
   })
@@ -2245,7 +2240,6 @@ function pinHeader($header) {
   }, {signal: controller.signal})
   window.addEventListener('pageshow', () => {
     lastY = getScrollY()
-    distance = 0
     render()
   }, {signal: controller.signal})
   render()
@@ -2257,6 +2251,7 @@ function pinHeader($header) {
     $header.removeAttribute('header-animate')
     $header.removeAttribute('header-hovered')
     $header.removeAttribute('header-hidden')
+    $header.style.removeProperty('--header-scroll-offset')
   }
 }
 //#endregion

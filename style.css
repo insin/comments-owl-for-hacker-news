@@ -165,7 +165,7 @@ html[mobile] .desktopnav {
   position: sticky;
   top: 0;
   z-index: 10;
-  transform: translateY(0);
+  transform: translateY(var(--header-scroll-offset, 0px));
   transition: none;
 }
 #header[pinned][header-hidden]:not(:focus-within) {
