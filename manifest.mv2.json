@@ -29,6 +29,7 @@
         "style.css"
       ],
       "js": [
+        "routes.js",
         "content.js"
       ],
       "run_at": "document_start"

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C04A00012FF0000000000001 /* routes.js in Resources */ = {isa = PBXBuildFile; fileRef = C04A00012FF0000000000003 /* routes.js */; };
+		C04A00012FF0000000000002 /* routes.js in Resources */ = {isa = PBXBuildFile; fileRef = C04A00012FF0000000000003 /* routes.js */; };
 		FB6A6CF12A595D2600636A10 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6A6CF02A595D2600636A10 /* AppDelegate.swift */; };
 		FB6A6CF32A595D2600636A10 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB6A6CF22A595D2600636A10 /* SceneDelegate.swift */; };
 		FB6A6CF62A595D2600636A10 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FB6A6CF42A595D2600636A10 /* LaunchScreen.storyboard */; };
@@ -122,6 +124,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C04A00012FF0000000000003 /* routes.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; name = routes.js; path = ../../../routes.js; sourceTree = "<group>"; };
 		FB6A6CD82A595D2500636A10 /* Base */ = {isa = PBXFileReference; lastKnownFileType = text.html; name = Base; path = ../Base.lproj/Main.html; sourceTree = "<group>"; };
 		FB6A6CD92A595D2500636A10 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon.png; sourceTree = "<group>"; };
 		FB6A6CDA2A595D2500636A10 /* Style.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = Style.css; sourceTree = "<group>"; };
@@ -263,6 +266,7 @@
 				FB6A6D4A2A599C9700636A10 /* options.css */,
 				FB6A6D4C2A599C9800636A10 /* options.html */,
 				FB6A6D502A599C9800636A10 /* options.js */,
+				C04A00012FF0000000000003 /* routes.js */,
 				FB7EC31F2F77D3F30021A73A /* settings.js */,
 				FB7EC3202F77D3F30021A73A /* storage.js */,
 				FBD6E6BB2F9621040003A700 /* style.css */,
@@ -481,6 +485,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB6A6D542A599C9800636A10 /* content.js in Resources */,
+				C04A00012FF0000000000001 /* routes.js in Resources */,
 				FB7EC3212F77D3F30021A73A /* storage.js in Resources */,
 				FB7EC3222F77D3F30021A73A /* settings.js in Resources */,
 				FB6A6D5E2A599C9800636A10 /* options.js in Resources */,
@@ -511,6 +516,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FB6A6D552A599C9800636A10 /* content.js in Resources */,
+				C04A00012FF0000000000002 /* routes.js in Resources */,
 				FB7EC3232F77D3F30021A73A /* storage.js in Resources */,
 				FB7EC3242F77D3F30021A73A /* settings.js in Resources */,
 				FB6A6D5F2A599C9800636A10 /* options.js in Resources */,

@@ -1,18 +1,13 @@
 import {get, set} from './storage.js'
+import './routes.js'
+
+const {HN_ORIGIN, ITEM_LIST_ROUTES} = globalThis.COMMENTS_OWL_ROUTES
 
 const TOGGLE_AI_ITEMS = 'toggle-ai-items'
+const TOGGLE_AI_ITEMS_URL_PATTERNS = ITEM_LIST_ROUTES
+  .filter(route => !route.userItems)
+  .flatMap(({path}) => [`${HN_ORIGIN}/${path}`, `${HN_ORIGIN}/${path}?*`])
 const TOGGLE_REPLY_LINKS = 'toggle-reply-links'
-
-const ITEM_PAGE_URL_PATTERNS = [
-  'https://news.ycombinator.com/',
-  'https://news.ycombinator.com/?*',
-  'https://news.ycombinator.com/ask*',
-  'https://news.ycombinator.com/front*',
-  'https://news.ycombinator.com/newest*',
-  'https://news.ycombinator.com/news*',
-  'https://news.ycombinator.com/show*',
-  'https://news.ycombinator.com/shownew*',
-]
 
 chrome.runtime.onInstalled.addListener(async (details) => {
   if (details.reason == 'update') {
@@ -23,7 +18,7 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     id: TOGGLE_AI_ITEMS,
     contexts: ['page'],
     title: chrome.i18n.getMessage(hideAiItems ? 'showAiItemsMenuItem' : 'hideAiItemsMenuItem'),
-    documentUrlPatterns: ITEM_PAGE_URL_PATTERNS,
+    documentUrlPatterns: TOGGLE_AI_ITEMS_URL_PATTERNS,
   })
   chrome.contextMenus.create({
     id: TOGGLE_REPLY_LINKS,

@@ -2637,11 +2637,7 @@ let path = location.pathname.slice(1)
 let startMs = Date.now()
 
 function isItemListPage() {
-  return (
-    /^(?:active|ask(?:new)?|best|classic|front|hidden|invited|launches|news|newest|noobstories|over|pool|show(?:new)?|submitted|upvoted|vouched)?$/.test(path) ||
-    /^flagged$/.test(path) && !location.search.includes('&kind=comment') ||
-    /^favorites$/.test(path) && !location.search.includes('&comments=t')
-  )
+  return COMMENTS_OWL_ROUTES.isItemListPage(location.pathname, location.search)
 }
 
 function isItemPage() {
@@ -2652,7 +2648,7 @@ function isItemPage() {
  * @returns `true` when we're on an item list page showing things a user did.
  */
 function isUserItemListPage() {
-  return /^(?:favorites|flagged|hidden|submitted|upvoted|vouched)$/.test(path)
+  return COMMENTS_OWL_ROUTES.isUserItemListPage(location.pathname)
 }
 
 function isUserProfilePage() {
