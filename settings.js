@@ -8,6 +8,7 @@ export const DEFAULT_CONFIG = {
   collapsedGroups: ['developer'],
   customCss: '',
   debug: false,
+  enableCustomCss: true,
   enableViewTransitions: false,
   hideAiItems: false,
   hideAiSiteRegex: `^(?:${[

@@ -27,9 +27,6 @@
   "commentsOptions": {
     "message": "Comments"
   },
-  "customCss": {
-    "message": "Custom CSS"
-  },
   "debug": {
     "message": "Debug"
   },
@@ -38,6 +35,9 @@
   },
   "developerOptions": {
     "message": "Developer"
+  },
+  "enableCustomCss": {
+    "message": "Custom CSS"
   },
   "enableViewTransitions": {
     "message": "Enable cross-document view transitions"

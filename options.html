@@ -38,8 +38,12 @@
           </div>
         </section>
         <section class="textarea">
-          <label id="customCss" for="customCss">Custom CSS</label>
-          <textarea id="customCss" rows="1"></textarea>
+          <label class="checkbox">
+            <span id="enableCustomCss">Custom CSS</span>
+            <input type="checkbox" name="enableCustomCss">
+            <span class="toggle"></span>
+          </label>
+          <textarea id="customCss" rows="1" aria-labelledby="enableCustomCss"></textarea>
           <button type="button" id="saveCustomCss" class="saveAndApply">Save and apply</button>
           <p id="customCssInfo">
             <span id="needMoreRoom">Need more room?</span>

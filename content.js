@@ -2019,7 +2019,7 @@ let $customCssStyle
 function configureCustomCss() {
   $customCssStyle = setCss($customCssStyle, {
     role: 'custom-css',
-    css: config.customCss,
+    css: config.enableCustomCss !== false ? config.customCss : '',
     removeIfEmpty:true
   })
 }
@@ -2776,7 +2776,7 @@ function main() {
 
   /** @type {Array<[string[], () => void]>} */
   const GLOBAL_CSS_CONFIG = [
-    [['customCss'], configureCustomCss],
+    [['customCss', 'enableCustomCss'], configureCustomCss],
     [THEME_CONFIG_KEYS, setActiveTheme],
     [VIEW_TRANSITION_CONFIG_KEYS, configureViewTransitionCss],
     [NAVIGATION_CONFIG_KEYS, configureNavigationCss],
