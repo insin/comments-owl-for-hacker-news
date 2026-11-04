@@ -470,14 +470,14 @@ function configureItemPageCss() {
           display: none;
         }
         /* Indicate when clicking will activate the toggle */
-        :where(html[themed]) &:hover :is(.toggle, .child-count-toggle) {
+        :where(html:not([notheme])) &:hover :is(.toggle, .child-count-toggle) {
           color: var(--link);
         }
       }
       .comhead:hover :is(.toggle, .child-count-toggle) {
         color: inherit;
       }
-      :where(html[themed]) .comhead :is(.toggle, .child-count-toggle):hover {
+      :where(html:not([notheme])) .comhead :is(.toggle, .child-count-toggle):hover {
         color: var(--link);
       }
     `,
@@ -500,7 +500,7 @@ function configureItemPageCss() {
       }
     `,
     config.makeSubmissionTextReadable && `
-      :where(html[themed]) div.toptext {
+      :where(html:not([notheme])) div.toptext {
         color: var(--text-primary);
       }
       div.toptext a:link {
@@ -1807,7 +1807,7 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
       .saved {
         opacity: 0;
       }
-      :where(html[themed]) .saved {
+      :where(html:not([notheme])) .saved {
         color: var(--text-primary);
       }
       .saved.show {
@@ -2309,7 +2309,7 @@ function setActiveSize() {
 function setActiveTheme() {
   let theme = config.theme ?? 'light'
   let dark = theme == 'dark' || theme == 'system' && systemDark.matches
-  document.documentElement.toggleAttribute('themed', theme != 'none')
+  document.documentElement.toggleAttribute('notheme', theme == 'none')
   document.documentElement.toggleAttribute('dark', dark)
   document.documentElement.toggleAttribute('light', !dark)
   document.documentElement.toggleAttribute('pure-black', dark && config.pureBlack)
