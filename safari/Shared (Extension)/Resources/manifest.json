@@ -59,6 +59,10 @@
   },
   "permissions": [
     "contextMenus",
-    "storage"
+    "storage",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": [
+    "https://news.ycombinator.com/*"
   ]
 }

@@ -45,6 +45,12 @@
   "generalOptions": {
     "message": "General"
   },
+  "embedYouTubeVideos": {
+    "message": "Embed YouTube videos"
+  },
+  "embedYouTubeVideosInfo": {
+    "message": "Loads the video player when you click Play"
+  },
   "hideAiItems": {
     "message": "Hide \"AI\" items"
   },

@@ -33,6 +33,8 @@ for (let translationId of [
   'debug',
   'debugInfo',
   'developerOptions',
+  'embedYouTubeVideos',
+  'embedYouTubeVideosInfo',
   'enableViewTransitions',
   'generalOptions',
   'hideAiItems',

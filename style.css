@@ -147,6 +147,13 @@ html[pure-black] {
 html[item-list] #bigbox .spacer {
   height: var(--item-spacing) !important;
 }
+html[item-list] .youtube-embed {
+  display: block;
+  width: min(100%, 480px);
+  aspect-ratio: 16 / 9;
+  border: 0;
+  margin-top: 8px;
+}
 /* Provide basic styling for unstyled pages */
 html[unstyled] body {
   font-family: Verdana, Geneva, sans-serif;

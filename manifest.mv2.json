@@ -50,7 +50,9 @@
   },
   "permissions": [
     "contextMenus",
-    "storage"
+    "storage",
+    "declarativeNetRequestWithHostAccess",
+    "https://news.ycombinator.com/*"
   ],
   "browser_specific_settings": {
     "gecko": {
