@@ -1575,7 +1575,7 @@ function itemListPage() {
     if (config.hideAiItems && aiMatches.length > 0) {
       log([
         `${aiMatches.length} "AI" item${s(aiMatches.length)} hidden`,
-        $rows.length > 1 && aiMatches.length > 0 ? ` (${Math.round(aiMatches.length / $rows.length)}%)` : '',
+        $rows.length > 1 && aiMatches.length > 0 ? ` (${Math.round(aiMatches.length / $rows.length * 100)}%)` : '',
         `\n${aiMatches.join('\n')}`,
       ].filter(Boolean).join(''))
     }
