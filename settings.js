@@ -81,7 +81,7 @@ export const DEFAULT_CONFIG = {
   listItemTransition: true,
   makeSubmissionTextReadable: true,
   pinHeader: false,
-  preventAccidentally: false,
+  preventAccidentally: navigator.maxTouchPoints > 0,
   pureBlack: false,
   submitTextAreaWithKeyboard: true,
   theme: 'light',
