@@ -1,8 +1,9 @@
 const IS_SAFARI = navigator.userAgent.includes('Safari/') && !/Chrom(e|ium)\//.test(navigator.userAgent)
-const MUTES_CHANGED_EVENT = 'comments-owl:mutes-changed'
 const MUTED_USERS_KEY = 'mutedUsers'
+const MUTES_CHANGED_EVENT = 'comments-owl:mutes-changed'
 const TOGGLE_HIDE = '[–]'
 const TOGGLE_SHOW = '[+]'
+const USER_LINK_SELECTOR = 'a[href^="user?id="]'
 const USER_NOTES_CHANGED_EVENT = 'comments-owl:user-notes-changed'
 const USER_NOTES_KEY = 'userNotes'
 
@@ -58,7 +59,7 @@ const LOGGED_OUT_USER_PAGE = `
                 <tr class="athing">
                   <td valign="top">user:</td>
                   <td>
-                    <a class="hnuser">anonymous comments owl user</a>
+                    <span id="anonymous-user">anonymous comments owl user</span>
                   </td>
                 </tr>
               </tbody>
@@ -655,7 +656,7 @@ function itemPage() {
       /** @type {number} */
       this.index = index
 
-      let $user = /** @type {HTMLElement} */ ($wrapper.querySelector('a.hnuser'))
+      let $user = $wrapper.querySelector(`span.comhead ${USER_LINK_SELECTOR}`)
       /** @type {string} */
       this.user = $user?.textContent
 
@@ -901,7 +902,7 @@ function itemPage() {
   class FocusedComment {
     /**  @param {HTMLElement} $wrapper */
     constructor($wrapper) {
-      let $user = /** @type {HTMLElement} */ ($wrapper.querySelector('a.hnuser'))
+      let $user = $wrapper.querySelector(`span.comhead ${USER_LINK_SELECTOR}`)
       /** @type {string} */
       this.user = $user?.textContent
 
@@ -1716,23 +1717,24 @@ function userPage({$context = document, onMuted = () => {}, textAreaProps = {col
     return
   }
 
-  let $userLink = /** @type {HTMLAnchorElement} */ ($context.querySelector('a.hnuser'))
-  if ($userLink == null) {
-    warn('a.hnuser not found')
+  let $profile = isUserPage ? document.querySelector('#bigbox') : $context
+  let $user = /** @type {HTMLElement} */ ($profile?.querySelector(`${USER_LINK_SELECTOR}, #anonymous-user`))
+  if ($user == null) {
+    warn('profile user not found')
     if (isUserPage) {
       document.documentElement.setAttribute('unstyled', '')
     }
     return
   }
 
-  let userId = $userLink.innerText
+  let userId = $user.innerText.trim()
   let isCurrentUser = userId == currentUser || location.pathname.startsWith('/muted')
   // Don't do anything if the current user is looking at their own hovercard
   if (isCurrentUser && !isUserPage) return
 
   let mutedUsers = getMutedUsers()
   let userNotes = getUserNotes()
-  let $table = $userLink.closest('table')
+  let $table = $user.closest('table')
 
   document.documentElement.toggleAttribute('user', isUserPage)
   if (isCurrentUser) {
@@ -2503,9 +2505,9 @@ function userHovercards() {
       h('table', {border: '0', style: {width: '100%'}},
         h('col', {style: {width: '1px'}}),
         h('tbody', null,
-          h('tr', null,
+          h('tr', {className: 'athing'},
             h('td', {valign: 'top'}, 'user:'),
-            h('td', null, h('a', {className: 'hnuser'},
+            h('td', null, h('a', {href: `user?id=${profile.username}`},
               profile.green ? h('font', {color: '#3c963c'}, profile.username) : profile.username),
             ),
           ),
@@ -2607,11 +2609,11 @@ function userHovercards() {
   })
   document.body.appendChild($hovercard)
   document.addEventListener('mouseover', (e) => {
-    if (!(e.target instanceof HTMLElement && e.target.closest('a.hnuser') && !$hovercard.contains(e.target))) return
-    showHovercard(e.target.closest('a.hnuser'))
+    if (!(e.target instanceof HTMLElement && e.target.closest(USER_LINK_SELECTOR) && !$hovercard.contains(e.target))) return
+    showHovercard(e.target.closest(USER_LINK_SELECTOR))
   })
   document.addEventListener('mouseout', (e) => {
-    if (!(e.target instanceof HTMLElement && e.target.closest('a.hnuser') && !$hovercard.contains(e.target))) return
+    if (!(e.target instanceof HTMLElement && e.target.closest(USER_LINK_SELECTOR) && !$hovercard.contains(e.target))) return
     clearTimeout(prefetchTimer)
     clearTimeout(showTimer)
     scheduleHideHovercard()
